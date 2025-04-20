@@ -1,0 +1,16 @@
+{
+  "name": "mylocalmanga",
+  "version": "1.0.0",
+  "description": "Web đọc truyện local như Netflix",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js"
+  },
+  "keywords": ["manga", "local", "reader", "nodejs"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}
