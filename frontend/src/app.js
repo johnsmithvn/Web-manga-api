@@ -4,27 +4,114 @@ let allFolders = [];
 let currentImages = [];
 let currentPage = 0;
 let readerMode = "horizontal"; // hoặc 'vertical'
+let folderPage = 0;
+const foldersPerPage = 20;
 
-function loadFolder(path = "") {
+function loadFolder(path = "", page = 0) {
   currentPath = path;
-  fetch(`/api/folder?path=${encodeURIComponent(path)}`)
+  folderPage = page;
+
+  const offset = folderPage * foldersPerPage;
+  fetch(
+    `/api/folder?path=${encodeURIComponent(
+      path
+    )}&limit=${foldersPerPage}&offset=${offset}`
+  )
     .then((res) => res.json())
     .then((data) => {
       const app = document.getElementById("app");
       app.innerHTML = "";
 
+      const searchBar = document.querySelector(".search");
+      const modeBtn = document.querySelector(".mode-toggle");
+
       if (data.type === "folder") {
-        allFolders = data.folders;
+        if (searchBar) searchBar.style.display = "block";
+        if (modeBtn) modeBtn.style.display = "none";
+
+        allFolders = [];
+
+        // Thêm "folder giả" nếu folder này có ảnh
+        if (data.images && data.images.length > 0) {
+          const parts = path.split("/");
+          const folderName = parts[parts.length - 1] || "Xem ảnh";
+          allFolders.push({
+            name: folderName,
+            path: currentPath + "/__self__",
+            thumbnail: data.images[0],
+            isSelfReader: true,
+            images: data.images,
+          });
+        }
+
+        // Thêm các folder con
+        allFolders = allFolders.concat(data.folders);
         renderFolderGrid(allFolders);
+
+        const totalPages = Math.ceil((data.total || 0) / foldersPerPage);
+
+        const nav = document.createElement("div");
+        nav.className = "reader-controls";
+
+        const prev = document.createElement("button");
+        prev.textContent = "⬅ Trang trước";
+        prev.disabled = folderPage <= 0;
+        prev.onclick = () => loadFolder(currentPath, folderPage - 1);
+        nav.appendChild(prev);
+
+        const jumpForm = document.createElement("form");
+        jumpForm.style.display = "inline-block";
+        jumpForm.style.margin = "0 10px";
+        jumpForm.onsubmit = (e) => {
+          e.preventDefault();
+          const inputPage = parseInt(jumpInput.value) - 1;
+          if (!isNaN(inputPage) && inputPage >= 0) {
+            loadFolder(currentPath, inputPage);
+          }
+        };
+
+        const jumpInput = document.createElement("input");
+        jumpInput.type = "number";
+        jumpInput.min = 1;
+        jumpInput.max = totalPages;
+        jumpInput.placeholder = `Trang...`;
+        jumpInput.title = `Tổng ${totalPages} trang`;
+        jumpInput.style.width = "60px";
+
+        const jumpBtn = document.createElement("button");
+        jumpBtn.textContent = "⏩";
+
+     
+        jumpForm.appendChild(jumpInput);
+        jumpForm.appendChild(jumpBtn);
+        nav.appendChild(jumpForm);
+
+        const next = document.createElement("button");
+        next.textContent = "Trang sau ➡";
+        next.disabled = folderPage + 1 >= totalPages;
+        next.onclick = () => loadFolder(currentPath, folderPage + 1);
+        nav.appendChild(next);
+
+        app.appendChild(nav);
+
+        const info = document.createElement("div");
+        info.textContent = `Trang ${folderPage + 1} / ${totalPages}`;
+        info.style.textAlign = "center";
+        info.style.marginTop = "10px";
+        app.appendChild(info);
       } else if (data.type === "reader") {
+        if (searchBar) searchBar.style.display = "none";
+        if (modeBtn) modeBtn.style.display = "inline-block";
         renderReader(data.images);
+      } else {
+        if (searchBar) searchBar.style.display = "block";
+        if (modeBtn) modeBtn.style.display = "none";
       }
     });
 }
 
 function renderFolderGrid(folders) {
   const app = document.getElementById("app");
-  app.innerHTML = "";
   const grid = document.createElement("div");
   grid.className = "grid";
   folders.forEach((f) => {
@@ -34,11 +121,15 @@ function renderFolderGrid(folders) {
         ${f.thumbnail ? `<img src="${f.thumbnail}" alt="${f.name}">` : ""}
         <div>${f.name}</div>
     `;
-    card.onclick = () => loadFolder(f.path);
+    card.onclick = () => {
+      if (f.isSelfReader && f.images) {
+        renderReader(f.images);
+      } else {
+        loadFolder(f.path);
+      }
+    };
     grid.appendChild(card);
   });
-  document.querySelector(".search").style.display = "block";
-
   app.appendChild(grid);
 }
 
@@ -58,13 +149,9 @@ function renderReader(images) {
   app.innerHTML = "";
 
   const reader = document.createElement("div");
-
   reader.className = "reader";
-  if (readerMode === "vertical") {
-    reader.classList.add("scroll-mode");
-  } else {
-    reader.classList.remove("scroll-mode");
-  }
+  reader.classList.toggle("scroll-mode", readerMode === "vertical");
+
   if (readerMode === "vertical") {
     images.forEach((src, index) => {
       const img = document.createElement("img");
@@ -96,20 +183,13 @@ function renderReader(images) {
       if (e.key === "ArrowLeft") prevPage();
     };
 
-    //  thêm chế click trái phải
     img.addEventListener("click", (e) => {
       const rect = img.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
-      if (clickX < rect.width / 2) {
-        prevPage();
-      } else {
-        nextPage();
-      }
+      if (clickX < rect.width / 2) prevPage();
+      else nextPage();
     });
   }
-
-  //  ẩn tìm kiếm
-  document.querySelector(".search").style.display = "none";
 
   app.appendChild(reader);
 }
@@ -155,25 +235,16 @@ function toggleDarkMode() {
 function toggleReaderMode() {
   readerMode = readerMode === "vertical" ? "horizontal" : "vertical";
   renderReader(currentImages);
-  console.log("Đã chuyển chế độ đọc sang:", readerMode);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("searchInput").addEventListener("input", filterManga);
-  loadFolder(); // chỉ giữ lại dòng này
-});
-
-// Trùm UX gọi đây là “Smart Hide UI” — tính năng kiểu YouTube, Facebook: scroll xuống thì nút ẩn đi, scroll lên thì hiện lại.
-let lastScrollY = window.scrollY;
-
-window.addEventListener("scroll", () => {
-  const currentScrollY = window.scrollY;
-  const isScrollingDown = currentScrollY > lastScrollY;
-
-  document.querySelectorAll(".btn-fab").forEach((btn) => {
-    btn.style.opacity = isScrollingDown ? "0" : "1";
-    btn.style.pointerEvents = isScrollingDown ? "none" : "auto";
-  });
-
-  lastScrollY = currentScrollY;
+  const search = document.querySelector(".search");
+  if (search) {
+    search.style.display = "block";
+    search.style.margin = "0 auto";
+  }
+  const modeBtn = document.querySelector(".mode-toggle");
+  if (modeBtn) modeBtn.style.display = "none";
+  loadFolder();
 });
