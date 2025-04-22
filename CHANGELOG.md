@@ -21,7 +21,7 @@ Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày ph
 
 ## [2025-04-20]
 - 🎉 Tạo project đọc truyện local bằng Node.js + HTML/JS.
-- 🎬 Hiển thị thư mục và ảnh, giao diện cơ bản giống Netflix.
+- 🎬 Hiển thị thư mục và ảnh
 - 🌙 Thêm dark mode chuyển thủ công.
 - ✅ Nâng cấp giao diện CSS: responsive, đẹp hơn, thân thiện với mobile.
 - ✅ Hỗ trợ click ảnh để lật trang, vuốt trang bằng Hammer.js.

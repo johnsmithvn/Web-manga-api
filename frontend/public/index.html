@@ -7,17 +7,24 @@
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <div class="search">
-      <input type="text" id="searchInput" placeholder="🔍 Tìm tên truyện..." />
-    </div>
+    <div id="wrapper">
+      <div class="search">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="🔍 Tìm tên truyện..."
+        />
+      </div>
       <!-- <div class="back">⬅ Trở lại</div> -->
- 
-    <button class="btn-fab back-btn" onclick="goBack()">⬅</button>
-    <button class="btn-fab mode-btn" onclick="toggleReaderMode()">📖</button>
-    <button class="btn-fab dark-btn" onclick="toggleDarkMode()">🌙</button>
 
-    <div id="app"></div>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-    <script src="/src/app.js"></script>
+      <button class="btn-fab back-btn" onclick="goBack()">⬅</button>
+      <button class="btn-fab mode-btn" onclick="toggleReaderMode()">📖</button>
+      <button class="btn-fab dark-btn" onclick="toggleDarkMode()">🌙</button>
+
+      <div id="app"></div>
+      <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+      <script src="/src/app.js"></script>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </div>
   </body>
 </html>

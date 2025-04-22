@@ -3,9 +3,18 @@ body {
     font-family: "Segoe UI", sans-serif;
     background-color: #f2f2f2;
     margin: 0;
-    padding: 20px;
+    padding: 0;
     color: #333;
 
+}
+
+#wrapper {
+    padding: 20px;
+}
+
+/* Ẩn padding khi đang đọc truyện */
+.reader-mode #wrapper {
+    padding: 0 !important;
 }
 
 .grid {
@@ -16,7 +25,7 @@ body {
     /* display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 16px;*/
-    padding: 20px; 
+    padding: 20px;
 }
 
 .card {
@@ -60,9 +69,9 @@ body {
 }
 
 .reader {
-    /* position: relative;
+    position: relative;
     height: 100vh;
-    overflow: hidden; */
+    overflow: hidden;
     background-color: #000;
 
 }
@@ -78,6 +87,37 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
 
+}
+
+/* scroll mode  */
+.reader.scroll-mode {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    height: auto;
+    /* padding: 20px 0; */
+    padding: 0;
+    /* 👈 Xóa padding ngang nếu có */
+    background-color: #000;
+}
+
+.scroll-img {
+    max-width: 100%;
+    /* giữ không vượt quá màn hình */
+    /* width: 100%;       /* 👈 Full chiều ngang khung nhìn */
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 20px;
+    display: block;
+}
+
+/* 👇 Trên mobile: ép width luôn là 100% */
+@media (max-width: 768px) {
+    .scroll-img {
+        width: 100% !important;
+        /* 👈 Full chiều ngang khung nhìn */
+    }
 }
 
 .page-indicator {
@@ -182,27 +222,7 @@ body.dark-mode {
 }
 
 
-/* scroll mode  */
-.reader.scroll-mode {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
-    height: auto;
-    /* padding: 20px 0; */
-    padding: 0;
-    /* 👈 Xóa padding ngang nếu có */
-    background-color: #000;
-}
 
-.scroll-img {
-    max-width: 100%;
-    /* width: 100%;        👈 Full chiều ngang khung nhìn */
-    height: auto;
-    object-fit: contain;
-    margin-bottom: 20px;
-    display: block;
-}
 
 /* 👇 Trên màn hình nhỏ (điện thoại), cho ảnh chiếm full ngang */
 @media screen and (max-width: 768px) {

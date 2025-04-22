@@ -26,6 +26,9 @@ function loadFolder(path = "", page = 0) {
       const modeBtn = document.querySelector(".mode-toggle");
 
       if (data.type === "folder") {
+        document.body.classList.remove("reader-mode");
+
+
         if (searchBar) searchBar.style.display = "block";
         if (modeBtn) modeBtn.style.display = "none";
 
@@ -100,6 +103,7 @@ function loadFolder(path = "", page = 0) {
         info.style.marginTop = "10px";
         app.appendChild(info);
       } else if (data.type === "reader") {
+        document.body.classList.add("reader-mode");
         if (searchBar) searchBar.style.display = "none";
         if (modeBtn) modeBtn.style.display = "inline-block";
         renderReader(data.images);
