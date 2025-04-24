@@ -16,6 +16,9 @@ MyLocalManga là một ứng dụng web giúp bạn đọc truyện tranh từ t
 - 🔙 Nút back, chuyển chế độ, dark mode dễ bấm
 - 📱 Giao diện responsive, tối ưu mobile
 - 🧱 Mã nguồn đã được refactor rõ ràng, dễ bảo trì
+- 🔁 Chuyển chương: Next / Prev Chapter dễ dàng ngay trong chế độ đọc truyện
+- 📄 Số trang hiển thị rõ ràng ở footer reader, hỗ trợ cả scroll và swipe
+- 🎯 Click giữa ảnh hoặc cuộn trang để ẩn/hiện header/footer mượt mà
 
 ---
 

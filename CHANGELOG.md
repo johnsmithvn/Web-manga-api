@@ -4,6 +4,26 @@ Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày ph
 
 ---
 
+## [2025-04-24]
+
+### ✨ Tính năng mới
+- ✅ Thêm footer reader riêng cố định khi đọc truyện (ẩn/hiện cùng header).
+- ✅ Footer reader hiển thị số trang và nút "Next Chapter" / "Prev Chapter".
+- ✅ Hỗ trợ click ảnh & scroll để ẩn/hiện UI trong cả chế độ swipe & scroll.
+- ✅ Căn giữa số trang trong footer.
+- ✅ Tự ẩn `main-footer` khi vào reader, hiện lại khi thoát.
+- ✅ Toggle header/footer đồng bộ khi click hoặc scroll.
+
+### 🛠️ Cải tiến kỹ thuật
+- 🧱 Tách `toggleReaderUI`, `hideReaderUI`, `showReaderUI` và `updateReaderPageInfo` thành hàm riêng để dễ bảo trì.
+- 🧠 Thêm logic xác định chương kế / trước thông qua biến `allFolders` và `currentPath`.
+
+### 🐞 Bug Fixes
+- 🐛 Sửa lỗi `Uncaught ReferenceError: allFolders is not defined` do thiếu import từ `folder.js`.
+- 🐛 Sửa lỗi header/footer toggle bị lệch pha (cái ẩn, cái hiện).
+- 🐛 Xoá số trang thừa trong swipe mode (đã có dưới footer).
+---
+
 ## [2025-04-22]
 
 ### ✨ Tính năng mới

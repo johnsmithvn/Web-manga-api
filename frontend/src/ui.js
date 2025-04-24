@@ -1,5 +1,5 @@
 // 📁 frontend/src/ui.js
-import { renderFolderGrid, loadFolder, currentPath, allFolders } from "./folder.js";
+import { renderFolderGrid, currentPath, allFolders } from "./folder.js";
 import { renderReader, toggleReaderMode as toggleMode } from "./reader.js";
 
 /**
@@ -24,7 +24,9 @@ export function toggleDarkMode() {
 export function goBack() {
   const parts = currentPath.split("/");
   parts.pop();
-  loadFolder(parts.join("/"));
+
+  // ❗ KHÔNG gọi trực tiếp loadFolder → gọi từ window để tránh circular import
+  window.loadFolder(parts.join("/"));
 }
 
 /**
@@ -47,7 +49,7 @@ export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
   const prev = document.createElement("button");
   prev.textContent = "⬅ Trang trước";
   prev.disabled = currentPage <= 0;
-  prev.onclick = () => loadFolder(currentPath, currentPage - 1);
+  prev.onclick = () => window.loadFolder(currentPath, currentPage - 1);
   nav.appendChild(prev);
 
   const jumpForm = document.createElement("form");
@@ -57,7 +59,7 @@ export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
     e.preventDefault();
     const inputPage = parseInt(jumpInput.value) - 1;
     if (!isNaN(inputPage) && inputPage >= 0) {
-      loadFolder(currentPath, inputPage);
+      window.loadFolder(currentPath, inputPage);
     }
   };
 
@@ -79,7 +81,7 @@ export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
   const next = document.createElement("button");
   next.textContent = "Trang sau ➡";
   next.disabled = currentPage + 1 >= totalPages;
-  next.onclick = () => loadFolder(currentPath, currentPage + 1);
+  next.onclick = () => window.loadFolder(currentPath, currentPage + 1);
   nav.appendChild(next);
 
   app.appendChild(nav);
@@ -89,4 +91,19 @@ export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
   info.style.textAlign = "center";
   info.style.marginTop = "10px";
   app.appendChild(info);
+}
+
+/**
+ * 🔍 Toggle thanh tìm kiếm trượt xuống giống YouTube
+ */
+export function toggleSearchBar() {
+  const bar = document.getElementById("floating-search");
+  bar?.classList.toggle("active");
+  const input = document.getElementById("floatingSearchInput");
+  if (bar?.classList.contains("active")) {
+    input?.focus();
+  } else {
+    input.value = "";
+    filterManga(); // Reset kết quả nếu đã gõ trước đó
+  }
 }

@@ -17,7 +17,11 @@ export function loadFolder(path = "", page = 0) {
   folderPage = page;
 
   const offset = folderPage * foldersPerPage;
-  fetch(`/api/folder?path=${encodeURIComponent(path)}&limit=${foldersPerPage}&offset=${offset}`)
+  fetch(
+    `/api/folder?path=${encodeURIComponent(
+      path
+    )}&limit=${foldersPerPage}&offset=${offset}`
+  )
     .then((res) => res.json())
     .then((data) => {
       const app = document.getElementById("app");
@@ -25,6 +29,9 @@ export function loadFolder(path = "", page = 0) {
 
       if (data.type === "folder") {
         document.body.classList.remove("reader-mode");
+        // ✅ Hiện lại footer mặc định
+        document.getElementById("main-footer")?.classList.remove("hidden");
+        document.getElementById("reader-footer")?.classList.add("hidden");
 
         allFolders = [];
 
@@ -46,6 +53,8 @@ export function loadFolder(path = "", page = 0) {
         updateFolderPaginationUI(folderPage, data.total || 0, foldersPerPage);
       } else if (data.type === "reader") {
         document.body.classList.add("reader-mode");
+        // 🧼 Ẩn footer mặc định (nếu chưa ẩn bằng CSS)
+        document.getElementById("main-footer")?.classList.add("hidden");
         renderReader(data.images);
       }
     });

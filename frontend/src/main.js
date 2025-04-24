@@ -1,13 +1,28 @@
 // 📁 frontend/src/main.js
 import { loadFolder } from "./folder.js";
-import { filterManga, toggleDarkMode, toggleReaderMode, goBack } from "./ui.js";
+import {
+  filterManga,
+  toggleDarkMode,
+  toggleReaderMode,
+  goBack,
+  toggleSearchBar,
+} from "./ui.js";
 
-// Khởi tạo sự kiện DOM khi trang sẵn sàng
+// Gắn vào window để HTML onclick hoạt động
+window.loadFolder = loadFolder;
+window.goBack = goBack;
+window.toggleDarkMode = toggleDarkMode;
+window.toggleReaderMode = toggleReaderMode;
+window.toggleSearchBar = toggleSearchBar;
+
 window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("searchInput")?.addEventListener("input", filterManga);
-  document.querySelector(".mode-btn")?.addEventListener("click", toggleReaderMode);
-  document.querySelector(".dark-btn")?.addEventListener("click", toggleDarkMode);
-  document.querySelector(".back-btn")?.addEventListener("click", goBack);
 
-  loadFolder(); // Load thư mục gốc khi mở web
+  const header = document.getElementById("site-header");
+  const wrapper = document.getElementById("wrapper");
+  if (header && wrapper) {
+    wrapper.style.paddingTop = `${header.offsetHeight}px`;
+  }
+
+  loadFolder(); // ✅ Load lần đầu
 });
