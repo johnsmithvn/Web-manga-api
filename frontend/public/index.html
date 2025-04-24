@@ -10,11 +10,18 @@
     <link rel="stylesheet" href="/src/styles/folder.css" />
     <link rel="stylesheet" href="/src/styles/reader.css" />
     <link rel="stylesheet" href="/src/styles/dark.css" />
+    <link rel="stylesheet" href="/src/styles/layout.css" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
     <div id="wrapper">
+
+      <!-- Header website -->
+      <header id="site-header">
+        <h1>📚 MyLocalManga</h1>
+      </header>
+
       <div class="search">
         <input
           type="text"
@@ -30,6 +37,11 @@
 
       <!-- App sẽ được render trong đây -->
       <div id="app"></div>
+
+      <!-- Footer website -->
+      <footer id="site-footer">
+        <p>&copy; 2025 MyLocalManga | Đọc truyện từ máy cá nhân</p>
+      </footer>
 
       <!-- Thư viện gesture cho mobile -->
       <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
