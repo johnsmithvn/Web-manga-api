@@ -15,25 +15,33 @@ MyLocalManga là một ứng dụng web giúp bạn đọc truyện tranh từ t
 - 🔍 Tìm truyện theo tên
 - 🔙 Nút back, chuyển chế độ, dark mode dễ bấm
 - 📱 Giao diện responsive, tối ưu mobile
-- 🎯 Ẩn nút khi cuộn – như YouTube/Facebook
+- 🧱 Mã nguồn đã được refactor rõ ràng, dễ bảo trì
 
 ---
 
 ## 🛠️ Cấu trúc dự án
 
-```
+```txt
 MyLocalManga/
 ├── backend/
-│   └── server.js          # Node.js + Express server
+│   ├── server.js              # Node.js + Express server
+│   └── utils/
+│       ├── config.js          # Đường dẫn thư mục truyện
+│       ├── fileUtils.js       # Đọc folder, ảnh thumbnail
+│       └── imageUtils.js      # Các hàm đệ quy tìm ảnh
 ├── frontend/
 │   ├── public/
-│   │   └── index.html     # Giao diện chính
-│   ├── src/
-│   │   ├── app.js         # Logic client
-│   │   └── styles.css     # Giao diện
-├── utils/
-│   ├── config.js          # Đường dẫn thư mục truyện
-│   └── fileUtils.js       # Đọc folder, ảnh thumbnail
+│   │   └── index.html         # Giao diện chính
+│   └── src/
+│       ├── main.js            # Entry point JS
+│       ├── folder.js          # Hiển thị thư mục
+│       ├── reader.js          # Hiển thị ảnh đọc truyện
+│       ├── ui.js              # Điều khiển UI, filter, dark mode
+│       └── styles/
+│           ├── base.css       # Style nền
+│           ├── folder.css     # Style thẻ folder
+│           ├── reader.css     # Style reader
+│           └── dark.css       # Style dark mode
 ```
 
 ---
@@ -47,10 +55,10 @@ MyLocalManga/
 ### 2. Cài thư viện
 
 ```bash
-npm install express mime-types
+npm install express
 ```
 
-> *Nếu có dùng `Hammer.js`, đã load từ CDN trong `index.html`.*
+> *Hammer.js đã được load từ CDN trong `index.html`*
 
 ### 3. Chạy server
 
@@ -64,36 +72,24 @@ Mặc định sẽ chạy tại: [http://localhost:3000](http://localhost:3000)
 
 ## ⚙️ Cấu hình thư mục truyện
 
-Mặc định truyện nằm tại:
-
 ```js
-// utils/config.js
+// backend/utils/config.js
 module.exports = {
-  MANGA_DIR: 'E:/File/Manga'
+  MANGA_DIR: 'E:/File/Manga' // Thay bằng đường dẫn truyện của bạn
 };
 ```
-
-➡ Thay bằng đường dẫn thư mục truyện của bạn trên máy.
 
 ---
 
 ## 📸 Cấu trúc thư mục truyện
 
-```
-MANGA_DIR/
+```txt
+E:/File/Manga/
 ├── Naruto/
-│   └── 01.jpg, 02.jpg, ...
+│   ├── 01.jpg, 02.jpg, ...
 ├── One Piece/
-│   └── 01.jpg, 02.jpg, ...
+│   ├── 01.jpg, 02.jpg, ...
 ```
-
----
-
-## 📌 Ghi chú
-
-- Ứng dụng chỉ dùng **cục bộ (local)**, không chia sẻ lên mạng
-- Không yêu cầu cơ sở dữ liệu
-- Dễ dàng mở rộng: bookmark, ghi nhớ trang, phân loại...
 
 ---
 

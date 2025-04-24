@@ -4,7 +4,14 @@
   <head>
     <meta charset="UTF-8" />
     <title>Truyện Local</title>
-    <link rel="stylesheet" href="/src/styles.css" />
+
+    <!-- Load từng phần CSS riêng biệt -->
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/folder.css" />
+    <link rel="stylesheet" href="/src/styles/reader.css" />
+    <link rel="stylesheet" href="/src/styles/dark.css" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
     <div id="wrapper">
@@ -15,16 +22,20 @@
           placeholder="🔍 Tìm tên truyện..."
         />
       </div>
-      <!-- <div class="back">⬅ Trở lại</div> -->
 
-      <button class="btn-fab back-btn" onclick="goBack()">⬅</button>
-      <button class="btn-fab mode-btn" onclick="toggleReaderMode()">📖</button>
-      <button class="btn-fab dark-btn" onclick="toggleDarkMode()">🌙</button>
+      <!-- Các nút điều khiển (Back, Dark Mode, Reader Mode) -->
+      <button class="btn-fab back-btn">⬅</button>
+      <button class="btn-fab mode-btn">📖</button>
+      <button class="btn-fab dark-btn">🌙</button>
 
+      <!-- App sẽ được render trong đây -->
       <div id="app"></div>
+
+      <!-- Thư viện gesture cho mobile -->
       <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-      <script src="/src/app.js"></script>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+      <!-- Entry point sau khi đã chia module -->
+      <script type="module" src="/src/main.js"></script>
     </div>
   </body>
 </html>

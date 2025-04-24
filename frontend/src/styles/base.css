@@ -1,0 +1,65 @@
+/* 📁 frontend/src/styles/base.css */
+body {
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f2f2f2;
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+  
+  #wrapper {
+    padding: 20px;
+  }
+  
+  .search {
+    margin: 40px 0 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .search input {
+    padding: 10px;
+    font-size: 16px;
+    width: 300px;
+    max-width: 90vw;
+    box-sizing: border-box;
+  }
+  
+  .btn-fab {
+    position: fixed;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    z-index: 999;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+  }
+  
+  .btn-fab:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+  
+  .back-btn {
+    top: 20px;
+    left: 20px;
+  }
+  
+  .mode-btn {
+    top: 20px;
+    right: 80px;
+  }
+  
+  .dark-btn {
+    top: 20px;
+    right: 20px;
+  }
