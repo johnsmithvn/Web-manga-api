@@ -1,5 +1,7 @@
 // 📁 backend/server.js (Refactored)
 const express = require("express");
+const favicon = require("serve-favicon");
+
 const path = require("path");
 const fs = require("fs");
 const { getFolderData } = require("./utils/fileUtils");
@@ -15,6 +17,7 @@ const app = express();
 app.use("/manga", express.static(MANGA_DIR));
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 app.use("/src", express.static(path.join(__dirname, "../frontend/src")));
+app.use(favicon(path.join(__dirname, '../frontend/public/favicon.ico')));
 
 // 📦 API trả về danh sách folder + ảnh
 app.get("/api/folder", (req, res) => {

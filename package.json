@@ -6,11 +6,17 @@
   "scripts": {
     "start": "node backend/server.js"
   },
-  "keywords": ["manga", "local", "reader", "nodejs"],
+  "keywords": [
+    "manga",
+    "local",
+    "reader",
+    "nodejs"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "serve-favicon": "^2.5.0"
   }
 }

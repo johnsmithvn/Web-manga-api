@@ -10,12 +10,18 @@
     <link rel="stylesheet" href="/src/styles/dark.css" />
     <link rel="stylesheet" href="/src/styles/layout.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  </head>
+
+  <body>
+    <!-- 🛠️ Mở body ở đây -->
     <header id="site-header" class="yt-style-header">
       <!-- Logo / Tên app bên trái -->
       <div class="header-left">
         <h1>📚 MyLocalManga</h1>
       </div>
-    
+
       <!-- Icon bên phải (Search, Back, Reader, DarkMode) -->
       <div class="header-icons">
         <button onclick="goBack()">⬅</button>
@@ -24,13 +30,12 @@
         <button onclick="toggleSearchBar()">🔍</button>
       </div>
     </header>
-    
+
     <!-- Thanh tìm kiếm nổi kiểu YouTube -->
     <div id="floating-search" class="search-bar-hidden">
       <input type="text" id="floatingSearchInput" placeholder="Tìm truyện..." />
       <button onclick="toggleSearchBar()">❌</button>
     </div>
-    </header>
 
     <!-- ✅ Bao quanh phần nội dung để né header/footer -->
     <div id="wrapper">
@@ -38,16 +43,19 @@
       <div id="app"></div>
     </div>
 
-    
-  <!-- ✅ Reader Footer -->
-<div id="reader-footer" class="hidden">
-  <div class="reader-footer-inner">
-    <button id="prev-chapter-btn">⬅ Prev</button>
-    <span id="page-info">Trang ? / ?</span>
-    <button id="next-chapter-btn">Next ➡</button>
-  </div>
-</div>
+    <!-- ✅ Loading overlay -->
+    <div id="loading-overlay" class="hidden">
+      <div class="spinner"></div>
+    </div>
 
+    <!-- ✅ Reader Footer -->
+    <div id="reader-footer" class="hidden">
+      <div class="reader-footer-inner">
+        <button id="prev-chapter-btn">⬅ Prev</button>
+        <span id="page-info">Trang ? / ?</span>
+        <button id="next-chapter-btn">Next ➡</button>
+      </div>
+    </div>
 
     <!-- ✅ FOOTER cố định bên dưới -->
     <footer id="main-footer">

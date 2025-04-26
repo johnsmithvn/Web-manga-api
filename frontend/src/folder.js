@@ -16,6 +16,9 @@ export function loadFolder(path = "", page = 0) {
   currentPath = path;
   folderPage = page;
 
+  // 👉 Hiện loading ngay khi bắt đầu
+  document.getElementById("loading-overlay")?.classList.remove("hidden");
+
   const offset = folderPage * foldersPerPage;
   fetch(
     `/api/folder?path=${encodeURIComponent(
@@ -49,7 +52,6 @@ export function loadFolder(path = "", page = 0) {
 
         allFolders = allFolders.concat(data.folders);
         renderFolderGrid(allFolders);
-
         updateFolderPaginationUI(folderPage, data.total || 0, foldersPerPage);
       } else if (data.type === "reader") {
         document.body.classList.add("reader-mode");
@@ -57,6 +59,13 @@ export function loadFolder(path = "", page = 0) {
         document.getElementById("main-footer")?.classList.add("hidden");
         renderReader(data.images);
       }
+    })
+    .catch((err) => {
+      console.error("❌ Lỗi khi load folder:", err);
+    })
+    .finally(() => {
+      // ✅ Luôn ẩn loading overlay bất kể success hay fail
+      document.getElementById("loading-overlay")?.classList.add("hidden");
     });
 }
 
