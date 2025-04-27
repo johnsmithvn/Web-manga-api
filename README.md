@@ -1,4 +1,4 @@
-# 📚 MyLocalManga – Web đọc truyện local mượt như Netflix
+# 📚 MyLocalManga – Web đọc truyện local
 
 MyLocalManga là một ứng dụng web giúp bạn đọc truyện tranh từ thư mục trên ổ cứng cá nhân. Giao diện đẹp, nhẹ, dễ sử dụng, tối ưu cho cả máy tính và điện thoại.
 
@@ -19,32 +19,54 @@ MyLocalManga là một ứng dụng web giúp bạn đọc truyện tranh từ t
 - 🔁 Chuyển chương: Next / Prev Chapter dễ dàng ngay trong chế độ đọc truyện
 - 📄 Số trang hiển thị rõ ràng ở footer reader, hỗ trợ cả scroll và swipe
 - 🎯 Click giữa ảnh hoặc cuộn trang để ẩn/hiện header/footer mượt mà
+- Clear cache khi đổi rootFolder: Đổi bộ đọc khác ➔ clear sạch cache bộ cũ.
+- Random truyện cực nhanh: Random trong cache local.
+- Tìm kiếm folder siêu nhanh: Search trong cache local không cần gọi server.
+- Phân trang folders nhẹ: Slice cache local ➔ hiển thị 20 folders mỗi lần ➔ cực mượt.
+- Cache danh sách folders: Cache toàn bộ {name, path} folders local để search và random nhanh.
+- Tự động clear cache sau 24h: Đảm bảo cache không lỗi thời nếu thư viện truyện thay đổi.
+
+
+
+
 
 ---
 
 ## 🛠️ Cấu trúc dự án
 
 ```txt
-MyLocalManga/
-├── backend/
-│   ├── server.js              # Node.js + Express server
-│   └── utils/
-│       ├── config.js          # Đường dẫn thư mục truyện
-│       ├── fileUtils.js       # Đọc folder, ảnh thumbnail
-│       └── imageUtils.js      # Các hàm đệ quy tìm ảnh
-├── frontend/
-│   ├── public/
-│   │   └── index.html         # Giao diện chính
-│   └── src/
-│       ├── main.js            # Entry point JS
-│       ├── folder.js          # Hiển thị thư mục
-│       ├── reader.js          # Hiển thị ảnh đọc truyện
-│       ├── ui.js              # Điều khiển UI, filter, dark mode
-│       └── styles/
-│           ├── base.css       # Style nền
-│           ├── folder.css     # Style thẻ folder
-│           ├── reader.css     # Style reader
-│           └── dark.css       # Style dark mode
+backend/
+├── api/
+│   ├── list-folder.js         // API list folders + images
+│   ├── list-all-folders.js     // (mới) API trả về toàn bộ {name, path}
+│   ├── random-folders.js       // API random folders
+│   ├── top-folders.js          // API top folders theo lượt view
+├── data/
+│   ├── views.json              // File lưu lượt xem truyện
+├── utils/
+│   ├── config.js               // Đường dẫn BASE_DIR
+│   ├── imageUtils.js           // Tìm ảnh đầu tiên trong folder
+│   ├── pathToUrl.js            // Convert local path -> URL
+│   ├── views-manager.js        // Quản lý view tăng khi đọc truyện
+├── server.js                   // Server Express chính
+
+frontend/
+├── public/
+│   ├── index.html              // Giao diện chính
+│   ├── select.html             // Giao diện chọn bộ truyện
+├── src/
+│   ├── folder.js               // Load folder, phân trang
+│   ├── reader.js               // Giao diện đọc truyện
+│   ├── ui.js                   // Giao diện chung: nút back, dark mode, search
+│   ├── storage.js              // Quản lý cache LocalStorage
+│   ├── preload.js              // Preload ảnh thumbnail
+│   ├── sidebar.js              // (nếu có) Sidebar menu
+│   ├── main.js                 // Bootstrap trang chính
+│   ├── config.js               // Cấu hình client
+├── styles/
+│   ├── base.css, layout.css, reader.css,... // Giao diện CSS
+
+
 ```
 
 ---
@@ -88,10 +110,6 @@ module.exports = {
 
 ```txt
 E:/File/Manga/
-├── Naruto/
-│   ├── 01.jpg, 02.jpg, ...
-├── One Piece/
-│   ├── 01.jpg, 02.jpg, ...
 ```
 
 ---

@@ -1,80 +1,111 @@
-// 📁 backend/server.js (Refactored)
-const express = require("express");
-const favicon = require("serve-favicon");
+// 📁 backend/server.js
 
+const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { getFolderData } = require("./utils/fileUtils");
-const { MANGA_DIR } = require("./utils/config");
-const {
-  hasImageRecursively,
-  findFirstImageRecursively,
-} = require("./utils/imageUtils");
+const { listFolder, listAllFolders } = require("./api/list-folder"); // 🆕 Import cả 2 hàm
+const topFolders = require("./api/top-folders");
+const randomFolders = require("./api/random-folders");
+const { BASE_DIR } = require("./utils/config");
 
 const app = express();
+const PORT = 3000;
 
-// Serve static files (truyện ảnh + frontend)
-app.use("/manga", express.static(MANGA_DIR));
-app.use(express.static(path.join(__dirname, "../frontend/public")));
-app.use("/src", express.static(path.join(__dirname, "../frontend/src")));
-app.use(favicon(path.join(__dirname, '../frontend/public/favicon.ico')));
+// ✅ Middleware parse JSON body
+app.use(express.json());
 
-// 📦 API trả về danh sách folder + ảnh
-app.get("/api/folder", (req, res) => {
-  const relativePath = req.query.path || "";
-  const fullPath = path.join(MANGA_DIR, relativePath);
-  const limit = parseInt(req.query.limit) || 20;
-  const offset = parseInt(req.query.offset) || 0;
-
-  const items = fs.readdirSync(fullPath, { withFileTypes: true });
-  const imageFiles = items.filter(f => f.isFile() && /\.(jpe?g|png|gif|webp)$/i.test(f.name));
-  const folders = items.filter(f => f.isDirectory());
-
-  // 📁 Chỉ lấy folder con có ảnh
-  const foldersWithImage = folders.filter((f) => {
-    const subPath = path.join(fullPath, f.name);
-    return hasImageRecursively(subPath);
-  });
-
-  const total = foldersWithImage.length;
-  const paginated = foldersWithImage.slice(offset, offset + limit);
-
-  // 📸 Lấy thumbnail cho mỗi folder
-  const folderData = paginated.map((item) => {
-    const folderPath = path.join(fullPath, item.name);
-    const relativeFolderPath = path.join(relativePath, item.name).replace(/\\/g, "/");
-    const thumbnail = findFirstImageRecursively(folderPath, relativeFolderPath);
-
-    return {
-      name: item.name,
-      path: relativeFolderPath,
-      thumbnail,
-    };
-  });
-
-  const images = imageFiles.map(img =>
-    `/manga/${relativePath}/${img.name}`.replace(/\\/g, "/")
-  );
-
-  // Nếu chỉ có ảnh → vào reader luôn
-  if (imageFiles.length > 0 && foldersWithImage.length === 0) {
-    return res.json({
-      type: "reader",
-      images,
-    });
+// ✅ Middleware fix lỗi URL encode (dấu () [] {} ...) khi load ảnh
+app.use("/manga", (req, res, next) => {
+  try {
+    req.url = decodeURIComponent(req.url); // 🔥 Decode chuẩn URL ảnh
+  } catch (e) {
+    console.error("❌ Error decoding URL:", e);
+    return res.status(400).send("Bad Request");
   }
-
-  // Nếu có folder hoặc có ảnh + folder → trả về cả hai
-  res.json({
-    type: "folder",
-    name: path.basename(fullPath),
-    folders: folderData,
-    total,
-    images: foldersWithImage.length > 0 ? images : [],
-  });
+  next();
 });
 
-const PORT = 3000;
+// ✅ Serve static images từ BASE_DIR (E:/File/Manga)
+app.use("/manga", express.static(BASE_DIR));
+
+// ✅ Serve frontend static files
+app.use(express.static(path.join(__dirname, "../frontend/public")));
+app.use("/src", express.static(path.join(__dirname, "../frontend/src")));
+
+// 📂 API: Lấy danh sách folder + ảnh trong 1 folder (phân trang)
+app.get("/api/list-folder", async (req, res) => {
+  const { root, path: subPath = "", limit, offset } = req.query;
+  if (!root) return res.status(400).json({ error: "Missing root parameter" });
+
+  try {
+    const result = await listFolder(root, subPath, parseInt(limit) || 0, parseInt(offset) || 0);
+    res.json(result);
+  } catch (err) {
+    console.error("❌ Error in list-folder:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 📂 API: Lấy toàn bộ folders {name, path} để cache search/random
+app.get("/api/list-all-folders", async (req, res) => {
+  const { root } = req.query;
+  if (!root) return res.status(400).json({ error: "Missing root parameter" });
+
+  try {
+    const folders = await listAllFolders(root);
+    res.json(folders);
+  } catch (err) {
+    console.error("❌ Error in list-all-folders:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// 📂 API: Lấy top 20 folder có lượt xem cao nhất
+app.get("/api/top-folders", async (req, res) => {
+  const { root } = req.query;
+  if (!root) return res.status(400).json({ error: "Missing root parameter" });
+
+  try {
+    const result = await topFolders(root);
+    res.json(result);
+  } catch (err) {
+    console.error("❌ Error in top-folders:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 📂 API: Random 10 folder ngẫu nhiên
+app.get("/api/random-folders", async (req, res) => {
+  const { root } = req.query;
+  if (!root) return res.status(400).json({ error: "Missing root parameter" });
+
+  try {
+    const result = await randomFolders(root);
+    res.json(result);
+  } catch (err) {
+    console.error("❌ Error in random-folders:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 📂 API: Trả về danh sách folder gốc (1,2,3,...)
+app.get("/api/list-roots", (req, res) => {
+  if (!fs.existsSync(BASE_DIR)) {
+    return res.status(500).json({ error: "BASE_DIR không tồn tại" });
+  }
+
+  const entries = fs.readdirSync(BASE_DIR, { withFileTypes: true });
+  const roots = entries.filter(e => e.isDirectory()).map(e => e.name);
+
+  res.json(roots);
+});
+
+// 🔥 Fallback tất cả route không match ➔ trả về index.html (SPA mode)
+app.get(/^\/(?!api|src|manga).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/public/index.html"));
+});
+
+// ✅ Start server
 app.listen(PORT, () => {
-  console.log(`✅ Server chạy tại http://localhost:${PORT}`);
+  console.log(`✅ Server is running at http://localhost:${PORT}`);
 });

@@ -1,13 +1,15 @@
 // 📁 frontend/src/reader.js
-import { allFolders, currentPath } from "./folder.js";
+
+import { state, loadFolder } from "./folder.js"; // ✅ Import đúng: state + loadFolder
+import { getRootFolder } from "./storage.js";
 
 export let currentImages = [];
 let currentPage = 0;
-let readerMode = "horizontal";
+let readerMode = "horizontal"; // "horizontal" hoặc "vertical"
 
 /**
- * 📖 Hiển thị ảnh đọc truyện
- * @param {Array} images
+ * 📖 Render giao diện reader mode (main)
+ * @param {Array} images - Danh sách ảnh
  */
 export function renderReader(images) {
   currentImages = images;
@@ -20,60 +22,84 @@ export function renderReader(images) {
   reader.className = "reader";
   reader.classList.toggle("scroll-mode", readerMode === "vertical");
 
-  // ✅ Khi vào reader: ẩn UI chính, hiện reader mode
+  setupReaderUI();
+  setupReaderModeButton();
+  renderImages(reader);
+  setupReaderNavigation(reader);
+  setupChapterNavigation();
+
+  app.appendChild(reader);
+  updateReaderPageInfo();
+}
+
+/**
+ * 📈 Thiết lập UI khi vào chế độ đọc
+ */
+function setupReaderUI() {
   document.body.classList.add("reader-mode");
   document.getElementById("site-header")?.classList.add("hidden");
   document.getElementById("main-footer")?.classList.add("hidden");
   document.getElementById("reader-footer")?.classList.add("hidden");
+}
 
+/**
+ * 📖 Thêm nút đổi chế độ đọc nếu chưa có
+ */
+function setupReaderModeButton() {
+  const headerIcons = document.querySelector(".header-icons");
+  if (headerIcons && !document.getElementById("readerModeButton")) {
+    const readerBtn = document.createElement("button");
+    readerBtn.id = "readerModeButton";
+    readerBtn.textContent = "📖";
+    readerBtn.onclick = toggleReaderMode;
+    headerIcons.appendChild(readerBtn);
+  }
+}
+
+/**
+ * 📷 Render danh sách ảnh trong reader
+ */
+function renderImages(reader) {
   if (readerMode === "vertical") {
-    // 📜 Scroll mode: hiển thị toàn bộ ảnh
-    images.forEach((src, index) => {
+    currentImages.forEach((src, index) => {
       const img = document.createElement("img");
       img.src = src;
       img.alt = `Page ${index + 1}`;
       img.className = "scroll-img";
-
-      // ✅ Click ảnh để toggle UI đồng bộ
-      img.addEventListener("click", () => toggleReaderUI());
+      img.addEventListener("click", toggleReaderUI);
       reader.appendChild(img);
     });
 
-    // ✅ Scroll để ẩn/hiện UI
-    let lastScrollTop = 0;
-    const scrollThreshold = 10;
-
-    window.addEventListener("scroll", () => {
-      const st = window.scrollY;
-      const delta = st - lastScrollTop;
-
-      if (Math.abs(delta) < scrollThreshold) return;
-
-      if (delta > 0) {
-        // Cuộn xuống → ẩn
-        hideReaderUI();
-      } else {
-        // Cuộn lên → hiện
-        showReaderUI();
-      }
-
-      lastScrollTop = st;
-    });
+    setupScrollHandler();
   } else {
-    // 📖 Swipe mode: chỉ hiện 1 ảnh
     const img = document.createElement("img");
     img.src = currentImages[currentPage];
     img.style.display = "block";
     reader.appendChild(img);
+  }
+}
 
-    // đếm trang luôn hiện
-    // const pageIndicator = document.createElement("div");
-    // pageIndicator.className = "page-indicator";
-    // pageIndicator.textContent = `Trang ${currentPage + 1} / ${
-    //   currentImages.length
-    // }`;
-    // reader.appendChild(pageIndicator);
+/**
+ * 👆 Ẩn/hiện header/footer khi cuộn
+ */
+function setupScrollHandler() {
+  let lastScrollTop = 0;
+  const scrollThreshold = 10;
 
+  window.addEventListener("scroll", () => {
+    const st = window.scrollY;
+    const delta = st - lastScrollTop;
+    if (Math.abs(delta) < scrollThreshold) return;
+    delta > 0 ? hideReaderUI() : showReaderUI();
+    lastScrollTop = st;
+  });
+}
+
+/**
+ * 🛋 Swipe, bàn phím, click trái/phải để đổi trang
+ */
+function setupReaderNavigation(reader) {
+  if (readerMode === "horizontal") {
     const hammer = new Hammer(reader);
     hammer.on("swipeleft", nextPage);
     hammer.on("swiperight", prevPage);
@@ -83,124 +109,103 @@ export function renderReader(images) {
       if (e.key === "ArrowLeft") prevPage();
     };
 
-    img.addEventListener("click", (e) => {
+    const img = reader.querySelector("img");
+    img?.addEventListener("click", (e) => {
       const rect = img.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
-      const isLeft = clickX < rect.width / 3;
-      const isRight = clickX > (rect.width * 2) / 3;
-
-      if (isLeft) return prevPage();
-      if (isRight) return nextPage();
-
-      // ✅ Click giữa ảnh → toggle UI
+      if (clickX < rect.width / 3) return prevPage();
+      if (clickX > (rect.width * 2) / 3) return nextPage();
       toggleReaderUI();
     });
   }
-
-  // ✅ Hiện đúng số trang ban đầu
-  updateReaderPageInfo();
-
-  // ✅ Nút Prev Chapter
-document.getElementById("prev-chapter-btn")?.addEventListener("click", () => {
-  const prevPath = getAdjacentChapterPath("prev");
-  if (prevPath) {
-    window.loadFolder(prevPath); // ← Chuyển sang chương trước
-  } else {
-    alert("🚫 Đây là chương đầu tiên!");
-  }
-});
-
-// ✅ Nút Next Chapter
-document.getElementById("next-chapter-btn")?.addEventListener("click", () => {
-  const nextPath = getAdjacentChapterPath("next");
-  if (nextPath) {
-    window.loadFolder(nextPath); // ← Chuyển sang chương kế tiếp
-  } else {
-    alert("🚫 Không có chương tiếp theo!");
-  }
-});
-
-
-  app.appendChild(reader);
 }
+
 /**
- * 🔁 Toggle hiển thị UI (header + footer reader)
- * Dùng khi click giữa ảnh hoặc chạm trong reader
+ * ⏩ Gắn nút Prev/Next chương
  */
-function toggleReaderUI() {
-  const header = document.getElementById("site-header");
-  const footer = document.getElementById("reader-footer");
+function setupChapterNavigation() {
+  const prevBtn = document.getElementById("prev-chapter-btn");
+  const nextBtn = document.getElementById("next-chapter-btn");
+  if (!prevBtn || !nextBtn) return;
 
-  // Kiểm tra xem header hiện tại có đang bị ẩn không
-  const isHidden = header?.classList.contains("hidden");
+  const newPrev = prevBtn.cloneNode(true);
+  const newNext = nextBtn.cloneNode(true);
 
-  if (isHidden) {
-    // 👉 Nếu đang ẩn thì hiện lại cả header và footer
-    header?.classList.remove("hidden");
-    footer?.classList.remove("hidden");
-  } else {
-    // 👉 Nếu đang hiện thì ẩn cả hai
-    header?.classList.add("hidden");
-    footer?.classList.add("hidden");
+  prevBtn.parentNode.replaceChild(newPrev, prevBtn);
+  nextBtn.parentNode.replaceChild(newNext, nextBtn);
+
+  newPrev.onclick = () => moveChapter("prev");
+  newNext.onclick = () => moveChapter("next");
+}
+
+/**
+ * 🔄 Chuyển chương tiếp theo hoặc chương trước
+ */
+function moveChapter(direction = "next") {
+  const targetPath = getAdjacentChapterPath(direction);
+  if (!targetPath) {
+    alert(
+      direction === "next"
+        ? "🚫 Đây là chương cuối cùng!"
+        : "🚫 Đây là chương đầu tiên!"
+    );
+    return;
   }
+
+  const root = getRootFolder();
+  if (!root) return;
+
+  const cleanPath = targetPath.replace(/\/__self__$/, "");
+
+  fetch(
+    `/api/list-folder?root=${encodeURIComponent(
+      root
+    )}&path=${encodeURIComponent(cleanPath)}`
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.type === "reader" && data.images.length > 0) {
+        state.currentPath = cleanPath; // ✅ update đúng
+        renderReader(data.images);
+      } else if (data.type === "folder") {
+        loadFolder(cleanPath);
+      } else {
+        alert("🚫 Không tìm thấy chương hợp lệ!");
+      }
+    })
+    .catch((err) => {
+      console.error("❌ Lỗi khi load chapter:", err);
+      alert("🚫 Lỗi khi chuyển chương!");
+    });
 }
 
 /**
- * 👆 Hiện lại UI reader (header + reader footer)
- * Dùng khi cuộn lên trong chế độ scroll
+ * 🔎 Lấy path của chapter tiếp theo hoặc trước
  */
-function showReaderUI() {
-  document.getElementById("site-header")?.classList.remove("hidden");
-  document.getElementById("reader-footer")?.classList.remove("hidden");
+function getAdjacentChapterPath(direction = "next") {
+  const index = state.allFolders.findIndex(
+    (f) =>
+      f.path === state.currentPath || f.path === state.currentPath + "/__self__"
+  );
+  if (index === -1) return null;
+
+  const targetIndex = direction === "next" ? index + 1 : index - 1;
+  return state.allFolders[targetIndex]?.path || null;
 }
 
 /**
- * 👇 Ẩn UI reader (header + reader footer)
- * Dùng khi cuộn xuống trong chế độ scroll
- */
-function hideReaderUI() {
-  document.getElementById("site-header")?.classList.add("hidden");
-  document.getElementById("reader-footer")?.classList.add("hidden");
-}
-
-/**
- * 📄 Cập nhật số trang hiện tại
- * Gọi lại sau khi đổi trang (next/prev) hoặc render ban đầu
+ * 🧮 Update số trang trong footer
  */
 function updateReaderPageInfo() {
-  const pageIndicator = document.querySelector(".page-indicator"); // phần trên ảnh (swipe mode)
-  const pageInfo = document.getElementById("page-info"); // phần dưới footer reader
-
-  if (pageIndicator) {
-    pageIndicator.textContent = `Trang ${currentPage + 1} / ${
-      currentImages.length
-    }`;
-  }
-
-  if (pageInfo) {
-    pageInfo.textContent = `Trang ${currentPage + 1} / ${currentImages.length}`;
-  }
-}
-
-function updatePage() {
-  const reader = document.querySelector(".reader");
-  const img = reader?.querySelector("img");
-  if (img) img.src = currentImages[currentPage];
-
-  // đém trang luôn hiện
-  // const pageIndicator = document.querySelector(".page-indicator");
-  // if (pageIndicator) {
-  //   pageIndicator.textContent = `Trang ${currentPage + 1} / ${
-  //     currentImages.length
-  //   }`;
-  // }
-
   const pageInfo = document.getElementById("page-info");
   if (pageInfo) {
     pageInfo.textContent = `Trang ${currentPage + 1} / ${currentImages.length}`;
   }
 }
 
+/**
+ * ➡️ Chuyển tới trang tiếp theo
+ */
 function nextPage() {
   if (currentPage < currentImages.length - 1) {
     currentPage++;
@@ -208,6 +213,9 @@ function nextPage() {
   }
 }
 
+/**
+ * ⬅️ Quay lại trang trước
+ */
 function prevPage() {
   if (currentPage > 0) {
     currentPage--;
@@ -216,7 +224,25 @@ function prevPage() {
 }
 
 /**
- * 🔁 Đổi chế độ đọc ngang <-> dọc
+ * 🔁 Cập nhật ảnh khi đổi trang
+ */
+function updatePage() {
+  const reader = document.querySelector(".reader img");
+  if (reader) reader.src = currentImages[currentPage];
+  updateReaderPageInfo();
+}
+
+/**
+ * 👆 Toggle hiển thị header/footer
+ */
+function toggleReaderUI() {
+  ["site-header", "reader-footer"].forEach((id) => {
+    document.getElementById(id)?.classList.toggle("hidden");
+  });
+}
+
+/**
+ * 🔄 Đổi chế độ đọc scroll <-> swipe
  */
 export function toggleReaderMode() {
   readerMode = readerMode === "vertical" ? "horizontal" : "vertical";
@@ -224,19 +250,17 @@ export function toggleReaderMode() {
 }
 
 /**
- * 📚 Tìm chương kế tiếp hoặc trước đó dựa trên currentPath
- * @param {"next"|"prev"} direction
+ * 👆 Show Reader UI
  */
-function getAdjacentChapterPath(direction = "next") {
-  const index = allFolders.findIndex(
-    (f) => f.path === currentPath || f.path === currentPath + "/__self__"
-  );
-  if (index === -1) return null;
+function showReaderUI() {
+  document.getElementById("site-header")?.classList.remove("hidden");
+  document.getElementById("reader-footer")?.classList.remove("hidden");
+}
 
-  const targetIndex = direction === "next" ? index + 1 : index - 1;
-  if (targetIndex >= 0 && targetIndex < allFolders.length) {
-    return allFolders[targetIndex].path;
-  }
-
-  return null;
+/**
+ * 👇 Hide Reader UI
+ */
+function hideReaderUI() {
+  document.getElementById("site-header")?.classList.add("hidden");
+  document.getElementById("reader-footer")?.classList.add("hidden");
 }

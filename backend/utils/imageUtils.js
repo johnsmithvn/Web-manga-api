@@ -1,44 +1,79 @@
 // 📁 backend/utils/imageUtils.js
-const fs = require("fs");
-const path = require("path");
+
+const fs = require('fs');
+const path = require('path');
+const { BASE_DIR } = require('./config');
+
+// Các định dạng file ảnh hợp lệ
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
 
 /**
- * 🔁 Đệ quy tìm ảnh đầu tiên trong folder (hoặc folder con) để làm thumbnail
- * @param {string} dirPath - Đường dẫn thư mục cần tìm
- * @param {string} baseUrl - Đường dẫn tương đối tính từ thư mục gốc
- * @returns {string|null} - Đường dẫn ảnh đầu tiên hoặc null nếu không có ảnh
+ * 📂 Đệ quy tìm ảnh đầu tiên trong folder hoặc subfolder
+ * @param {string} dirPath - Đường dẫn tuyệt đối cần tìm
+ * @param {string} baseUrl - URL gốc để convert (ví dụ "/manga")
+ * @returns {string|null} - URL public tới ảnh hoặc null nếu không có
  */
-function findFirstImageRecursively(dirPath, baseUrl) {
-  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-  for (const entry of entries) {
-    const entryPath = path.join(dirPath, entry.name);
-    const entryUrl = path.join(baseUrl, entry.name).replace(/\\/g, "/");
+function findFirstImageRecursively(dirPath, baseUrl = '/manga') {
+  if (!fs.existsSync(dirPath)) return null;
 
-    if (entry.isFile() && /\.(jpe?g|png|gif|webp)$/i.test(entry.name)) {
-      return `/manga/${entryUrl}`;
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dirPath, entry.name);
+
+    if (entry.isFile()) {
+      const ext = path.extname(entry.name).toLowerCase();
+      if (IMAGE_EXTENSIONS.includes(ext)) {
+        return convertToUrl(fullPath, baseUrl);
+      }
     }
 
     if (entry.isDirectory()) {
-      const found = findFirstImageRecursively(entryPath, entryUrl);
+      const found = findFirstImageRecursively(fullPath, baseUrl);
       if (found) return found;
     }
   }
+
   return null;
 }
 
 /**
- * 🔁 Đệ quy kiểm tra folder có ảnh hay không
- * @param {string} dirPath - Đường dẫn thư mục
- * @returns {boolean} - true nếu có ảnh, false nếu không
+ * 📸 Kiểm tra folder có chứa ít nhất 1 ảnh hợp lệ không
+ * @param {string} dirPath - Đường dẫn tuyệt đối
+ * @returns {boolean}
  */
 function hasImageRecursively(dirPath) {
+  if (!fs.existsSync(dirPath)) return false;
+
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
   for (const entry of entries) {
-    const entryPath = path.join(dirPath, entry.name);
-    if (entry.isFile() && /\.(jpe?g|png|gif|webp)$/i.test(entry.name)) return true;
-    if (entry.isDirectory() && hasImageRecursively(entryPath)) return true;
+    const fullPath = path.join(dirPath, entry.name);
+
+    if (entry.isFile()) {
+      const ext = path.extname(entry.name).toLowerCase();
+      if (IMAGE_EXTENSIONS.includes(ext)) {
+        return true;
+      }
+    }
+
+    if (entry.isDirectory()) {
+      if (hasImageRecursively(fullPath)) return true;
+    }
   }
+
   return false;
+}
+
+/**
+ * 🔗 Chuyển đường dẫn vật lý sang URL public
+ * @param {string} filePath
+ * @param {string} baseUrl - Ví dụ "/manga"
+ * @returns {string}
+ */
+function convertToUrl(filePath, baseUrl = '/manga') {
+  const relativePath = path.relative(BASE_DIR, filePath).replace(/\\/g, '/');
+  return `${baseUrl}/${relativePath}`;
 }
 
 module.exports = {

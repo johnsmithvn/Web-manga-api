@@ -3,7 +3,18 @@
 Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày phát triển.
 
 ---
+## 2025-04-27
+- ✨ Thêm cơ chế cache toàn bộ folders list (`allFoldersList`) theo rootFolder.
+- ✨ Phân trang folders nhẹ bằng slicing từ cache local, không query server mỗi lần.
+- ✨ Search và Random cực nhanh dựa trên cache local.
+- ✨ Thêm preload thumbnail chuẩn `<link rel="preload" as="image" as="image">`.
+- 🛠️ Fix lỗi phân trang chỉ hiện đúng 1 page.
+- 🛠️ Fix preload ảnh chỉ load ảnh hợp lệ.
+- ⚙️ Thêm tự động clear cache sau 24h (timeout 1 ngày).
+- ⚙️ Khi đổi rootFolder, tự động clear cache cũ liên quan.
+- 🆕 Thêm API mới `/api/list-all-folders` để lấy toàn bộ {name, path}.
 
+---
 ## [2025-04-24]
 
 ### ✨ Tính năng mới

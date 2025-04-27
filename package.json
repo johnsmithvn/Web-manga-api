@@ -1,7 +1,7 @@
 {
   "name": "mylocalmanga",
   "version": "1.0.0",
-  "description": "Web đọc truyện local như Netflix",
+  "description": "Web đọc truyện local",
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js"

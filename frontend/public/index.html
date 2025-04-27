@@ -3,52 +3,64 @@
   <head>
     <meta charset="UTF-8" />
     <title>Truyện Local</title>
-    <!-- 👉 Load toàn bộ style tách riêng -->
+
+    <!-- 👉 Load toàn bộ style -->
     <link rel="stylesheet" href="/src/styles/base.css" />
     <link rel="stylesheet" href="/src/styles/folder.css" />
     <link rel="stylesheet" href="/src/styles/reader.css" />
     <link rel="stylesheet" href="/src/styles/dark.css" />
     <link rel="stylesheet" href="/src/styles/layout.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/src/styles/sidebar.css" /> <!-- 🆕 Thêm sidebar CSS -->
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/default/favicon.ico" type="image/x-icon" />
   </head>
 
   <body>
+    <!-- 🆕 Sidebar -->
+    <div id="sidebar-menu"></div>
+
     <!-- 🛠️ Mở body ở đây -->
     <header id="site-header" class="yt-style-header">
       <!-- Logo / Tên app bên trái -->
       <div class="header-left">
-        <h1>📚 MyLocalManga</h1>
+        <h1>
+          <a
+            href="/"
+            id="logo-link"
+            style="text-decoration: none; color: inherit"
+          >
+            📚 MyLocalManga
+          </a>
+        </h1>
       </div>
 
-      <!-- Icon bên phải (Search, Back, Reader, DarkMode) -->
+      <!-- Icon bên phải -->
       <div class="header-icons">
-        <button onclick="goBack()">⬅</button>
+        <button id="back-button" onclick="goBack()" style="display: none;">⬅</button>
         <button onclick="toggleReaderMode()">📖</button>
         <button onclick="toggleDarkMode()">🌙</button>
         <button onclick="toggleSearchBar()">🔍</button>
       </div>
     </header>
 
-    <!-- Thanh tìm kiếm nổi kiểu YouTube -->
+    <!-- Thanh tìm kiếm nổi -->
     <div id="floating-search" class="search-bar-hidden">
       <input type="text" id="floatingSearchInput" placeholder="Tìm truyện..." />
       <button onclick="toggleSearchBar()">❌</button>
     </div>
 
-    <!-- ✅ Bao quanh phần nội dung để né header/footer -->
+    <!-- Bao quanh nội dung -->
     <div id="wrapper">
-      <!-- ✅ Nơi render folder / ảnh đọc truyện -->
       <div id="app"></div>
     </div>
 
-    <!-- ✅ Loading overlay -->
+    <!-- Loading overlay -->
     <div id="loading-overlay" class="hidden">
       <div class="spinner"></div>
     </div>
 
-    <!-- ✅ Reader Footer -->
+    <!-- Footer Reader -->
     <div id="reader-footer" class="hidden">
       <div class="reader-footer-inner">
         <button id="prev-chapter-btn">⬅ Prev</button>
@@ -57,7 +69,7 @@
       </div>
     </div>
 
-    <!-- ✅ FOOTER cố định bên dưới -->
+    <!-- Footer chính -->
     <footer id="main-footer">
       <p>&copy; 2025 MyLocalManga | Đọc truyện từ ổ cứng cá nhân</p>
     </footer>

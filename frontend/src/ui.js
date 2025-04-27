@@ -1,13 +1,39 @@
 // 📁 frontend/src/ui.js
-import { renderFolderGrid, currentPath, allFolders } from "./folder.js";
-import { renderReader, toggleReaderMode as toggleMode } from "./reader.js";
+
+import { renderFolderGrid, state, loadFolder, ensureAllFoldersList } from "/src/folder.js"; // 🆕 Import ensureAllFoldersList
+import { toggleReaderMode as toggleMode } from "/src/reader.js";
+import { changeRootFolder } from "./storage.js"; 
+
+/**
+ * 🔙 Cập nhật trạng thái nút Back/Home tuỳ theo vị trí folder
+ */
+export function updateBackButtonUI() {
+  const backButton = document.getElementById("back-button");
+  if (!backButton) return;
+
+  backButton.style.display = "inline-block";
+
+  if (!state.currentPath || state.currentPath.trim() === "") {
+    backButton.textContent = "🏠"; 
+    backButton.setAttribute("aria-label", "Về chọn bộ"); 
+  } else {
+    backButton.textContent = "⬅"; 
+    backButton.setAttribute("aria-label", "Back về thư mục cha");
+  }
+}
 
 /**
  * 🔍 Lọc danh sách truyện theo từ khóa
  */
-export function filterManga() {
-  const keyword = document.getElementById("searchInput").value.toLowerCase();
-  const filtered = allFolders.filter((f) => f.name.toLowerCase().includes(keyword));
+export async function filterManga() {
+  const keyword = document.getElementById("searchInput")?.value.toLowerCase() || "";
+  if (!keyword) {
+    renderFolderGrid(state.allFolders);
+    return;
+  }
+
+  const allFoldersList = await ensureAllFoldersList(); // 🆕 lấy cache hoặc fetch
+  const filtered = allFoldersList.filter((f) => f.name.toLowerCase().includes(keyword));
   renderFolderGrid(filtered);
 }
 
@@ -19,25 +45,27 @@ export function toggleDarkMode() {
 }
 
 /**
- * ↩️ Quay lại folder cha
+ * ⬅️ Xử lý hành động Back (về root hoặc folder cha)
  */
 export function goBack() {
-  const parts = currentPath.split("/");
-  parts.pop();
-
-  // ❗ KHÔNG gọi trực tiếp loadFolder → gọi từ window để tránh circular import
-  window.loadFolder(parts.join("/"));
+  if (!state.currentPath || state.currentPath.trim() === "") {
+    changeRootFolder(); 
+  } else {
+    const parts = state.currentPath.split("/").filter(Boolean);
+    parts.pop(); 
+    loadFolder(parts.join("/")); 
+  }
 }
 
 /**
- * 📖 Đổi chế độ đọc truyện (scroll <-> swipe)
+ * 📖 Đổi chế độ đọc (scroll <-> swipe)
  */
 export function toggleReaderMode() {
   toggleMode();
 }
 
 /**
- * 📄 Phân trang folder view (prev / next / jump)
+ * 📄 Cập nhật UI phân trang
  */
 export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
   const totalPages = Math.ceil(totalItems / perPage);
@@ -49,7 +77,7 @@ export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
   const prev = document.createElement("button");
   prev.textContent = "⬅ Trang trước";
   prev.disabled = currentPage <= 0;
-  prev.onclick = () => window.loadFolder(currentPath, currentPage - 1);
+  prev.onclick = () => loadFolder(state.currentPath, currentPage - 1);
   nav.appendChild(prev);
 
   const jumpForm = document.createElement("form");
@@ -59,7 +87,7 @@ export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
     e.preventDefault();
     const inputPage = parseInt(jumpInput.value) - 1;
     if (!isNaN(inputPage) && inputPage >= 0) {
-      window.loadFolder(currentPath, inputPage);
+      loadFolder(state.currentPath, inputPage);
     }
   };
 
@@ -81,7 +109,7 @@ export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
   const next = document.createElement("button");
   next.textContent = "Trang sau ➡";
   next.disabled = currentPage + 1 >= totalPages;
-  next.onclick = () => window.loadFolder(currentPath, currentPage + 1);
+  next.onclick = () => loadFolder(state.currentPath, currentPage + 1);
   nav.appendChild(next);
 
   app.appendChild(nav);
@@ -94,16 +122,34 @@ export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
 }
 
 /**
- * 🔍 Toggle thanh tìm kiếm trượt xuống giống YouTube
+ * 🔍 Toggle thanh tìm kiếm nổi (slide xuống giống YouTube)
  */
 export function toggleSearchBar() {
   const bar = document.getElementById("floating-search");
   bar?.classList.toggle("active");
+
   const input = document.getElementById("floatingSearchInput");
   if (bar?.classList.contains("active")) {
     input?.focus();
   } else {
     input.value = "";
-    filterManga(); // Reset kết quả nếu đã gõ trước đó
+    filterManga();
   }
+}
+
+/**
+ * ⚙️ Setup menu đổi bộ truyện
+ */
+export function setupSettingsMenu() {
+  const settingsMenu = document.getElementById("settings-menu");
+  if (!settingsMenu) return;
+
+  const changeFolderBtn = document.createElement("button");
+  changeFolderBtn.textContent = "🔄 Đổi Manga Folder";
+  changeFolderBtn.onclick = () => {
+    localStorage.removeItem("rootFolder");
+    window.location.href = "/select.html";
+  };
+
+  settingsMenu.appendChild(changeFolderBtn);
 }
