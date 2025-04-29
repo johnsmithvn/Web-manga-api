@@ -35,36 +35,44 @@ MyLocalManga là một ứng dụng web giúp bạn đọc truyện tranh từ t
 ## 🛠️ Cấu trúc dự án
 
 ```txt
-backend/
-├── api/
-│   ├── list-folder.js         // API list folders + images
-│   ├── list-all-folders.js     // (mới) API trả về toàn bộ {name, path}
-│   ├── random-folders.js       // API random folders
-│   ├── top-folders.js          // API top folders theo lượt view
-├── data/
-│   ├── views.json              // File lưu lượt xem truyện
-├── utils/
-│   ├── config.js               // Đường dẫn BASE_DIR
-│   ├── imageUtils.js           // Tìm ảnh đầu tiên trong folder
-│   ├── pathToUrl.js            // Convert local path -> URL
-│   ├── views-manager.js        // Quản lý view tăng khi đọc truyện
-├── server.js                   // Server Express chính
+/backend
+  ├── api/
+  │   ├── list-folder.js         # API lấy danh sách folder + ảnh (có phân trang __self__)
+  │   ├── random-folders.js      # API lấy random folders
+  │   └── top-folders.js         # API lấy folder nhiều ảnh nhất
+  ├── data/
+  │   └── views.json             # JSON lưu cache views
+  ├── utils/
+  │   ├── config.js              # Biến môi trường (BASE_DIR)
+  │   ├── imageUtils.js          # Hàm xử lý ảnh thumbnail
+  │   ├── pathToUrl.js           # Chuyển path hệ thống thành URL
+  │   └── views-manager.js       # Quản lý views/cache
+  └── server.js                  # Node server
 
-frontend/
-├── public/
-│   ├── index.html              // Giao diện chính
-│   ├── select.html             // Giao diện chọn bộ truyện
-├── src/
-│   ├── folder.js               // Load folder, phân trang
-│   ├── reader.js               // Giao diện đọc truyện
-│   ├── ui.js                   // Giao diện chung: nút back, dark mode, search
-│   ├── storage.js              // Quản lý cache LocalStorage
-│   ├── preload.js              // Preload ảnh thumbnail
-│   ├── sidebar.js              // (nếu có) Sidebar menu
-│   ├── main.js                 // Bootstrap trang chính
-│   ├── config.js               // Cấu hình client
-├── styles/
-│   ├── base.css, layout.css, reader.css,... // Giao diện CSS
+/frontend
+  ├── public/
+  │   └── default/
+  │       ├── index.html         # Trang index
+  │       └── select.html        # Trang chọn folder
+  ├── src/
+  │   ├── styles/
+  │   │   ├── base.css
+  │   │   ├── dark.css
+  │   │   ├── folder.css
+  │   │   ├── layout.css
+  │   │   ├── reader.css
+  │   │   ├── select.css
+  │   │   └── sidebar.css
+  │   ├── folder.js              # Xử lý load folder
+  │   ├── main.js                # Trang index: select folder
+  │   ├── preload.js             # (Preload folder random — chuẩn bị)
+  │   ├── reader-horizontal.js   # 📖 Reader Horizontal (Swipe Mode)
+  │   ├── reader-scroll.js       # 📜 Reader Scroll (Scroll Mode, phân trang)
+  │   ├── reader.js              # Điều phối render reader mode
+  │   ├── select.js              # Xử lý UI chọn folder
+  │   ├── sidebar.js             # Sidebar chọn folder
+  │   ├── storage.js             # Lưu thông tin rootFolder hiện tại
+  │   └── ui.js                  # Các hàm UI helper
 
 
 ```

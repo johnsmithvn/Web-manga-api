@@ -1,23 +1,84 @@
-
 # 📘 FLOW HỆ THỐNG - MY LOCAL MANGA READER
 
 ## 1. Flow tổng quát hệ thống
 
-[User mở website]
-    ↓
-[Kiểm tra LocalStorage rootFolder]
-    ↳ Nếu chưa có ➔ Redirect về select.html để chọn bộ
-    ↳ Nếu đã có ➔ Tiếp tục load allFoldersList
+# 📚 FLOW TỔNG QUÁT - MY LOCAL MANGA READER
 
-[Load allFoldersList từ LocalStorage hoặc fetch /api/list-all-folders]
-    ↓
-[Render folder giao diện, phân trang 20 folder/trang]
-    ↓
-[User Search hoặc Random]
-    ↓
-[Load reader view nếu chọn folder đọc ảnh]
+```
+User mở website (index.html)
+        ↓
+Kiểm tra LocalStorage "rootFolder"
+        ↓
+Có rootFolder?
+    ├—— Có:
+    │     ↓
+    │  Load allFoldersList từ LocalStorage
+    │     ↓
+    │  Có allFoldersList cache?
+    │     ├—— Có:
+    │     │    ↓
+    │     │ Render list folders (state.allFolders)
+    │     │    ↓
+    │     │ Phân trang 20 folders mỗi page
+    │     │    ↓
+    │     │ Hiển thị thumbnail, tên folder
+    │     │    ↓
+    │     │ User tương tác: Search / Random / Click folder
+    │     │    ↓
+    │     │ User click 1 folder
+    │     │    ↓
+    │     │ Kiểm tra loại folder
+    │     │       ├—— Folder ảnh (__self__) ➔ Render reader-scroll/horizontal
+    │     │       └—— Folder con ➔ Load folder con
+    │     │
+    │     │ Trong Reader:
+    │     │    ↓
+    │     │  Scroll hoặc Swipe đọc ảnh
+    │     │    ↓
+    │     │  Có click Prev/Next chapter?
+    │     │    ↓
+    │     │  Load chapter mới
+    │
+    │     
+    └—— Không:
+          ↓
+       Redirect về select.html để chọn root folder
+```
+
+
+
 
 ---
+Trường hợp đặc biệt:
+- Nếu user đổi bộ ➔ Gọi `changeRootFolder()`:
+  - Xóa `rootFolder`
+  - Clear cache `folderCache`, `allFoldersList`
+  - Redirect lại `/select.html`
+
+---
+
+Trường hợp đặc biệt:
+
+- Nếu user đổi bộ ➔ Gọi `changeRootFolder()`:
+  - Xóa `rootFolder`
+  - Clear cache `folderCache`, `allFoldersList`
+  - Redirect lại `/select.html`
+
+---
+
+📚 Bổ sung các CƠ CHẾ nội bộ
+
+| Thành phần                 | Cách hoạt động                                                                                            |
+| :------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| **Cache folders**          | `folderCache::root:path` lưu JSON data 24h timeout                                                        |
+| **Cache all folders list** | `allFoldersList::root` lưu danh sách `{name, path}`                                                       |
+| **Preload thumbnail**      | Gắn `<link rel="preload" as="image" href="...">` vào `<head>`                                             |
+| **Phân trang folder**      | slice array `state.allFolders` ➔ mỗi trang 20 card                                                        |
+| **Search folder**          | filter `allFoldersList` local, không gọi API                                                              |
+| **Random folder**          | chọn ngẫu nhiên từ `allFoldersList`                                                                       |
+| **API backend chính**      | `/api/list-folder`, `/api/list-all-folders`, `/api/top-folders`, `/api/random-folders`, `/api/list-roots` |
+| **Scroll Mode**            | Phân page 200 ảnh, lazy load 50 ảnh/batch, click Trang X/Y để chọn                                        |
+| **Swipe Mode**             | Next/Prev từng ảnh, swipe gesture, phím ← →                                                               |
 
 ## 2. Cơ chế cache & timeout
 
@@ -67,13 +128,13 @@
 
 ## 7. API backend sử dụng
 
-| API | Mục đích |
-|:----|:---------|
-| `/api/list-folder` | Lấy danh sách folders + ảnh trong 1 path |
-| `/api/list-all-folders` | Lấy toàn bộ `{name, path}` folders theo root |
-| `/api/top-folders` | Lấy 20 folder có lượt view cao nhất |
-| `/api/random-folders` | Random 10 folders bất kỳ trong root |
-| `/api/list-roots` | Trả về danh sách root folder (`1`, `2`, `3`,...) |
+| API                     | Mục đích                                         |
+| :---------------------- | :----------------------------------------------- |
+| `/api/list-folder`      | Lấy danh sách folders + ảnh trong 1 path         |
+| `/api/list-all-folders` | Lấy toàn bộ `{name, path}` folders theo root     |
+| `/api/top-folders`      | Lấy 20 folder có lượt view cao nhất              |
+| `/api/random-folders`   | Random 10 folders bất kỳ trong root              |
+| `/api/list-roots`       | Trả về danh sách root folder (`1`, `2`, `3`,...) |
 
 ---
 
@@ -91,4 +152,5 @@
 ---
 
 # ✅ Kết thúc
+
 Flow đã được tối ưu full cho hệ thống đọc truyện local lớn (hàng chục nghìn folders) vận hành nhanh, ổn định và dễ mở rộng.

@@ -1,38 +1,40 @@
 // 📁 backend/api/list-folder.js
 
-const fs = require('fs');
-const path = require('path');
-const { pathToUrl } = require('../utils/pathToUrl');
-const { BASE_DIR } = require('../utils/config');
-const { findFirstImageRecursively } = require('../utils/imageUtils');
+const fs = require("fs");
+const path = require("path");
+const { pathToUrl } = require("../utils/pathToUrl");
+const { BASE_DIR } = require("../utils/config");
+const { findFirstImageRecursively } = require("../utils/imageUtils");
 
-// Các định dạng file ảnh hợp lệ
-const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
+// ✨ Định dạng file ảnh hợp lệ
+const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
 
 /**
- * 📂 API: Lấy danh sách folder và ảnh trong một thư mục
+ * 📂 API: Lấy danh sách folder và ảnh trong 1 thư mục
  * @param {string} rootFolder - Folder gốc
- * @param {string} subPath - Sub folder con
- * @param {number} limit - số lượng folder mỗi page (0 = lấy hết)
- * @param {number} offset - bắt đầu từ folder thứ mấy
- * @returns {object} - { type, folders, images }
+ * @param {string} subPath - Folder con (nếu có)
+ * @param {number} limit - số lượng folder/anh trả về (0 = không giới hạn)
+ * @param {number} offset - bắt đầu từ folder/anh thứ mấy
+ * @returns {object} - { type, folders, images, total }
  */
-async function listFolder(rootFolder, subPath = '', limit = 0, offset = 0) {
+async function listFolder(rootFolder, subPath = "", limit = 0, offset = 0) {
   const basePath = path.join(BASE_DIR, rootFolder, subPath);
+
   if (!fs.existsSync(basePath)) {
-    throw new Error('Folder not found');
+    throw new Error("Folder not found");
   }
 
   const entries = fs.readdirSync(basePath, { withFileTypes: true });
 
-  let folders = [];
-  const images = [];
+  let folders = []; // Danh sách folder con
+  const images = []; // Danh sách đường dẫn ảnh
 
+  // Đọc danh sách entry trong folder
   for (const entry of entries) {
     const fullPath = path.join(basePath, entry.name);
 
     if (entry.isDirectory()) {
-      const firstImage = findFirstImageRecursively(fullPath, '/manga');
+      const firstImage = findFirstImageRecursively(fullPath, "/manga");
       if (firstImage) {
         folders.push({
           name: entry.name,
@@ -50,35 +52,53 @@ async function listFolder(rootFolder, subPath = '', limit = 0, offset = 0) {
     }
   }
 
-  // 📋 Nếu có cả ảnh lẫn folder ➔ tạo "folder giả"
+  // 📊 Nếu vừa có ảnh và folder, tạo "folder giả" để làm thumbnail folder cha
   if (images.length > 0 && folders.length > 0) {
-    const parts = subPath.split('/').filter(Boolean);
+    const parts = subPath.split("/").filter(Boolean);
     const folderName = parts[parts.length - 1] || "Ảnh riêng";
 
     folders.unshift({
       name: folderName,
-      path: path.posix.join(subPath, '__self__'),
+      path: path.posix.join(subPath, "__self__"),
       thumbnail: images[0],
       isSelfReader: true,
-      images: images,
+      images: limit > 0 ? images.slice(offset, offset + limit) : images,
+      totalImages: images.length
     });
-  }
+    
 
-  // 📥 Nếu có limit/offset thì slice
-  const total = folders.length;
-  const slicedFolders = limit > 0 ? folders.slice(offset, offset + limit) : folders;
+    const total = folders.length;
+    const slicedFolders =
+      limit > 0 ? folders.slice(offset, offset + limit) : folders;
 
-  if (images.length > 0 && folders.length === 0) {
-    // 📖 Chỉ có ảnh ➔ Reader mode
     return {
-      type: 'reader',
-      images,
+      type: "folder",
+      folders: slicedFolders,
+      images: [],
+      total,
     };
   }
 
-  // 📂 Chỉ có folder ➔ Folder mode
+  // 📚 Nếu chỉ có ảnh, không có folder con
+  if (images.length > 0 && folders.length === 0) {
+    const totalImages = images.length;
+    const slicedImages =
+      limit > 0 ? images.slice(offset, offset + limit) : images;
+
+    return {
+      type: "reader",
+      images: slicedImages,
+      totalImages,
+    };
+  }
+
+  // 📂 Nếu chỉ có folder con, không có ảnh
+  const total = folders.length;
+  const slicedFolders =
+    limit > 0 ? folders.slice(offset, offset + limit) : folders;
+
   return {
-    type: 'folder',
+    type: "folder",
     folders: slicedFolders,
     images: [],
     total,
@@ -86,14 +106,14 @@ async function listFolder(rootFolder, subPath = '', limit = 0, offset = 0) {
 }
 
 /**
- * 📂 API: Lấy tất cả folder {name, path} của 1 root để cache toàn bộ
- * @param {string} rootFolder 
+ * 📂 API: Lấy tất cả folder để cache search/random
+ * @param {string} rootFolder
  * @returns {Array<{name: string, path: string}>}
  */
 async function listAllFolders(rootFolder) {
   const basePath = path.join(BASE_DIR, rootFolder);
   if (!fs.existsSync(basePath)) {
-    throw new Error('Root folder not found');
+    throw new Error("Root folder not found");
   }
 
   const entries = fs.readdirSync(basePath, { withFileTypes: true });
@@ -103,7 +123,7 @@ async function listAllFolders(rootFolder) {
     if (entry.isDirectory()) {
       folders.push({
         name: entry.name,
-        path: entry.name, // root trực tiếp
+        path: entry.name,
       });
     }
   }
@@ -113,5 +133,5 @@ async function listAllFolders(rootFolder) {
 
 module.exports = {
   listFolder,
-  listAllFolders, // 🆕 Export thêm hàm mới
+  listAllFolders,
 };

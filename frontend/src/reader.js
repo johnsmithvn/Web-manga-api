@@ -1,6 +1,6 @@
 // 📁 frontend/src/reader.js
 
-import { state, loadFolder } from "./folder.js"; // ✅ Import đúng: state + loadFolder
+import { state, loadFolder } from "./folder.js";
 import { getRootFolder } from "./storage.js";
 
 export let currentImages = [];
@@ -9,8 +9,8 @@ let readerMode = "horizontal"; // "horizontal" hoặc "vertical"
 
 /**
  * 📖 Render giao diện reader mode (main)
- * @param {Array} images - Danh sách ảnh
  */
+
 export function renderReader(images) {
   currentImages = images;
   currentPage = 0;
@@ -24,27 +24,32 @@ export function renderReader(images) {
 
   setupReaderUI();
   setupReaderModeButton();
-  renderImages(reader);
-  setupReaderNavigation(reader);
-  setupChapterNavigation();
 
+  if (readerMode === "vertical") {
+    import("./reader-scroll.js").then(({ renderScrollReader }) => {
+      renderScrollReader(images, reader);
+    });
+  } else {
+    import("./reader-horizontal.js").then(({ renderHorizontalReader }) => {
+      renderHorizontalReader(images, reader, updateReaderPageInfo);
+    });
+  }
+
+  setupChapterNavigation();
   app.appendChild(reader);
   updateReaderPageInfo();
 }
 
-/**
- * 📈 Thiết lập UI khi vào chế độ đọc
- */
+
+/** 📈 Ẩn header/footer gốc khi vào reader mode */
 function setupReaderUI() {
   document.body.classList.add("reader-mode");
   document.getElementById("site-header")?.classList.add("hidden");
   document.getElementById("main-footer")?.classList.add("hidden");
-  document.getElementById("reader-footer")?.classList.add("hidden");
+  document.getElementById("reader-footer")?.classList.remove("hidden");
 }
 
-/**
- * 📖 Thêm nút đổi chế độ đọc nếu chưa có
- */
+/** 📖 Gắn nút đổi chế độ đọc nếu chưa có */
 function setupReaderModeButton() {
   const headerIcons = document.querySelector(".header-icons");
   if (headerIcons && !document.getElementById("readerModeButton")) {
@@ -56,9 +61,7 @@ function setupReaderModeButton() {
   }
 }
 
-/**
- * 📷 Render danh sách ảnh trong reader
- */
+/** 📷 Render ảnh reader scroll/slide */
 function renderImages(reader) {
   if (readerMode === "vertical") {
     currentImages.forEach((src, index) => {
@@ -66,10 +69,10 @@ function renderImages(reader) {
       img.src = src;
       img.alt = `Page ${index + 1}`;
       img.className = "scroll-img";
+      img.loading = "lazy"; // ✅ lazy load từng ảnh
       img.addEventListener("click", toggleReaderUI);
       reader.appendChild(img);
     });
-
     setupScrollHandler();
   } else {
     const img = document.createElement("img");
@@ -79,50 +82,61 @@ function renderImages(reader) {
   }
 }
 
-/**
- * 👆 Ẩn/hiện header/footer khi cuộn
- */
+/** 👆 Scroll ẩn/hiện UI */
 function setupScrollHandler() {
   let lastScrollTop = 0;
   const scrollThreshold = 10;
-
   window.addEventListener("scroll", () => {
     const st = window.scrollY;
     const delta = st - lastScrollTop;
     if (Math.abs(delta) < scrollThreshold) return;
     delta > 0 ? hideReaderUI() : showReaderUI();
     lastScrollTop = st;
+    updateReaderPageInfo(); // cập nhật số trang khi scroll
   });
 }
 
-/**
- * 🛋 Swipe, bàn phím, click trái/phải để đổi trang
- */
-function setupReaderNavigation(reader) {
+/** 🧮 Cập nhật lại nút Trang X/Y */
+function updateReaderPageInfo() {
+  const pageInfo = document.getElementById("page-info");
+  if (!pageInfo) return;
+
   if (readerMode === "horizontal") {
-    const hammer = new Hammer(reader);
-    hammer.on("swipeleft", nextPage);
-    hammer.on("swiperight", prevPage);
+    pageInfo.textContent = `Trang ${currentPage + 1} / ${currentImages.length}`;
+  } else {
+    const imagesPerPage = 100;
+    const totalPages = Math.ceil(currentImages.length / imagesPerPage);
 
-    document.onkeydown = (e) => {
-      if (e.key === "ArrowRight") nextPage();
-      if (e.key === "ArrowLeft") prevPage();
-    };
-
-    const img = reader.querySelector("img");
-    img?.addEventListener("click", (e) => {
-      const rect = img.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      if (clickX < rect.width / 3) return prevPage();
-      if (clickX > (rect.width * 2) / 3) return nextPage();
-      toggleReaderUI();
-    });
+    const scrollImgs = document.querySelectorAll(".scroll-img");
+    let currentScrollPage = 0;
+    for (let i = 0; i < scrollImgs.length; i++) {
+      const rect = scrollImgs[i].getBoundingClientRect();
+      if (rect.top > 100) {
+        currentScrollPage = Math.floor(i / imagesPerPage);
+        break;
+      }
+    }
+    pageInfo.textContent = `Trang ${currentScrollPage + 1} / ${totalPages}`;
   }
 }
 
-/**
- * ⏩ Gắn nút Prev/Next chương
- */
+/** ➡️ Trang tiếp */
+function nextPage() {
+  if (currentPage < currentImages.length - 1) {
+    currentPage++;
+    updatePage();
+  }
+}
+
+/** ⬅️ Trang trước */
+function prevPage() {
+  if (currentPage > 0) {
+    currentPage--;
+    updatePage();
+  }
+}
+
+/** ⏩ Gắn nút Prev/Next chương */
 function setupChapterNavigation() {
   const prevBtn = document.getElementById("prev-chapter-btn");
   const nextBtn = document.getElementById("next-chapter-btn");
@@ -138,9 +152,7 @@ function setupChapterNavigation() {
   newNext.onclick = () => moveChapter("next");
 }
 
-/**
- * 🔄 Chuyển chương tiếp theo hoặc chương trước
- */
+/** 🔄 Chuyển chương tiếp theo hoặc trước */
 function moveChapter(direction = "next") {
   const targetPath = getAdjacentChapterPath(direction);
   if (!targetPath) {
@@ -157,15 +169,11 @@ function moveChapter(direction = "next") {
 
   const cleanPath = targetPath.replace(/\/__self__$/, "");
 
-  fetch(
-    `/api/list-folder?root=${encodeURIComponent(
-      root
-    )}&path=${encodeURIComponent(cleanPath)}`
-  )
+  fetch(`/api/list-folder?root=${encodeURIComponent(root)}&path=${encodeURIComponent(cleanPath)}`)
     .then((res) => res.json())
     .then((data) => {
       if (data.type === "reader" && data.images.length > 0) {
-        state.currentPath = cleanPath; // ✅ update đúng
+        state.currentPath = cleanPath;
         renderReader(data.images);
       } else if (data.type === "folder") {
         loadFolder(cleanPath);
@@ -179,88 +187,45 @@ function moveChapter(direction = "next") {
     });
 }
 
-/**
- * 🔎 Lấy path của chapter tiếp theo hoặc trước
- */
+/** 🔍 Tìm chapter tiếp theo/trước */
 function getAdjacentChapterPath(direction = "next") {
   const index = state.allFolders.findIndex(
-    (f) =>
-      f.path === state.currentPath || f.path === state.currentPath + "/__self__"
+    (f) => f.path === state.currentPath || f.path === state.currentPath + "/__self__"
   );
   if (index === -1) return null;
-
   const targetIndex = direction === "next" ? index + 1 : index - 1;
   return state.allFolders[targetIndex]?.path || null;
 }
 
-/**
- * 🧮 Update số trang trong footer
- */
-function updateReaderPageInfo() {
-  const pageInfo = document.getElementById("page-info");
-  if (pageInfo) {
-    pageInfo.textContent = `Trang ${currentPage + 1} / ${currentImages.length}`;
-  }
-}
-
-/**
- * ➡️ Chuyển tới trang tiếp theo
- */
-function nextPage() {
-  if (currentPage < currentImages.length - 1) {
-    currentPage++;
-    updatePage();
-  }
-}
-
-/**
- * ⬅️ Quay lại trang trước
- */
-function prevPage() {
-  if (currentPage > 0) {
-    currentPage--;
-    updatePage();
-  }
-}
-
-/**
- * 🔁 Cập nhật ảnh khi đổi trang
- */
+/** 🔁 Cập nhật ảnh theo trang */
 function updatePage() {
   const reader = document.querySelector(".reader img");
   if (reader) reader.src = currentImages[currentPage];
   updateReaderPageInfo();
 }
 
-/**
- * 👆 Toggle hiển thị header/footer
- */
+/** 👆 Toggle UI */
 function toggleReaderUI() {
   ["site-header", "reader-footer"].forEach((id) => {
     document.getElementById(id)?.classList.toggle("hidden");
   });
 }
 
-/**
- * 🔄 Đổi chế độ đọc scroll <-> swipe
- */
+/** 🔄 Đổi chế độ dọc/ngang */
 export function toggleReaderMode() {
   readerMode = readerMode === "vertical" ? "horizontal" : "vertical";
   renderReader(currentImages);
 }
 
-/**
- * 👆 Show Reader UI
- */
+/** 👆 Show UI */
 function showReaderUI() {
   document.getElementById("site-header")?.classList.remove("hidden");
   document.getElementById("reader-footer")?.classList.remove("hidden");
 }
 
-/**
- * 👇 Hide Reader UI
- */
+/** 👇 Hide UI */
 function hideReaderUI() {
   document.getElementById("site-header")?.classList.add("hidden");
   document.getElementById("reader-footer")?.classList.add("hidden");
 }
+
