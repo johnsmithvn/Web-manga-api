@@ -77,6 +77,8 @@ export function renderScrollReader(images, container) {
           setupScrollLazyLoad(pageWrapper, pages[currentPageIndex]);
           updateScrollPageInfo(currentPageIndex + 1, totalPages);
           modal.remove();
+          scrollToReader(pageWrapper); // 🆕 thêm dòng này
+
         };
         box.appendChild(btn);
       }
@@ -96,6 +98,8 @@ export function renderScrollReader(images, container) {
           setupScrollLazyLoad(pageWrapper, pages[currentPageIndex]);
           updateScrollPageInfo(currentPageIndex + 1, totalPages);
           modal.remove();
+          scrollToReader(pageWrapper); // 🆕 thêm dòng này
+
         }
       };
       next.onclick = () => {
@@ -106,6 +110,8 @@ export function renderScrollReader(images, container) {
           setupScrollLazyLoad(pageWrapper, pages[currentPageIndex]);
           updateScrollPageInfo(currentPageIndex + 1, totalPages);
           modal.remove();
+          scrollToReader(pageWrapper); // 🆕 thêm dòng này
+
         }
       };
       nav.appendChild(prev);
@@ -169,6 +175,15 @@ export function renderScrollReader(images, container) {
   function toggleReaderUI() {
     ["site-header", "reader-footer"].forEach((id) => {
       document.getElementById(id)?.classList.toggle("hidden");
+    });
+  }
+
+  function scrollToReader(pageWrapper) {
+    const rect = pageWrapper.getBoundingClientRect();
+    const offsetTop = rect.top + window.scrollY;
+    window.scrollTo({
+      top: offsetTop,
+      behavior: 'instant' // hoặc 'smooth' nếu mày muốn mượt
     });
   }
   

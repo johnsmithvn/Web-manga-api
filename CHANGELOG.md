@@ -2,6 +2,77 @@
 
 Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày phát triển.
 
+# 📒 MyLocalManga - CHANGELOG
+
+> Theo chuẩn Semantic Versioning (SemVer)
+
+---
+
+## [1.2.0] - 2025-04-29
+
+### ✨ Added
+
+- Preload ảnh xung quanh currentPage cho horizontal reader (10–20 ảnh).
+- Modal Jump Page cho scroll mode.
+- Input Jump Page cho horizontal mode.
+- Tự động reset scroll sau khi Next/Prev/Jump page trong scroll mode.
+- Customize scrollbar đẹp, mỏ mỏ khi hover trong scroll mode.
+
+### 🛠 Changed
+
+- Cải thiện UX mobile: Đổi scroll theo touch pan-y.
+- Cập nhật lazyload scroll mode: load batch 50 ảnh, mượt hơn.
+
+### 🛠 Fixed
+
+- Fix horizontal reader sau khi jump page: Trang X/Y update đúng.
+- Fix scroll mode khi next page giữ bottom: Đã reset scroll top reader.
+- Fix mobile không cầm scroll reader được: bổ sung touch-action, min-height.
+- Fix lỗi `QuotaExceededError` khi cache folder lớn vượt quá giới hạn LocalStorage (5MB).
+- Thêm kiểm tra size JSON trước khi lưu cache folder (`> 4MB` thì skip không lưu, log warning).
+- Cải thiện độ ổn định load folder lớn (hàng trăm chapter) mà không crash browser.
+
+---
+
+## [1.1.0] - 2025-04-29
+
+### ✨ Added
+
+- Tách module `reader-scroll.js` và `reader-horizontal.js`.
+- Modal chọn page trong scroll mode.
+
+### 🛠 Fixed
+
+- Xác nhận Scroll mode lazyload + modal page hoạt động OK.
+- Xác nhận Swipe mode next/prev update Trang X/Y chuẩn.
+
+---
+
+## [1.0.0] - 2025-04-20 ~ 2025-04-28
+
+### 🎉 Initial Project
+
+- Hiển thị thư mục, ảnh từ ổ cứng.
+- Dark Mode toggle.
+- Responsive giao diện mobile.
+- API backend đọc file manga local.
+- Footer reader hiển thị Trang X/Y + Next Chapter.
+- Random folder / Search folder nhanh dựa vào cache local.
+
+### 🛠 Fixed
+
+- Fix toggle header/footer khi đọc truyện.
+- Fix cache folders sau 24h timeout.
+- Fix lỗi swipe lật trang sai state ban đầu.
+
+---
+
+# 📈 Quy tắc đánh version
+
+- 🔢 Major (2.0.0, 3.0.0): Big update thay đổi flow.
+- 🔣 Minor (1.2.0, 1.3.0): Thêm tính năng mới.
+- 🔤 Patch (1.2.1, 1.2.2): Sửa bug nhỏ, tối ưu performance.
+
 ---
 
 ## 2025-04-29
@@ -11,7 +82,6 @@ Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày ph
 - 🛠️ Thêm modal chọn trang (jump page) trong Scroll mode.
 - ✅ Confirm Scroll mode hoạt động: lazy load, chọn trang OK.
 - ✅ Confirm Swipe mode hoạt động: next/prev ảnh, Trang X/Y cập nhật đúng.
-
 
 ---
 

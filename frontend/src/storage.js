@@ -57,14 +57,20 @@ export function getFolderCache(root, path) {
  */
 export function setFolderCache(root, path, data) {
   const key = `${FOLDER_CACHE_PREFIX}${root}:${path}`;
-  localStorage.setItem(
-    key,
-    JSON.stringify({
-      timestamp: Date.now(),
-      data: data,
-    })
-  );
+  const jsonData = JSON.stringify({
+    timestamp: Date.now(),
+    data: data,
+  });
+
+  // 🆕 Nếu dữ liệu quá lớn (trên 4MB) thì không lưu cache
+  if (jsonData.length > 4000 * 1024) {
+    console.warn(`⚠️ Folder quá lớn, không cache localStorage: ${path}`);
+    return;
+  }
+
+  localStorage.setItem(key, jsonData);
 }
+
 
 /**
  * 🧹 Xoá toàn bộ folder cache (theo dạng folderCache::)
