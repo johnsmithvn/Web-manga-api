@@ -4,15 +4,18 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const { listFolder, listAllFolders } = require("./api/list-folder"); // 🆕 Import cả 2 hàm
-const topFolders = require("./api/top-folders");
-const randomFolders = require("./api/random-folders");
 const { BASE_DIR } = require("./utils/config");
+const allSubfoldersApi = require("./api/all-subfolders");
+const topViewApi = require("./api/top-view");
 
 const app = express();
 const PORT = 3000;
 
 // ✅ Middleware parse JSON body
 app.use(express.json());
+app.use("/api", allSubfoldersApi);
+app.use("/api", topViewApi);
+app.use("/api", require("./api/increase-view"));
 
 // ✅ Middleware fix lỗi URL encode (dấu () [] {} ...) khi load ảnh
 app.use("/manga", (req, res, next) => {
@@ -31,6 +34,8 @@ app.use("/manga", express.static(BASE_DIR));
 // ✅ Serve frontend static files
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 app.use("/src", express.static(path.join(__dirname, "../frontend/src")));
+// api reset cache
+app.use("/api", require("./api/reset-cache"));
 
 // 📂 API: Lấy danh sách folder + ảnh trong 1 folder (phân trang)
 app.get("/api/list-folder", async (req, res) => {
@@ -60,33 +65,6 @@ app.get("/api/list-all-folders", async (req, res) => {
   }
 });
 
-// 📂 API: Lấy top 20 folder có lượt xem cao nhất
-app.get("/api/top-folders", async (req, res) => {
-  const { root } = req.query;
-  if (!root) return res.status(400).json({ error: "Missing root parameter" });
-
-  try {
-    const result = await topFolders(root);
-    res.json(result);
-  } catch (err) {
-    console.error("❌ Error in top-folders:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// 📂 API: Random 10 folder ngẫu nhiên
-app.get("/api/random-folders", async (req, res) => {
-  const { root } = req.query;
-  if (!root) return res.status(400).json({ error: "Missing root parameter" });
-
-  try {
-    const result = await randomFolders(root);
-    res.json(result);
-  } catch (err) {
-    console.error("❌ Error in random-folders:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
 
 // 📂 API: Trả về danh sách folder gốc (1,2,3,...)
 app.get("/api/list-roots", (req, res) => {

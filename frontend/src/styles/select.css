@@ -2,48 +2,82 @@
 
 /* Header chọn folder */
 .select-header {
-    text-align: center;
-    margin-top: 20px;
-  }
-  
-  /* Layout grid folder */
-  .select-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 20px;
-    padding: 20px;
-  }
-  
-  /* Thẻ folder */
-  .select-card {
-    background: #f9f9f9;
-    border-radius: 12px;
-    overflow: hidden;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  }
-  
-  .select-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-  
-  /* Thumbnail */
-  .select-thumbnail {
-    width: 100%;
-    height: 180px;
-    object-fit: cover; /* ✅ Ảnh fill đầy ô, không méo */
-    background: #ccc; /* fallback nền xám nếu lỗi */
-  }
-  
-  /* Label tên folder */
-  .select-label {
-    padding: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    background: #fff;
-  }
-  
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Layout grid folder */
+.select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Thẻ folder */
+.select-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 280px;              /* ✅ Giới hạn chiều cao */
+  background: #f9f9f9;
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.select-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Thumbnail */
+.select-thumbnail {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  /* ✅ Ảnh fill đầy ô, không méo */
+  background: #ccc;
+  /* fallback nền xám nếu lỗi */
+}
+
+/* Label tên folder */
+.select-label {
+  padding: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  background: #fff;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+footer {
+  background: #f5f5f5;
+  padding: 12px 20px;
+  text-align: center;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+}
+/* Giữ footer không dính vào grid */
+.select-grid {
+  padding-bottom: 80px;
+}
+
+main.select-grid {
+  padding-bottom: 80px; /* 🧼 Giữ khoảng trống với footer */
+}

@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="/src/styles/reader.css" />
     <link rel="stylesheet" href="/src/styles/dark.css" />
     <link rel="stylesheet" href="/src/styles/layout.css" />
-    <link rel="stylesheet" href="/src/styles/sidebar.css" /> <!-- 🆕 Thêm sidebar CSS -->
+    <link rel="stylesheet" href="/src/styles/sidebar.css" />
+    <!-- 🆕 Thêm sidebar CSS -->
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/default/favicon.ico" type="image/x-icon" />
@@ -37,7 +38,9 @@
 
       <!-- Icon bên phải -->
       <div class="header-icons">
-        <button id="back-button" onclick="goBack()" style="display: none;">⬅</button>
+        <button id="back-button" onclick="goBack()" style="display: none">
+          ⬅
+        </button>
         <button onclick="toggleReaderMode()">📖</button>
         <button onclick="toggleDarkMode()">🌙</button>
         <button onclick="toggleSearchBar()">🔍</button>
@@ -52,6 +55,10 @@
 
     <!-- Bao quanh nội dung -->
     <div id="wrapper">
+      <div id="home-sections">
+        <div id="section-random"></div>
+        <div id="section-topview"></div>
+      </div>
       <div id="app"></div>
     </div>
 
@@ -65,13 +72,15 @@
       <div class="reader-footer-inner">
         <button id="prev-chapter-btn">⬅ Prev</button>
         <span id="page-info">Trang ? / ?</span>
-        <span id="image-count-info" style="margin-left:10px;">Ảnh ? / ?</span> <!-- 🆕 thêm -->
+        <span id="image-count-info" style="margin-left: 10px">Ảnh ? / ?</span>
+        <!-- 🆕 thêm -->
         <button id="next-chapter-btn">Next ➡</button>
       </div>
     </div>
 
     <!-- Footer chính -->
     <footer id="main-footer">
+      <button id="reset-cache-btn">🧹 Reset Cache</button>
       <p>&copy; 2025 MyLocalManga | Đọc truyện từ ổ cứng cá nhân</p>
     </footer>
 

@@ -1,5 +1,6 @@
 // 📁 frontend/src/select.js
 import { clearAllFolderCache } from "./storage.js";
+import { getRootFolder } from "./storage.js"; // nếu chưa có
 
 /**
  * 📂 Fetch danh sách folder gốc và render ra giao diện
@@ -50,3 +51,28 @@ async function loadRootFolders() {
 }
 
 window.addEventListener("DOMContentLoaded", loadRootFolders);
+
+
+
+document.getElementById("reset-cache-btn")?.addEventListener("click", async () => {
+  const root = getRootFolder();
+  if (!root) return alert("Chưa chọn root folder nào!");
+
+  if (!confirm(`Reset cache cho '${root}'?`)) return;
+
+  try {
+    const res = await fetch(`/api/reset-cache?root=${encodeURIComponent(root)}`, {
+      method: "DELETE",
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert("✅ Reset cache thành công!");
+      location.reload();
+    } else {
+      alert("❌ Lỗi reset cache.");
+    }
+  } catch (err) {
+    alert("🚫 Lỗi kết nối đến API reset-cache");
+    console.error(err);
+  }
+});
