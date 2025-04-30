@@ -8,6 +8,19 @@ Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày ph
 
 ---
 
+## [1.2.1] - 2025-04-30
+
+### ✨ Tính năng mới
+
+- Áp dụng sort folder và ảnh theo đúng thứ tự tự nhiên giống Windows (StrCmpLogicalW).
+- Switch giữ các view nhảy đến đúng page
+
+### 🐞 Bug còn tồn tại
+
+- Chuyển scroll ➔ single vẫn không nhảy đúng ảnh đang nhìn nếu chưa scroll đủ trong page.
+
+---
+
 ## [1.2.0] - 2025-04-29
 
 ### ✨ Added

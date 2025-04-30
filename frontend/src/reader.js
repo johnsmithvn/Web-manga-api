@@ -11,9 +11,16 @@ let readerMode = "horizontal"; // "horizontal" hoặc "vertical"
  * 📖 Render giao diện reader mode (main)
  */
 
-export function renderReader(images) {
+export function renderReader(
+  images,
+  preserveCurrentPage = false,
+  scrollPage = 0
+) {
   currentImages = images;
-  currentPage = 0;
+  // 🧠 Đừng reset currentPage nếu đang ở horizontal mode (đã tính sẵn bên toggle)
+  if (!preserveCurrentPage) {
+    currentPage = 0;
+  }
 
   const app = document.getElementById("app");
   app.innerHTML = "";
@@ -27,14 +34,21 @@ export function renderReader(images) {
 
   if (readerMode === "vertical") {
     import("./reader-scroll.js").then(({ renderScrollReader }) => {
-      renderScrollReader(images, reader);
+      // ✅ truyền page đúng
+      renderScrollReader(images, reader, scrollPage, (newPage) => {
+        currentPage = newPage; // 🧠 Cập nhật biến toàn cục ở đây
+      });
     });
   } else {
     import("./reader-horizontal.js").then(({ renderHorizontalReader }) => {
       const { setCurrentPage } = renderHorizontalReader(
         images,
         reader,
-        updateReaderPageInfoReal
+        updateReaderPageInfoReal,
+        currentPage,
+        (page) => {
+          currentPage = page; // ✅ Nhận lại page đúng từ reader-horizontal.js
+        }
       ); // ✅ lấy đúng
       window.setHorizontalPage = setCurrentPage; // 🆕 Gán vào window tạm để xài ngoài
     });
@@ -66,41 +80,6 @@ function setupReaderModeButton() {
   }
 }
 
-/** 📷 Render ảnh reader scroll/slide */
-function renderImages(reader) {
-  if (readerMode === "vertical") {
-    currentImages.forEach((src, index) => {
-      const img = document.createElement("img");
-      img.src = src;
-      img.alt = `Page ${index + 1}`;
-      img.className = "scroll-img";
-      img.loading = "lazy"; // ✅ lazy load từng ảnh
-      img.addEventListener("click", toggleReaderUI);
-      reader.appendChild(img);
-    });
-    setupScrollHandler();
-  } else {
-    const img = document.createElement("img");
-    img.src = currentImages[currentPage];
-    img.style.display = "block";
-    reader.appendChild(img);
-  }
-}
-
-/** 👆 Scroll ẩn/hiện UI */
-function setupScrollHandler() {
-  let lastScrollTop = 0;
-  const scrollThreshold = 10;
-  window.addEventListener("scroll", () => {
-    const st = window.scrollY;
-    const delta = st - lastScrollTop;
-    if (Math.abs(delta) < scrollThreshold) return;
-    delta > 0 ? hideReaderUI() : showReaderUI();
-    lastScrollTop = st;
-    updateReaderPageInfo(); // cập nhật số trang khi scroll
-  });
-}
-
 /** 🧮 Cập nhật lại nút Trang X/Y */
 function updateReaderPageInfo() {
   const pageInfo = document.getElementById("page-info");
@@ -108,37 +87,8 @@ function updateReaderPageInfo() {
 
   if (readerMode === "horizontal") {
     pageInfo.textContent = `Trang ${currentPage + 1} / ${currentImages.length}`;
-  } else {
-    const imagesPerPage = 100;
-    const totalPages = Math.ceil(currentImages.length / imagesPerPage);
-
-    const scrollImgs = document.querySelectorAll(".scroll-img");
-    let currentScrollPage = 0;
-    for (let i = 0; i < scrollImgs.length; i++) {
-      const rect = scrollImgs[i].getBoundingClientRect();
-      if (rect.top > 100) {
-        currentScrollPage = Math.floor(i / imagesPerPage);
-        break;
-      }
-    }
-    pageInfo.textContent = `Trang ${currentScrollPage + 1} / ${totalPages}`;
   }
-}
-
-/** ➡️ Trang tiếp */
-function nextPage() {
-  if (currentPage < currentImages.length - 1) {
-    currentPage++;
-    updatePage();
-  }
-}
-
-/** ⬅️ Trang trước */
-function prevPage() {
-  if (currentPage > 0) {
-    currentPage--;
-    updatePage();
-  }
+  // scroll-mode nên để reader-scroll.js tự update
 }
 
 /** ⏩ Gắn nút Prev/Next chương */
@@ -207,36 +157,34 @@ function getAdjacentChapterPath(direction = "next") {
   return state.allFolders[targetIndex]?.path || null;
 }
 
-/** 🔁 Cập nhật ảnh theo trang */
-function updatePage() {
-  const reader = document.querySelector(".reader img");
-  if (reader) reader.src = currentImages[currentPage];
-  updateReaderPageInfo();
-}
-
-/** 👆 Toggle UI */
-function toggleReaderUI() {
-  ["site-header", "reader-footer"].forEach((id) => {
-    document.getElementById(id)?.classList.toggle("hidden");
-  });
-}
-
 /** 🔄 Đổi chế độ dọc/ngang */
 export function toggleReaderMode() {
-  readerMode = readerMode === "vertical" ? "horizontal" : "vertical";
-  renderReader(currentImages);
-}
+  let scrollPage = 0;
 
-/** 👆 Show UI */
-function showReaderUI() {
-  document.getElementById("site-header")?.classList.remove("hidden");
-  document.getElementById("reader-footer")?.classList.remove("hidden");
-}
-
-/** 👇 Hide UI */
-function hideReaderUI() {
-  document.getElementById("site-header")?.classList.add("hidden");
-  document.getElementById("reader-footer")?.classList.add("hidden");
+  if (readerMode === "vertical") {
+    // Scroll ➜ Single
+    const countInfo = document.getElementById("image-count-info");
+    if (countInfo) {
+      const match = countInfo.textContent.match(/Ảnh (\d+)/); // 🧠 regex tách số ảnh
+      if (match) {
+        currentPage = parseInt(match[1], 10) - 1; // 🧠 cập nhật currentPage
+      }
+    }
+    readerMode = "horizontal";
+  } else {
+    const imagesPerPage = 200; // Số ảnh tối đa trên 1 page scroll
+    // Single ➜ Scroll
+    scrollPage = Math.floor(currentPage / imagesPerPage);
+    readerMode = "vertical";
+  }
+  // 🧠 Gọi lại set page đúng ảnh sau khi render xong
+  renderReader(currentImages, true, scrollPage); // ✅ chỉ gọi 1 lần
+  // ✅ Delay để chắc chắn window.setHorizontalPage đã được gán xong
+  setTimeout(() => {
+    if (typeof window.setHorizontalPage === "function") {
+      window.setHorizontalPage(currentPage);
+    }
+  }, 0);
 }
 
 // 🖼️ Gọi hàm này từ bên ngoài để cập nhật số trang

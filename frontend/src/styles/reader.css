@@ -39,6 +39,8 @@ body.reader-mode #wrapper {
   object-fit: contain;
   margin-bottom: 20px;
   display: block;
+  -webkit-overflow-scrolling: touch;
+
 }
 
 @media (max-width: 768px) {
@@ -73,35 +75,5 @@ body.reader-mode #wrapper {
 }
 
 
-/*  SCROLL */
-/* Scrollbar cơ bản */
-.reader.scroll-mode {
-  overflow-y: auto;
-  max-height: 100vh; /* 🆕 quan trọng: max-height chứ không ép height */
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  background: #000;
-  width: 100%;
-  display: block; /* 🆕 đừng ép flex ở đây */
-}
-/* Webkit (Chrome, Edge, Safari) */
-.reader.scroll-mode::-webkit-scrollbar {
-  width: 10px; /* 🆙 to thêm cho dễ kéo bằng tay */
-}
-.reader.scroll-mode::-webkit-scrollbar-track {
-  background: transparent;
-}
 
-.reader.scroll-mode::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 100, 100, 0.5); /* màu scrollbar */
-  border-radius: 10px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-/* Khi hover mới show đậm hơn */
-.reader.scroll-mode:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(150, 150, 150, 0.8);
-}
-
-/*//////////////////////////
+/*////////////////////////// */

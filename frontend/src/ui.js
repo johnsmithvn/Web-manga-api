@@ -153,3 +153,30 @@ export function setupSettingsMenu() {
 
   settingsMenu.appendChild(changeFolderBtn);
 }
+
+
+/**
+ * 👆 Toggle hiển/ẩn header và reader-footer
+ * Dùng chung cho mọi chế độ reader (horizontal, scroll...)
+ */
+export function toggleReaderUI() {
+  ["site-header", "reader-footer"].forEach((id) => {
+    document.getElementById(id)?.classList.toggle("hidden");
+  });
+}
+
+/**
+ * 👆 Show lại UI nếu đang ẩn
+ */
+export function showReaderUI() {
+  document.getElementById("site-header")?.classList.remove("hidden");
+  document.getElementById("reader-footer")?.classList.remove("hidden");
+}
+
+/**
+ * 👇 Hide toàn bộ UI để tập trung đọc
+ */
+export function hideReaderUI() {
+  document.getElementById("site-header")?.classList.add("hidden");
+  document.getElementById("reader-footer")?.classList.add("hidden");
+}

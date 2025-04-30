@@ -5,6 +5,7 @@ const path = require("path");
 const { pathToUrl } = require("../utils/pathToUrl");
 const { BASE_DIR } = require("../utils/config");
 const { findFirstImageRecursively } = require("../utils/imageUtils");
+const naturalCompare = require("string-natural-compare"); // 🆕 Import thư viện so sánh giống Windows Explorer
 
 // ✨ Định dạng file ảnh hợp lệ
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
@@ -25,6 +26,8 @@ async function listFolder(rootFolder, subPath = "", limit = 0, offset = 0) {
   }
 
   const entries = fs.readdirSync(basePath, { withFileTypes: true });
+  // 🆕 Sort entries theo đúng thứ tự Windows Explorer
+  entries.sort((a, b) => naturalCompare(a.name, b.name));
 
   let folders = []; // Danh sách folder con
   const images = []; // Danh sách đường dẫn ảnh
@@ -63,9 +66,8 @@ async function listFolder(rootFolder, subPath = "", limit = 0, offset = 0) {
       thumbnail: images[0],
       isSelfReader: true,
       images: limit > 0 ? images.slice(offset, offset + limit) : images,
-      totalImages: images.length
+      totalImages: images.length,
     });
-    
 
     const total = folders.length;
     const slicedFolders =
