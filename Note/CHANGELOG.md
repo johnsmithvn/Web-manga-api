@@ -5,6 +5,33 @@ Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày ph
 # 📒 MyLocalManga - CHANGELOG
 
 > Theo chuẩn Semantic Versioning (SemVer)
+---
+## [1.3.0] - 2025-05-01
+
+### ✨ Tính năng mới
+
+- 🔍 API search folder theo tên: `GET /api/search?root=...&q=...` (LIKE `%keyword%`)
+- 🖼️ UI dropdown dạng list (kiểu MangaDex): thumbnail + tên folder
+- 🔁 Cache random folder 30 phút bằng `localStorage`
+- 🔄 Nút "Làm mới" random thủ công
+- 🕘 Hiển thị thời gian random được cập nhật gần nhất
+- Hiển thị top view - recentview-random view
+
+### 🧠 Tối ưu DB + hiệu năng
+
+- 🧱 Thiết kế chuẩn schema `cache.db`:
+  - Bảng `folders`: root, name, path, thumbnail, mtime
+  - Bảng `views`: path, count
+- ⚙️ Ghi view vào SQLite khi vào reader
+- 🧠 Quét folder recursive, cache thumbnail thông minh (theo mtime)
+
+### 🛠 Refactor
+
+- Tách riêng `filterManga()` xử lý API và UI search
+- Gắn `refresh-random-btn` đúng lúc sau render DOM
+- Show `random-timestamp` đúng thời điểm sau `renderRandomBanner`
+- Tối ưu lại `renderTopView()`, `renderRecentViewed()` dùng container riêng
+
 
 ---
 
