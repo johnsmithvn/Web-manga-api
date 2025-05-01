@@ -1,5 +1,6 @@
 // 📁 frontend/src/select.js
 import { clearAllFolderCache } from "./storage.js";
+import { getRootFolder } from "./storage.js"; // nếu chưa có
 
 /**
  * 📂 Fetch danh sách folder gốc và render ra giao diện
@@ -50,3 +51,6 @@ async function loadRootFolders() {
 }
 
 window.addEventListener("DOMContentLoaded", loadRootFolders);
+
+
+

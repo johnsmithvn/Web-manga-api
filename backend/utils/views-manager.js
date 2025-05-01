@@ -1,42 +1,24 @@
-// /utils/views-manager.js
-
-const fs = require('fs').promises;
-const path = require('path');
-
-const VIEWS_FILE = path.join(__dirname, '..', 'data', 'views.json');
+// 📁 backend/utils/views-manager.js (mới)
+const db = require('./db');
 
 /**
- * Đọc file views.json
- * @returns {Promise<Object>}
+ * 📈 Tăng lượt xem cho folder (theo path, VD: "1/Naruto")
+ * Nếu chưa có trong bảng `views` ➜ thêm mới
+ * Nếu đã có ➜ tăng count lên 1
+ * @param {string} folderPath - Đường path đầy đủ (VD: '1/Naruto')
  */
-async function getViews() {
+function increaseView(folderPath) {
   try {
-    const data = await fs.readFile(VIEWS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return {}; // Nếu file chưa tồn tại
+    const existing = db.prepare(`SELECT count FROM views WHERE path = ?`).get(folderPath);
+
+    if (!existing) {
+      db.prepare(`INSERT INTO views (path, count) VALUES (?, 1)`).run(folderPath);
+    } else {
+      db.prepare(`UPDATE views SET count = count + 1 WHERE path = ?`).run(folderPath);
+    }
+  } catch (err) {
+    console.error('❌ Error tăng lượt xem:', err);
   }
 }
 
-/**
- * Tăng lượt xem cho 1 folder
- * @param {string} folderPath - Ví dụ: '1/OnePiece' hoặc '2/Naruto'
- * @returns {Promise<void>}
- */
-async function increaseView(folderPath) {
-  const views = await getViews();
-  const key = folderPath.replace(/\\/g, '/'); // chuẩn hóa đường dẫn
-
-  if (views[key]) {
-    views[key]++;
-  } else {
-    views[key] = 1;
-  }
-
-  await fs.writeFile(VIEWS_FILE, JSON.stringify(views, null, 2), 'utf-8');
-}
-
-module.exports = {
-  getViews,
-  increaseView
-};
+module.exports = { increaseView };

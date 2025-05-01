@@ -10,6 +10,7 @@ import {
   setAllFoldersList,
 } from "./storage.js";
 import { preloadThumbnails } from "./preload.js";
+import { saveRecentViewed } from "./ui.js";
 
 export const state = {
   currentPath: "",
@@ -44,7 +45,9 @@ export function loadFolder(path = "", page = 0) {
   }
 
   fetch(
-    `/api/list-folder?root=${encodeURIComponent(rootFolder)}&path=${encodeURIComponent(path)}`
+    `/api/list-folder?root=${encodeURIComponent(
+      rootFolder
+    )}&path=${encodeURIComponent(path)}`
   )
     .then((res) => res.json())
     .then((data) => {
@@ -71,7 +74,9 @@ export async function ensureAllFoldersList() {
   if (list) return list;
 
   try {
-    const res = await fetch(`/api/list-all-folders?root=${encodeURIComponent(root)}`);
+    const res = await fetch(
+      `/api/list-all-folders?root=${encodeURIComponent(root)}`
+    );
     list = await res.json();
     setAllFoldersList(root, list);
     return list;
@@ -131,6 +136,21 @@ function renderFromData(data) {
   } else if (data.type === "reader") {
     document.body.classList.add("reader-mode");
     document.getElementById("main-footer")?.classList.add("hidden");
+
+    // ✅ THÊM Ở ĐÂY
+    const parts = state.currentPath.split("/");
+    const folderName = parts[parts.length - 1] || "Xem ảnh";
+    saveRecentViewed({
+      name: folderName,
+      path: state.currentPath,
+      thumbnail: data.images[0] || null,
+    });
+    // 📍 Tăng view tại đây là đúng
+    fetch("/api/increase-view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: state.currentPath }),
+    });
 
     renderReader(data.images);
   }
