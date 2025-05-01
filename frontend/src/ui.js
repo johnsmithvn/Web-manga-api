@@ -1,12 +1,8 @@
 // ➕ BỔ SUNG UI FRONTEND RENDER BANNER RANDOM
 // 📁 frontend/src/ui.js ➜ renderRandomBanner()
+import { getRootFolder } from "./storage.js"; 
 
-import {
-  renderFolderGrid,
-  state,
-  loadFolder,
-  ensureAllFoldersList,
-} from "/src/folder.js"; // 🆕 Import ensureAllFoldersList
+import { state, loadFolder } from "/src/folder.js"; // 🆕 Import ensureAllFoldersList
 import { toggleReaderMode as toggleMode } from "/src/reader.js";
 import { changeRootFolder } from "./storage.js";
 
@@ -41,20 +37,54 @@ export function updateBackButtonUI() {
 /**
  * 🔍 Lọc danh sách truyện theo từ khóa
  */
+
 export async function filterManga() {
-  const keyword =
-    document.getElementById("searchInput")?.value.toLowerCase() || "";
+  const keyword = document.getElementById("floatingSearchInput")?.value.trim().toLowerCase();
+  const dropdown = document.getElementById("search-dropdown");
+  const root = getRootFolder();
+  if (!dropdown || !root) return;
+
   if (!keyword) {
-    renderFolderGrid(state.allFolders);
+    dropdown.classList.add("hidden");
+    dropdown.innerHTML = "";
     return;
   }
 
-  const allFoldersList = await ensureAllFoldersList(); // 🆕 lấy cache hoặc fetch
-  const filtered = allFoldersList.filter((f) =>
-    f.name.toLowerCase().includes(keyword)
-  );
-  renderFolderGrid(filtered);
+  // Hiện dropdown + loader
+  dropdown.classList.remove("hidden");
+  dropdown.innerHTML = `<div id="search-loader">🔍 Đang tìm kiếm...</div>`;
+
+  try {
+    const res = await fetch(`/api/search?root=${encodeURIComponent(root)}&q=${encodeURIComponent(keyword)}`);
+    const results = await res.json();
+
+    dropdown.innerHTML = "";
+
+    if (results.length === 0) {
+      dropdown.innerHTML = `<div id="search-loader">❌ Không tìm thấy kết quả</div>`;
+      return;
+    }
+
+    results.forEach((f) => {
+      const item = document.createElement("div");
+      item.className = "search-item";
+      item.innerHTML = `
+        <img src="${f.thumbnail}" class="search-thumb" alt="thumb">
+        <div class="search-title">${f.name}</div>
+      `;
+      item.onclick = () => {
+        dropdown.classList.add("hidden");
+        window.loadFolder(f.path);
+      };
+      dropdown.appendChild(item);
+    });
+  } catch (err) {
+    dropdown.innerHTML = `<div id="search-loader">⚠️ Lỗi khi tìm kiếm</div>`;
+    console.error("❌ Lỗi tìm kiếm:", err);
+  }
 }
+
+
 
 /**
  * 🌙 Bật / tắt chế độ dark mode
@@ -323,37 +353,38 @@ export function renderRandomBanner(folders) {
   titleRow.style.justifyContent = "space-between";
   titleRow.style.alignItems = "center";
   titleRow.style.padding = "0 16px";
-  
+
   const title = document.createElement("h3");
   title.textContent = "✨ Đề xuất ngẫu nhiên";
   title.style.margin = "6px 0";
   title.style.fontSize = "18px";
   title.style.fontWeight = "bold";
-  
+
   const rightBox = document.createElement("div");
   rightBox.style.display = "flex";
   rightBox.style.alignItems = "center";
   rightBox.style.gap = "12px";
-  
+
   // 👈 Nút làm mới
   const refreshBtn = document.createElement("button");
   refreshBtn.textContent = "🔄 Làm mới";
   refreshBtn.id = "refresh-random-btn";
   refreshBtn.style.padding = "4px 10px";
   refreshBtn.style.cursor = "pointer";
-  
+
   // 👈 Text hiển thị thời gian
   const timestamp = document.createElement("span");
   timestamp.id = "random-timestamp";
   timestamp.style.fontSize = "14px";
   timestamp.style.color = "#666";
-  
+
   rightBox.appendChild(refreshBtn);
   rightBox.appendChild(timestamp);
-  
+
   titleRow.appendChild(title);
   titleRow.appendChild(rightBox);
-  container.appendChild(titleRow);  container.appendChild(banner);
+  container.appendChild(titleRow);
+  container.appendChild(banner);
 }
 
 /**

@@ -112,8 +112,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     readerBtn.style.display = "none"; // ⛔ Ban đầu ẩn luôn
   }
   document
-    .getElementById("searchInput")
-    ?.addEventListener("input", filterManga);
+  .getElementById("floatingSearchInput")
+  ?.addEventListener("input", filterManga);
 
   const header = document.getElementById("site-header");
   const wrapper = document.getElementById("wrapper");

@@ -16,6 +16,15 @@ app.use(express.json());
 app.use("/api", allSubfoldersApi);
 app.use("/api", topViewApi);
 app.use("/api", require("./api/increase-view"));
+// ✅ Serve static images từ BASE_DIR (E:/File/Manga)
+app.use("/manga", express.static(BASE_DIR));
+
+// ✅ Serve frontend static files
+app.use(express.static(path.join(__dirname, "../frontend/public")));
+app.use("/src", express.static(path.join(__dirname, "../frontend/src")));
+// api reset cache
+app.use("/api", require("./api/reset-cache"));
+app.use("/api", require("./api/search"));
 
 // ✅ Middleware fix lỗi URL encode (dấu () [] {} ...) khi load ảnh
 app.use("/manga", (req, res, next) => {
@@ -28,14 +37,6 @@ app.use("/manga", (req, res, next) => {
   next();
 });
 
-// ✅ Serve static images từ BASE_DIR (E:/File/Manga)
-app.use("/manga", express.static(BASE_DIR));
-
-// ✅ Serve frontend static files
-app.use(express.static(path.join(__dirname, "../frontend/public")));
-app.use("/src", express.static(path.join(__dirname, "../frontend/src")));
-// api reset cache
-app.use("/api", require("./api/reset-cache"));
 
 // 📂 API: Lấy danh sách folder + ảnh trong 1 folder (phân trang)
 app.get("/api/list-folder", async (req, res) => {
