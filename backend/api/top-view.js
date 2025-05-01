@@ -17,7 +17,7 @@ router.get('/top-view', (req, res) => {
       SELECT f.name, f.path, f.thumbnail, v.count FROM views v
       JOIN folders f ON f.path = v.path AND f.root = ?
       ORDER BY v.count DESC
-      LIMIT 20
+      LIMIT 30
     `).all(root);
 
     res.json(results);

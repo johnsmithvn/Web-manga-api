@@ -16,11 +16,11 @@ import { changeRootFolder } from "./storage.js";
 
 /** 🧩 Thêm tiêu đề cho các hàng slider */
 function createSectionTitle(titleText) {
-  const h = document.createElement('h3');
+  const h = document.createElement("h3");
   h.textContent = titleText;
-  h.style.margin = '4px 16px';
-  h.style.fontSize = '18px';
-  h.style.fontWeight = 'bold';
+  h.style.margin = "4px 16px";
+  h.style.fontSize = "18px";
+  h.style.fontWeight = "bold";
   return h;
 }
 export function updateBackButtonUI() {
@@ -203,9 +203,20 @@ export function hideReaderUI() {
  * 🖼️ Render banner thư mục ngẫu nhiên dạng slider ngang
  * @param {Array} folders - Danh sách folder có thumbnail
  */
+// ✅ Hiển thị thời gian cập nhật ngẫu nhiên bên dưới banner random
+export function showRandomUpdatedTime(timestamp) {
+  const info = document.getElementById("random-timestamp");
+  if (!info) return;
+
+  const diff = Math.floor((Date.now() - timestamp) / 60000); // phút
+  info.textContent = `🎲 Random cập nhật ${
+    diff === 0 ? "vừa xong" : diff + " phút trước"
+  }`;
+}
 export function renderRandomBanner(folders) {
   const container = document.getElementById("section-random"); // 🆕 thay vì wrapper
   if (!container) return;
+  container.innerHTML = ""; // 🧹 Clear toàn bộ section
 
   // Xóa banner cũ nếu có
   container.innerHTML = ""; // 🧹 Clear luôn nội dung section
@@ -307,10 +318,43 @@ export function renderRandomBanner(folders) {
   });
 
   // Cuối cùng: gắn vào DOM
-  container.appendChild(createSectionTitle("✨ Đề xuất ngẫu nhiên"));
-  container.appendChild(banner);
+  const titleRow = document.createElement("div");
+  titleRow.style.display = "flex";
+  titleRow.style.justifyContent = "space-between";
+  titleRow.style.alignItems = "center";
+  titleRow.style.padding = "0 16px";
+  
+  const title = document.createElement("h3");
+  title.textContent = "✨ Đề xuất ngẫu nhiên";
+  title.style.margin = "6px 0";
+  title.style.fontSize = "18px";
+  title.style.fontWeight = "bold";
+  
+  const rightBox = document.createElement("div");
+  rightBox.style.display = "flex";
+  rightBox.style.alignItems = "center";
+  rightBox.style.gap = "12px";
+  
+  // 👈 Nút làm mới
+  const refreshBtn = document.createElement("button");
+  refreshBtn.textContent = "🔄 Làm mới";
+  refreshBtn.id = "refresh-random-btn";
+  refreshBtn.style.padding = "4px 10px";
+  refreshBtn.style.cursor = "pointer";
+  
+  // 👈 Text hiển thị thời gian
+  const timestamp = document.createElement("span");
+  timestamp.id = "random-timestamp";
+  timestamp.style.fontSize = "14px";
+  timestamp.style.color = "#666";
+  
+  rightBox.appendChild(refreshBtn);
+  rightBox.appendChild(timestamp);
+  
+  titleRow.appendChild(title);
+  titleRow.appendChild(rightBox);
+  container.appendChild(titleRow);  container.appendChild(banner);
 }
-
 
 /**
  * 📈 Render hàng TOP VIEW bên dưới banner random
@@ -363,79 +407,64 @@ export function renderTopView(folders) {
   container.appendChild(scrollWrapper);
 }
 
-
 // ➕ BỔ SUNG UI FRONTEND - TIÊU ĐỀ + RECENT VIEW
-
 
 /** ✅ Ghi lại folder vừa đọc vào localStorage */
 export function saveRecentViewed(folder) {
   try {
-    const key = 'recentViewed';
+    const root = getRootFolder();
+    const key = `recentViewed::${root}`;
     const raw = localStorage.getItem(key);
     const list = raw ? JSON.parse(raw) : [];
 
     // Bỏ item cũ nếu trùng path
-    const filtered = list.filter(item => item.path !== folder.path);
+    const filtered = list.filter((item) => item.path !== folder.path);
 
     // Thêm lên đầu
-    filtered.unshift({ name: folder.name, path: folder.path, thumbnail: folder.thumbnail });
+    filtered.unshift({
+      name: folder.name,
+      path: folder.path,
+      thumbnail: folder.thumbnail,
+    });
 
     // Giới hạn 10
-    const limited = filtered.slice(0, 10);
+    const limited = filtered.slice(0, 30);
     localStorage.setItem(key, JSON.stringify(limited));
   } catch (err) {
-    console.warn('❌ Không thể lưu recentViewed:', err);
+    console.warn("❌ Không thể lưu recentViewed:", err);
   }
 }
 
 /** 🧠 Danh sách truy cập gần đây – hiển thị bên phải, vuốt được */
 export function renderRecentViewed(folders = []) {
-  const wrapper = document.getElementById('wrapper');
-  if (!wrapper) return;
+  const container = document.getElementById("section-recent");
+  if (!container) return;
 
-  const old = document.getElementById('recent-view');
-  if (old) old.remove();
+  container.innerHTML = "";
+  container.appendChild(createSectionTitle("🕘 Mới đọc"));
 
-  const box = document.createElement('div');
-  box.id = 'recent-view';
-  box.style.position = 'fixed';
-  box.style.top = '100px';
-  box.style.right = '0';
-  box.style.width = '200px';
-  box.style.maxHeight = 'calc(100vh - 150px)';
-  box.style.overflowY = 'auto';
-  box.style.background = '#fff';
-  box.style.borderLeft = '1px solid #ddd';
-  box.style.padding = '8px';
-  box.style.boxShadow = '-2px 0 6px rgba(0,0,0,0.1)';
-  box.style.zIndex = '999';
+  const scrollRow = document.createElement("div");
+  scrollRow.style.display = "flex";
+  scrollRow.style.overflowX = "auto";
+  scrollRow.style.gap = "12px";
+  scrollRow.style.padding = "8px";
 
-  const title = document.createElement('div');
-  title.textContent = '🕘 Mới đọc';
-  title.style.fontWeight = 'bold';
-  title.style.marginBottom = '6px';
-  box.appendChild(title);
+  for (const f of folders.slice(0, 30)) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.width = "160px";
+    card.style.flex = "0 0 auto";
+    card.style.cursor = "pointer";
 
-  for (const f of folders.slice(0, 10)) {
-    const item = document.createElement('div');
-    item.style.marginBottom = '8px';
-    item.style.cursor = 'pointer';
-    item.style.display = 'flex';
-    item.style.alignItems = 'center';
-    item.innerHTML = `
-      <img src="${f.thumbnail}" alt="thumb" style="width:40px;height:40px;object-fit:cover;margin-right:6px;border-radius:4px;">
-      <span style="font-size:14px;">${f.name}</span>
+    card.innerHTML = `
+      <img src="${f.thumbnail}" alt="${f.name}" loading="lazy"
+        style="width:100%; height:120px; object-fit:cover; border-radius:8px">
+      <div style="padding:6px; font-size:14px; font-weight:bold; text-align:center">${f.name}</div>
     `;
-    item.onclick = () => window.loadFolder(f.path);
-    box.appendChild(item);
+
+    card.onclick = () => window.loadFolder(f.path);
+    scrollRow.appendChild(card);
   }
 
-  // ✅ Chỉ hiện trên màn desktop
-  box.style.display = window.innerWidth < 768 ? 'none' : 'block';
-  window.addEventListener('resize', () => {
-    box.style.display = window.innerWidth < 768 ? 'none' : 'block';
-  });
-
-  document.body.appendChild(box);
+  container.appendChild(scrollRow);
 }
-

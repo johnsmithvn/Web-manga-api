@@ -11,6 +11,7 @@ import {
   renderRandomBanner,
   renderTopView,
   renderRecentViewed,
+  showRandomUpdatedTime,
 } from "/src/ui.js";
 import {
   getRootFolder,
@@ -18,7 +19,6 @@ import {
   changeRootFolder,
 } from "./storage.js"; // ✅ Import từ storage.js chuẩn
 import { setupSidebar, toggleSidebar } from "./sidebar.js";
-
 
 // Gắn vào window để HTML onclick hoạt động
 window.loadFolder = loadFolder;
@@ -32,25 +32,67 @@ window.getRootFolder = getRootFolder; // 👈 THÊM dòng này
 window.addEventListener("DOMContentLoaded", async () => {
   requireRootFolder(); // 📂 Nếu chưa có rootFolder thì chuyển về select.html
   setupSettingsMenu(); // ⚙️ Setup menu đổi folder
-  
-    // 🆕 Gọi API random banner ngay sau load folder
+
+  // 🆕 Gọi API random banner ngay sau load folder
   const root = getRootFolder();
   if (!root) return;
   loadFolder(); // ✅ Load lần đầu
 
-
   if (root) {
     try {
-      const [res1, res2] = await Promise.all([
-        fetch(`/api/all-subfolders?root=${encodeURIComponent(root)}`),
-        fetch(`/api/top-view?root=${encodeURIComponent(root)}`),
-      ]);
+      // 🔒 KEY lưu cache random
+      const randomKey = `randomView::${root}`;
+      let listRandom = null;
 
-      const listRandom = await res1.json();
+      try {
+        const cache = localStorage.getItem(randomKey);
+        if (cache) {
+          const { data, time } = JSON.parse(cache);
+          if (Date.now() - time < 30 * 60 * 1000) {
+            listRandom = data;
+            console.log("⚡ Dùng cache random từ localStorage");
+          }
+        }
+      } catch (err) {
+        console.warn("❌ Lỗi đọc cache random:", err);
+      }
+
+      if (!listRandom) {
+        const res1 = await fetch(
+          `/api/all-subfolders?root=${encodeURIComponent(root)}`
+        );
+        listRandom = await res1.json();
+        localStorage.setItem(
+          randomKey,
+          JSON.stringify({ data: listRandom, time: Date.now() })
+        );
+        renderRandomBanner(listRandom); // ✅ Thêm dòng này
+        showRandomUpdatedTime(Date.now()); // ✅ Thêm ở đây
+      }
+
+      const res2 = await fetch(
+        `/api/top-view?root=${encodeURIComponent(root)}`
+      );
       const listTop = await res2.json();
 
       if (Array.isArray(listRandom)) {
         renderRandomBanner(listRandom);
+        // ✅ Sau khi render xong, gọi timestamp
+        const cache = localStorage.getItem(randomKey);
+        if (cache) {
+          const { time } = JSON.parse(cache);
+          showRandomUpdatedTime(time);
+        }
+
+        // ✅ Gắn sự kiện sau khi DOM render xong
+        document
+          .getElementById("refresh-random-btn")
+          ?.addEventListener("click", () => {
+            const root = getRootFolder();
+            if (!root) return;
+            localStorage.removeItem(`randomView::${root}`);
+            location.reload();
+          });
       }
       if (Array.isArray(listTop)) {
         renderTopView(listTop);
@@ -85,33 +127,45 @@ window.addEventListener("DOMContentLoaded", async () => {
   sidebarButton.onclick = toggleSidebar;
   document.querySelector(".header-icons")?.prepend(sidebarButton);
   // ✅ THÊM CUỐI CÙNG
-  const recentRaw = localStorage.getItem("recentViewed");
+  const recentRaw = localStorage.getItem(`recentViewed::${root}`);
   if (recentRaw) {
     const list = JSON.parse(recentRaw);
     renderRecentViewed(list);
   }
 });
 
-
-document.getElementById("reset-cache-btn")?.addEventListener("click", async () => {
+// 🆕 nut reset random banner
+document.getElementById("refresh-random-btn")?.addEventListener("click", () => {
   const root = getRootFolder();
-  if (!root) return alert("❌ Chưa chọn root!");
-
-  if (!confirm(`Reset cache cho '${root}'?`)) return;
-
-  try {
-    const res = await fetch(`/api/reset-cache?root=${encodeURIComponent(root)}`, {
-      method: "DELETE"
-    });
-    const json = await res.json();
-    if (json.success) {
-      alert("✅ Reset xong!");
-      location.reload();
-    } else {
-      alert("❌ Reset thất bại!");
-    }
-  } catch (err) {
-    alert("🚫 Lỗi kết nối API reset");
-    console.error(err);
-  }
+  if (!root) return;
+  localStorage.removeItem(`randomView::${root}`);
+  location.reload();
 });
+
+document
+  .getElementById("reset-cache-btn")
+  ?.addEventListener("click", async () => {
+    const root = getRootFolder();
+    if (!root) return alert("❌ Chưa chọn root!");
+
+    if (!confirm(`Reset cache cho '${root}'?`)) return;
+
+    try {
+      const res = await fetch(
+        `/api/reset-cache?root=${encodeURIComponent(root)}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const json = await res.json();
+      if (json.success) {
+        alert("✅ Reset xong!");
+        location.reload();
+      } else {
+        alert("❌ Reset thất bại!");
+      }
+    } catch (err) {
+      alert("🚫 Lỗi kết nối API reset");
+      console.error(err);
+    }
+  });
