@@ -1,23 +1,15 @@
 // ➕ BỔ SUNG UI FRONTEND RENDER BANNER RANDOM
 // 📁 frontend/src/ui.js ➜ renderRandomBanner()
-import { getRootFolder } from "./storage.js"; 
+import { getRootFolder } from "./storage.js";
 
 import { state, loadFolder } from "/src/core/folder.js"; // 🆕 Import ensureAllFoldersList
 import { changeRootFolder } from "./storage.js";
+import { renderFolderSlider } from "/src/components/folderSlider.js";
 
 /**
  * 🔙 Cập nhật trạng thái nút Back/Home tuỳ theo vị trí folder
  */
 
-/** 🧩 Thêm tiêu đề cho các hàng slider */
-function createSectionTitle(titleText) {
-  const h = document.createElement("h3");
-  h.textContent = titleText;
-  h.style.margin = "4px 16px";
-  h.style.fontSize = "18px";
-  h.style.fontWeight = "bold";
-  return h;
-}
 export function updateBackButtonUI() {
   const backButton = document.getElementById("back-button");
   if (!backButton) return;
@@ -38,7 +30,10 @@ export function updateBackButtonUI() {
  */
 
 export async function filterManga() {
-  const keyword = document.getElementById("floatingSearchInput")?.value.trim().toLowerCase();
+  const keyword = document
+    .getElementById("floatingSearchInput")
+    ?.value.trim()
+    .toLowerCase();
   const dropdown = document.getElementById("search-dropdown");
   const root = getRootFolder();
   if (!dropdown || !root) return;
@@ -54,7 +49,11 @@ export async function filterManga() {
   dropdown.innerHTML = `<div id="search-loader">🔍 Đang tìm kiếm...</div>`;
 
   try {
-    const res = await fetch(`/api/search?root=${encodeURIComponent(root)}&q=${encodeURIComponent(keyword)}`);
+    const res = await fetch(
+      `/api/search?root=${encodeURIComponent(root)}&q=${encodeURIComponent(
+        keyword
+      )}`
+    );
     const results = await res.json();
 
     dropdown.innerHTML = "";
@@ -83,8 +82,6 @@ export async function filterManga() {
   }
 }
 
-
-
 /**
  * 🌙 Bật / tắt chế độ dark mode
  */
@@ -104,7 +101,6 @@ export function goBack() {
     loadFolder(parts.join("/"));
   }
 }
-
 
 /**
  * 📄 Cập nhật UI phân trang
@@ -196,8 +192,6 @@ export function setupSettingsMenu() {
   settingsMenu.appendChild(changeFolderBtn);
 }
 
-
-
 /**
  * 🖼️ Render banner thư mục ngẫu nhiên dạng slider ngang
  * @param {Array} folders - Danh sách folder có thumbnail
@@ -212,148 +206,13 @@ export function showRandomUpdatedTime(timestamp) {
     diff === 0 ? "vừa xong" : diff + " phút trước"
   }`;
 }
+
 export function renderRandomBanner(folders) {
-  const container = document.getElementById("section-random"); // 🆕 thay vì wrapper
-  if (!container) return;
-  container.innerHTML = ""; // 🧹 Clear toàn bộ section
-
-  // Xóa banner cũ nếu có
-  container.innerHTML = ""; // 🧹 Clear luôn nội dung section
-
-  // Tạo container chính
-  const banner = document.createElement("div");
-  banner.id = "random-banner";
-  banner.style.overflow = "hidden";
-  banner.style.position = "relative";
-  banner.style.margin = "10px 0";
-
-  const inner = document.createElement("div");
-  inner.className = "banner-inner";
-  inner.style.display = "flex";
-  inner.style.transition = "transform 0.5s ease";
-
-  const cardWidth = 180;
-  const containerWidth = container.clientWidth || 1000;
-  const perSlide = Math.max(2, Math.floor(containerWidth / cardWidth));
-  const totalSlides = Math.ceil(folders.length / perSlide);
-
-  for (let i = 0; i < totalSlides; i++) {
-    const group = folders.slice(i * perSlide, (i + 1) * perSlide);
-    const groupDiv = document.createElement("div");
-    groupDiv.style.display = "flex";
-    groupDiv.style.flex = `0 0 ${containerWidth}px`;
-
-    for (const f of group) {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.style.width = `${cardWidth}px`;
-      card.style.marginRight = "12px";
-      card.style.cursor = "pointer";
-
-      card.innerHTML = `
-        <img src="${f.thumbnail}" alt="${f.name}" style="width:100%; height:120px; object-fit:cover; border-radius:8px">
-        <div style="text-align:center; font-size:14px; font-weight:bold;">${f.name}</div>
-      `;
-
-      card.onclick = () => window.loadFolder(f.path);
-      groupDiv.appendChild(card);
-    }
-
-    inner.appendChild(groupDiv);
-  }
-
-  banner.appendChild(inner);
-
-  // Thêm nút ← →
-  let currentSlide = 0;
-  const updateSlide = () => {
-    inner.style.transform = `translateX(-${currentSlide * containerWidth}px)`;
-  };
-
-  const prev = document.createElement("button");
-  const next = document.createElement("button");
-  [prev, next].forEach((btn) => {
-    btn.style.position = "absolute";
-    btn.style.top = "50%";
-    btn.style.transform = "translateY(-50%)";
-    btn.style.background = "rgba(0,0,0,0.5)";
-    btn.style.color = "white";
-    btn.style.border = "none";
-    btn.style.padding = "8px 12px";
-    btn.style.cursor = "pointer";
-    btn.style.zIndex = "10";
+  renderFolderSlider({
+    title: "✨ Đề xuất ngẫu nhiên",
+    folders,
+    showRefresh: true,
   });
-  prev.textContent = "←";
-  next.textContent = "→";
-  prev.style.left = "0";
-  next.style.right = "0";
-  prev.onclick = () => {
-    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-    updateSlide();
-  };
-  next.onclick = () => {
-    currentSlide = (currentSlide + 1) % totalSlides;
-    updateSlide();
-  };
-
-  banner.appendChild(prev);
-  banner.appendChild(next);
-
-  // Auto slide mỗi 10s
-  setInterval(() => {
-    currentSlide = (currentSlide + 1) % totalSlides;
-    updateSlide();
-  }, 10000);
-
-  // Vuốt (Hammer.js)
-  const hammer = new Hammer(banner);
-  hammer.on("swipeleft", () => {
-    currentSlide = (currentSlide + 1) % totalSlides;
-    updateSlide();
-  });
-  hammer.on("swiperight", () => {
-    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-    updateSlide();
-  });
-
-  // Cuối cùng: gắn vào DOM
-  const titleRow = document.createElement("div");
-  titleRow.style.display = "flex";
-  titleRow.style.justifyContent = "space-between";
-  titleRow.style.alignItems = "center";
-  titleRow.style.padding = "0 16px";
-
-  const title = document.createElement("h3");
-  title.textContent = "✨ Đề xuất ngẫu nhiên";
-  title.style.margin = "6px 0";
-  title.style.fontSize = "18px";
-  title.style.fontWeight = "bold";
-
-  const rightBox = document.createElement("div");
-  rightBox.style.display = "flex";
-  rightBox.style.alignItems = "center";
-  rightBox.style.gap = "12px";
-
-  // 👈 Nút làm mới
-  const refreshBtn = document.createElement("button");
-  refreshBtn.textContent = "🔄 Làm mới";
-  refreshBtn.id = "refresh-random-btn";
-  refreshBtn.style.padding = "4px 10px";
-  refreshBtn.style.cursor = "pointer";
-
-  // 👈 Text hiển thị thời gian
-  const timestamp = document.createElement("span");
-  timestamp.id = "random-timestamp";
-  timestamp.style.fontSize = "14px";
-  timestamp.style.color = "#666";
-
-  rightBox.appendChild(refreshBtn);
-  rightBox.appendChild(timestamp);
-
-  titleRow.appendChild(title);
-  titleRow.appendChild(rightBox);
-  container.appendChild(titleRow);
-  container.appendChild(banner);
 }
 
 /**
@@ -363,48 +222,11 @@ export function renderRandomBanner(folders) {
 
 // ✅ Cập nhật renderTopView để thêm tiêu đề
 export function renderTopView(folders) {
-  const container = document.getElementById("section-topview"); // ✅ thay vì wrapper
-  if (!container) return;
-
-  container.innerHTML = ""; // 🧹 xoá sạch trước khi render
-
-  const title = createSectionTitle("👑 Xem nhiều nhất");
-  container.appendChild(title);
-
-  const scrollWrapper = document.createElement("div");
-  scrollWrapper.id = "top-view";
-  scrollWrapper.style.overflowX = "auto";
-  scrollWrapper.style.margin = "12px 0";
-
-  const row = document.createElement("div");
-  row.style.display = "flex";
-  row.style.gap = "12px";
-  row.style.padding = "8px";
-
-  for (const f of folders) {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.style.position = "relative";
-    card.style.width = "160px";
-    card.style.flex = "0 0 auto";
-    card.style.cursor = "pointer";
-
-    card.innerHTML = `
-      <img src="${f.thumbnail}" alt="${f.name}" loading="lazy"
-        style="width:100%; height:120px; object-fit:cover; border-radius:8px">
-      <div style="padding:6px; font-size:14px; font-weight:bold; text-align:center">${f.name}</div>
-      <div style="position:absolute; top:6px; right:6px; background:#000a; color:white;
-        font-size:12px; padding:2px 6px; border-radius:6px;">
-        👁 ${f.count}
-      </div>
-    `;
-
-    card.onclick = () => window.loadFolder(f.path);
-    row.appendChild(card);
-  }
-
-  scrollWrapper.appendChild(row);
-  container.appendChild(scrollWrapper);
+  renderFolderSlider({
+    title: "👑 Xem nhiều nhất",
+    folders,
+    showViews: true,
+  });
 }
 
 // ➕ BỔ SUNG UI FRONTEND - TIÊU ĐỀ + RECENT VIEW
@@ -437,36 +259,10 @@ export function saveRecentViewed(folder) {
 
 /** 🧠 Danh sách truy cập gần đây – hiển thị bên phải, vuốt được */
 export function renderRecentViewed(folders = []) {
-  const container = document.getElementById("section-recent");
-  if (!container) return;
-
-  container.innerHTML = "";
-  container.appendChild(createSectionTitle("🕘 Mới đọc"));
-
-  const scrollRow = document.createElement("div");
-  scrollRow.style.display = "flex";
-  scrollRow.style.overflowX = "auto";
-  scrollRow.style.gap = "12px";
-  scrollRow.style.padding = "8px";
-
-  for (const f of folders.slice(0, 30)) {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.style.width = "160px";
-    card.style.flex = "0 0 auto";
-    card.style.cursor = "pointer";
-
-    card.innerHTML = `
-      <img src="${f.thumbnail}" alt="${f.name}" loading="lazy"
-        style="width:100%; height:120px; object-fit:cover; border-radius:8px">
-      <div style="padding:6px; font-size:14px; font-weight:bold; text-align:center">${f.name}</div>
-    `;
-
-    card.onclick = () => window.loadFolder(f.path);
-    scrollRow.appendChild(card);
-  }
-
-  container.appendChild(scrollRow);
+  renderFolderSlider({
+    title: "🕘 Mới đọc",
+    folders,
+  });
 }
 
 // / Side bar
