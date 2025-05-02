@@ -55,33 +55,36 @@ MyLocalManga là một ứng dụng web giúp bạn đọc truyện tranh từ t
 │
 │   └── server.js              # 🎯 Node.js server chính (Express + router)
 │
-├── frontend/
-│   ├── public/
-│   │   ├── public/     
-│   │   │   ├── default-cover.jpg  # Ảnh cover fallback nếu folder không có ảnh
-│   │   ├── index.html             # Trang chính hiển thị thư mục
-│   │   └── select.html            # Trang chọn rootFolder lần đầu
+📁 frontend/
+├── public/
+│   ├── index.html           # Trang chính (hiển thị folder, banner)
+│   ├── reader.html          # Trang đọc truyện (scroll / horizontal)
+│   └── select.html          # Trang chọn thư mục root
 │
-│   ├── src/
-│   │   ├── styles/                # 🎨 CSS chia theo component/page
-│   │   │   ├── base.css           # CSS chung toàn hệ thống
-│   │   │   ├── layout.css         # Lưới folder + layout trang
-│   │   │   ├── folder.css         # Style riêng cho card folder
-│   │   │   ├── reader.css         # Style cho chế độ đọc truyện
-│   │   │   ├── sidebar.css        # Style thanh menu bên trái
-│   │   │   ├── dark.css           # Dark mode CSS override
-│   │   │   └── select.css         # Trang chọn root (select.html)
-│   │
-│   │   ├── folder.js              # 📂 Load folders + phân trang + xử lý __self__
-│   │   ├── main.js                # 🧠 Entry chính cho index.html (mount UI, render)
-│   │   ├── preload.js             # 🚀 Preload thumbnail qua <link preload>
-│   │   ├── reader.js              # Điều phối chế độ đọc scroll/swipe
-│   │   ├── reader-scroll.js       # 📜 Scroll mode (phân trang, lazy load)
-│   │   ├── reader-horizontal.js   # 📖 Swipe mode (next/prev, gesture)
-│   │   ├── sidebar.js             # Hiển thị menu chọn folder bên trái
-│   │   ├── select.js              # Logic xử lý UI chọn root folder (select.html)
-│   │   ├── storage.js             # Lưu thông tin rootFolder, recentViewed, cache key
-│   │   └── ui.js                  # Các hàm render UI: random banner, top view, search
+├── src/
+│   ├── styles/
+│   │   ├── base.css         # CSS reset + style dùng chung
+│   │   ├── pages/
+│   │   │   ├── home.css           # style cho index.html
+│   │   │   ├── reader.css         # style cho reader.html
+│   │   │   └── select.css         # style cho select.html
+│   │   └── dark/
+│   │       ├── home-dark.css      # dark mode riêng cho index
+│   │       └── reader-dark.css    # dark mode riêng cho reader
+│   ├── pages/
+│   │   ├── home.js           # logic cho index.html (load folder, sidebar, banner...)
+│   │   ├── reader.js         # logic cho reader.html (gọi renderReader)
+│   │   └── select.js         # logic cho select.html
+│   ├── core/
+│   │   ├── folder.js         # Load folder từ API hoặc cache
+│   │   ├── storage.js        # Lưu rootFolder, allFoldersList, cache
+│   │   ├── ui.js             # Giao diện folder, search, sidebar, back
+│   │   ├── preload.js        # preload ảnh
+│   │   ├── reader/
+│   │   │   ├── index.js         # renderReader(), toggle mode, move chapter
+│   │   │   ├── horizontal.js     # swipe mode
+│   │   │   ├── scroll.js         # scroll mode
+│   │   │   └── utils.js          # toggle UI, preload, jump page modal
 
 ```
 ### ✅ TỔNG KẾT CHỨC NĂNG

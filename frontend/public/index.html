@@ -2,94 +2,60 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>Truyện Local</title>
-
-    <!-- 👉 Load toàn bộ style -->
-    <link rel="stylesheet" href="/src/styles/base.css" />
-    <link rel="stylesheet" href="/src/styles/folder.css" />
-    <link rel="stylesheet" href="/src/styles/reader.css" />
-    <link rel="stylesheet" href="/src/styles/dark.css" />
-    <link rel="stylesheet" href="/src/styles/layout.css" />
-    <link rel="stylesheet" href="/src/styles/sidebar.css" />
-    <!-- 🆕 Thêm sidebar CSS -->
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/default/favicon.ico" type="image/x-icon" />
+    <title>📚 MyLocalManga</title>
+    <link rel="stylesheet" href="/src/styles/base.css">
+    <link rel="stylesheet" href="/src/styles/pages/home.css">
+    <link rel="stylesheet" href="/src/styles/dark/home-dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script type="module" src="/src/pages/home.js"></script>
   </head>
-
   <body>
-    <!-- 🆕 Sidebar -->
-    <div id="sidebar-menu"></div>
-
-    <!-- 🛠️ Mở body ở đây -->
-    <header id="site-header" class="yt-style-header">
-      <!-- Logo / Tên app bên trái -->
-      <div class="header-left">
-        <h1>
-          <a
-            href="/"
-            id="logo-link"
-            style="text-decoration: none; color: inherit"
-          >
-            📚 MyLocalManga
-          </a>
-        </h1>
-      </div>
-
-      <!-- Icon bên phải -->
+    <!-- ✅ HEADER GỐC -->
+    <header id="site-header">
       <div class="header-icons">
-        <button id="back-button" onclick="goBack()" style="display: none">
-          ⬅
-        </button>
-        <button onclick="toggleReaderMode()">📖</button>
-        <button onclick="toggleDarkMode()">🌙</button>
-        <button onclick="toggleSearchBar()">🔍</button>
+        <!-- Nút sẽ được JS gắn vào -->
       </div>
+      <h1
+        style="margin: 0; cursor: pointer"
+        onclick="location.href='index.html'"
+      >
+        📚 MyLocalManga
+      </h1>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     </header>
 
-    <!-- Thanh tìm kiếm nổi -->
-    <div id="floating-search" class="search-bar-hidden">
-      <input type="text" id="floatingSearchInput" placeholder="Tìm truyện..." />
-      <button onclick="toggleSearchBar()">❌</button>
-      <div id="search-dropdown" class="hidden"></div>
-
-    </div>
-
-    <!-- Bao quanh nội dung -->
+    <!-- ✅ WRAPPER CHÍNH -->
     <div id="wrapper">
-      <div id="home-sections">
-        <div id="section-random"></div>
-        <div id="section-topview"></div>
-        <div id="section-recent"></div>
+      <aside id="sidebar-menu"></aside>
 
-      </div>
-      <div id="app"></div>
+      <!-- ✅ BANNER / SECTION -->
+      <section id="section-random"></section>
+      <section id="section-topview"></section>
+      <section id="section-recent"></section>
+
+      <main id="app">
+        <!-- JS render folder grid và phân trang vào đây -->
+      </main>
     </div>
 
-    <!-- Loading overlay -->
-    <div id="loading-overlay" class="hidden">
-      <div class="spinner"></div>
-    </div>
-
-    <!-- Footer Reader -->
-    <div id="reader-footer" class="hidden">
-      <div class="reader-footer-inner">
-        <button id="prev-chapter-btn">⬅ Prev</button>
-        <span id="page-info">Trang ? / ?</span>
-        <span id="image-count-info" style="margin-left: 10px">Ảnh ? / ?</span>
-        <!-- 🆕 thêm -->
-        <button id="next-chapter-btn">Next ➡</button>
-      </div>
-    </div>
-
-    <!-- Footer chính -->
+    <!-- ✅ FOOTER CHÍNH -->
     <footer id="main-footer">
       <button id="reset-cache-btn">🧹 Reset Cache</button>
-      <p>&copy; 2025 MyLocalManga | Đọc truyện từ ổ cứng cá nhân</p>
     </footer>
 
-    <!-- ⚙️ JS & Hammer -->
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-    <script type="module" src="/src/main.js"></script>
+    <!-- ✅ SEARCH FLOATING -->
+    <div id="floating-search" class="floating-search">
+      <input
+        type="text"
+        id="floatingSearchInput"
+        placeholder="Tìm kiếm truyện..."
+      />
+      <div id="search-dropdown" class="search-dropdown hidden"></div>
+    </div>
+    <!-- ✅ OVERLAY LOADING -->
+    <div id="loading-overlay" class="hidden">
+      <div class="loader-text">⏳ Đang tải...</div>
+    </div>
   </body>
 </html>

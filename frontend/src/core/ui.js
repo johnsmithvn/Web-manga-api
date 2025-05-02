@@ -2,8 +2,7 @@
 // 📁 frontend/src/ui.js ➜ renderRandomBanner()
 import { getRootFolder } from "./storage.js"; 
 
-import { state, loadFolder } from "/src/folder.js"; // 🆕 Import ensureAllFoldersList
-import { toggleReaderMode as toggleMode } from "/src/reader.js";
+import { state, loadFolder } from "/src/core/folder.js"; // 🆕 Import ensureAllFoldersList
 import { changeRootFolder } from "./storage.js";
 
 /**
@@ -106,12 +105,6 @@ export function goBack() {
   }
 }
 
-/**
- * 📖 Đổi chế độ đọc (scroll <-> swipe)
- */
-export function toggleReaderMode() {
-  toggleMode();
-}
 
 /**
  * 📄 Cập nhật UI phân trang
@@ -203,31 +196,7 @@ export function setupSettingsMenu() {
   settingsMenu.appendChild(changeFolderBtn);
 }
 
-/**
- * 👆 Toggle hiển/ẩn header và reader-footer
- * Dùng chung cho mọi chế độ reader (horizontal, scroll...)
- */
-export function toggleReaderUI() {
-  ["site-header", "reader-footer"].forEach((id) => {
-    document.getElementById(id)?.classList.toggle("hidden");
-  });
-}
 
-/**
- * 👆 Show lại UI nếu đang ẩn
- */
-export function showReaderUI() {
-  document.getElementById("site-header")?.classList.remove("hidden");
-  document.getElementById("reader-footer")?.classList.remove("hidden");
-}
-
-/**
- * 👇 Hide toàn bộ UI để tập trung đọc
- */
-export function hideReaderUI() {
-  document.getElementById("site-header")?.classList.add("hidden");
-  document.getElementById("reader-footer")?.classList.add("hidden");
-}
 
 /**
  * 🖼️ Render banner thư mục ngẫu nhiên dạng slider ngang
@@ -498,4 +467,26 @@ export function renderRecentViewed(folders = []) {
   }
 
   container.appendChild(scrollRow);
+}
+
+// / Side bar
+// 📂 Sidebar functions gộp từ sidebar.js
+export function setupSidebar() {
+  const sidebar = document.getElementById("sidebar-menu");
+  if (!sidebar) return;
+
+  sidebar.innerHTML = "";
+  const changeBtn = document.createElement("button");
+  changeBtn.textContent = "🔄 Đổi Manga Folder";
+  changeBtn.onclick = () => {
+    localStorage.removeItem("rootFolder");
+    window.location.href = "/select.html";
+  };
+  sidebar.appendChild(changeBtn);
+}
+
+export function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar-menu");
+  if (!sidebar) return;
+  sidebar.classList.toggle("active");
 }

@@ -1,6 +1,5 @@
 // 📁 frontend/src/folder.js
 
-import { renderReader } from "./reader.js";
 import { updateFolderPaginationUI, updateBackButtonUI } from "./ui.js";
 import {
   getRootFolder,
@@ -10,7 +9,6 @@ import {
   setAllFoldersList,
 } from "./storage.js";
 import { preloadThumbnails } from "./preload.js";
-import { saveRecentViewed } from "./ui.js";
 
 export const state = {
   currentPath: "",
@@ -132,28 +130,11 @@ function renderFromData(data) {
     // 🆕 update đúng phân trang: dùng tổng số folders
     updateFolderPaginationUI(folderPage, totalFolders, foldersPerPage);
 
-    updateBackButtonUI();
   } else if (data.type === "reader") {
-    document.body.classList.add("reader-mode");
-    document.getElementById("main-footer")?.classList.add("hidden");
-
-    // ✅ THÊM Ở ĐÂY
-    const parts = state.currentPath.split("/");
-    const folderName = parts[parts.length - 1] || "Xem ảnh";
-    saveRecentViewed({
-      name: folderName,
-      path: state.currentPath,
-      thumbnail: data.images[0] || null,
-    });
-    // 📍 Tăng view tại đây là đúng
-    fetch("/api/increase-view", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: state.currentPath }),
-    });
-
-    renderReader(data.images);
+    const encoded = encodeURIComponent(state.currentPath);
+    window.location.href = `/reader.html?path=${encoded}`;
   }
+  
 }
 
 /**
@@ -180,7 +161,8 @@ export function renderFolderGrid(folders) {
 
     card.onclick = () => {
       if (f.isSelfReader && f.images) {
-        renderReader(f.images);
+        const encoded = encodeURIComponent(f.path);
+        window.location.href = `/reader.html?path=${encoded}`;
       } else {
         loadFolder(f.path);
       }
