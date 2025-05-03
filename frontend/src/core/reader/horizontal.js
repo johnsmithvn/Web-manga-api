@@ -22,8 +22,12 @@ export function renderHorizontalReader(
   img.style.display = "block";
   container.appendChild(img);
   img.onload = () => img.classList.remove("loading");
-
-  updateReaderPageInfo(currentPage + 1, images.length);
+  enableSwipeGesture(
+    container,
+    () => updateImage(currentPage + 1),  // swipe left
+    () => updateImage(currentPage - 1)   // swipe right
+  );
+    updateReaderPageInfo(currentPage + 1, images.length);
   preloadAroundPage(currentPage, images);
 
   // 🔁 Đổi ảnh
@@ -53,10 +57,10 @@ export function renderHorizontalReader(
     if (e.key === "ArrowLeft") updateImage(currentPage - 1);
   };
 
-  // 🤚 Swipe bằng Hammer.js
-  const hammer = new Hammer(container);
-  hammer.on("swipeleft", () => updateImage(currentPage + 1));
-  hammer.on("swiperight", () => updateImage(currentPage - 1));
+  // // 🤚 Swipe bằng Hammer.js
+  // const hammer = new Hammer(container);
+  // hammer.on("swipeleft", () => updateImage(currentPage + 1));
+  // hammer.on("swiperight", () => updateImage(currentPage - 1));
 
   // 🧩 Cho phép set page từ bên ngoài
   function setCurrentPage(pageIndex) {
@@ -64,4 +68,34 @@ export function renderHorizontalReader(
   }
 
   return { setCurrentPage };
+}
+
+
+
+// ✅ Tự xử lý swipe trái/phải
+/**
+ * 📱 Bắt gesture swipe trái/phải đơn giản không cần thư viện
+ * @param {HTMLElement} container
+ * @param {function} onSwipeLeft
+ * @param {function} onSwipeRight
+ */
+function enableSwipeGesture(container, onSwipeLeft, onSwipeRight) {
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  container.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+    }
+  });
+
+  container.addEventListener("touchend", (e) => {
+    touchEndX = e.changedTouches[0].clientX;
+    const deltaX = touchEndX - touchStartX;
+
+    if (Math.abs(deltaX) > 50) {
+      if (deltaX < 0) onSwipeLeft?.();
+      else onSwipeRight?.();
+    }
+  });
 }

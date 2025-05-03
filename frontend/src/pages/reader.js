@@ -2,6 +2,7 @@
 
 import { getRootFolder } from "/src/core/storage.js";
 import { renderReader } from "/src/core/reader.js";
+import { toggleSidebar, toggleSearchBar } from "/src/core/ui.js";
 
 // 👉 Auto render reader nếu có path trên URL
 window.addEventListener("DOMContentLoaded", async () => {
@@ -24,6 +25,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     if (data.type === "reader" && Array.isArray(data.images)) {
       renderReader(data.images);
+        
+   
     } else {
       alert("❌ Folder này không chứa ảnh hoặc không hợp lệ!");
     }

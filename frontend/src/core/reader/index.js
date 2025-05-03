@@ -1,7 +1,7 @@
 import { state, loadFolder } from "/src/core/folder.js";
 import { getRootFolder } from "/src/core/storage.js";
 import { updateReaderPageInfo, showJumpPageInput } from "./utils.js";
-import { saveRecentViewed } from "/src/core/ui.js";
+import { saveRecentViewed,toggleSidebar,toggleSearchBar } from "/src/core/ui.js";
 
 let currentImages = [];
 let currentPage = 0;
@@ -22,6 +22,7 @@ export function renderReader(
 
   const parts = path.split("/");
   const folderName = parts[parts.length - 1] || "Xem ảnh";
+  updateReaderHeaderTitle(folderName);
 
   saveRecentViewed({
     name: folderName,
@@ -87,15 +88,32 @@ function setupReaderUI() {
  * 🧩 Gắn nút đổi chế độ đọc 📖
  */
 function setupReaderModeButton() {
-  const box = document.querySelector(".header-icons");
-  if (!box || document.getElementById("readerModeButton")) return;
+  if (document.getElementById("readerModeButton")) return;
 
   const btn = document.createElement("button");
   btn.id = "readerModeButton";
   btn.textContent = "📖";
+  btn.title = "Đổi chế độ đọc";
+
+  Object.assign(btn.style, {
+    position: "fixed",
+    bottom: "60px",
+    left: "16px",
+    zIndex: 1000,
+    padding: "12px 14px",
+    fontSize: "20px",
+    borderRadius: "50%",
+    border: "none",
+    background: "#444",
+    color: "white",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+    cursor: "pointer",
+  });
+
   btn.onclick = toggleReaderMode;
-  box.appendChild(btn);
+  document.body.appendChild(btn);
 }
+
 
 /**
  * 🔁 Toggle giữa scroll/horizontal
@@ -195,3 +213,19 @@ function setupPageInfoClick() {
     });
   };
 }
+
+
+function updateReaderHeaderTitle(folderName) {
+  const titleEl = document.getElementById("reader-folder-name");
+  if (!titleEl) return;
+
+  titleEl.textContent = folderName;
+  titleEl.title = folderName;
+
+  titleEl.onclick = () => {
+    const backUrl = `/`;
+    window.location.href = backUrl;
+  };
+}
+
+

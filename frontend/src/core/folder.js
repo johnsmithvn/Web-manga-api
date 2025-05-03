@@ -1,5 +1,3 @@
-// 📁 frontend/src/folder.js
-
 import { updateFolderPaginationUI } from "./ui.js";
 import {
   getRootFolder,
@@ -15,14 +13,13 @@ export const state = {
   currentPath: "",
   allFolders: [],
 };
+
 let folderPage = 0;
 const foldersPerPage = 20;
-let totalFolders = 0; // 🆕 Tổng số folder thực tế không bị slice
+let totalFolders = 0;
 
 /**
- * 📂 Load folder từ API hoặc cache + hiển thị thư mục / ảnh
- * @param {string} path
- * @param {number} page
+ * 📂 Load thư mục từ cache hoặc API và render ra giao diện
  */
 export function loadFolder(path = "", page = 0) {
   const rootFolder = getRootFolder();
@@ -30,40 +27,42 @@ export function loadFolder(path = "", page = 0) {
 
   state.currentPath = path;
   folderPage = page;
-
-  document.getElementById("loading-overlay")?.classList.remove("hidden");
-
-  const readerBtn = document.getElementById("readerModeButton");
-  if (readerBtn) readerBtn.remove();
+  showLoading();
 
   const cached = getFolderCache(rootFolder, path);
   if (cached) {
-    renderFromData(cached);
-    document.getElementById("loading-overlay")?.classList.add("hidden");
+    renderFolderData(cached);
+    hideLoading();
     return;
   }
 
-  fetch(
-    `/api/list-folder?root=${encodeURIComponent(
-      rootFolder
-    )}&path=${encodeURIComponent(path)}`
-  )
+  fetchFromAPI(rootFolder, path);
+}
+
+function showLoading() {
+  document.getElementById("loading-overlay")?.classList.remove("hidden");
+}
+
+function hideLoading() {
+  document.getElementById("loading-overlay")?.classList.add("hidden");
+}
+
+function fetchFromAPI(rootFolder, path) {
+  fetch(`/api/list-folder?root=${encodeURIComponent(rootFolder)}&path=${encodeURIComponent(path)}`)
     .then((res) => res.json())
     .then((data) => {
       setFolderCache(rootFolder, path, data);
-      renderFromData(data);
+      renderFolderData(data);
     })
     .catch((err) => {
       console.error("❌ Lỗi khi load folder:", err);
       alert("🚫 Lỗi khi tải thư mục, vui lòng thử lại!");
     })
-    .finally(() => {
-      document.getElementById("loading-overlay")?.classList.add("hidden");
-    });
+    .finally(hideLoading);
 }
 
 /**
- * 🆕 Load danh sách allFoldersList để search/random (cache hoặc fetch)
+ * 📚 Load danh sách allFoldersList cho tính năng random/search
  */
 export async function ensureAllFoldersList() {
   const root = getRootFolder();
@@ -73,9 +72,7 @@ export async function ensureAllFoldersList() {
   if (list) return list;
 
   try {
-    const res = await fetch(
-      `/api/list-all-folders?root=${encodeURIComponent(root)}`
-    );
+    const res = await fetch(`/api/list-all-folders?root=${encodeURIComponent(root)}`);
     list = await res.json();
     setAllFoldersList(root, list);
     return list;
@@ -86,92 +83,91 @@ export async function ensureAllFoldersList() {
 }
 
 /**
- * 🧱 Render dữ liệu folder hoặc reader từ cache hoặc API
- * @param {object} data
+ * 📦 Render dữ liệu folder hoặc điều hướng sang reader nếu cần
  */
-function renderFromData(data) {
-  const app = document.getElementById("app");
-  app.innerHTML = "";
-
+function renderFolderData(data) {
   if (data.type === "folder") {
-    document.body.classList.remove("reader-mode");
-    document.getElementById("main-footer")?.classList.remove("hidden");
-    document.getElementById("reader-footer")?.classList.add("hidden");
-
-    state.allFolders = [];
-
-    if (data.images && data.images.length > 0) {
-      const parts = state.currentPath.split("/");
-      const folderName = parts[parts.length - 1] || "Xem ảnh";
-
-      state.allFolders.push({
-        name: folderName,
-        path: state.currentPath + "/__self__",
-        thumbnail: data.images[0],
-        isSelfReader: true,
-        images: data.images,
-      });
-    }
-
-    state.allFolders = state.allFolders.concat(data.folders);
-
-    preloadThumbnails(state.allFolders);
-
-    // 🆕 Ghi lại tổng số folders thực tế
-    totalFolders = state.allFolders.length;
-
-    // 🆕 Slice phân trang chỉ đúng trang cần render
-    const pagedFolders = state.allFolders.slice(
-      folderPage * foldersPerPage,
-      (folderPage + 1) * foldersPerPage
-    );
-
+    buildFolderState(data);
+    const pagedFolders = paginateFolders(state.allFolders);
     renderFolderGrid(pagedFolders);
-
-    // 🆕 update đúng phân trang: dùng tổng số folders
     updateFolderPaginationUI(folderPage, totalFolders, foldersPerPage);
-
   } else if (data.type === "reader") {
-    const encoded = encodeURIComponent(state.currentPath);
-    window.location.href = `/reader.html?path=${encoded}`;
+    redirectToReader();
   }
-  
 }
 
 /**
- * 🧱 Hiển thị lưới folder (thẻ card)
- * @param {Array} folders
+ * 🧠 Chuẩn bị dữ liệu folder để hiển thị
  */
-/**
- * Hiển thị danh sách folder theo dạng lưới (grid)
- * @param {Array} folders - Danh sách folder
- */
+function buildFolderState(data) {
+  state.allFolders = [];
+
+  if (data.images?.length > 0) {
+    const parts = state.currentPath.split("/");
+    const folderName = parts[parts.length - 1] || "Xem ảnh";
+
+    state.allFolders.push({
+      name: folderName,
+      path: state.currentPath + "/__self__",
+      thumbnail: data.images[0],
+      isSelfReader: true,
+      images: data.images,
+    });
+  }
+
+  state.allFolders = state.allFolders.concat(data.folders);
+  preloadThumbnails(state.allFolders);
+  totalFolders = state.allFolders.length;
+}
 
 /**
- * Hiển thị danh sách folder dạng lưới, được wrap giống slider
- * @param {Array} folders
+ * 📑 Trả về danh sách folder đã phân trang
+ */
+function paginateFolders(folders) {
+  return folders.slice(
+    folderPage * foldersPerPage,
+    (folderPage + 1) * foldersPerPage
+  );
+}
+
+/**
+ * 🔀 Điều hướng sang trang reader nếu API trả về reader
+ */
+function redirectToReader() {
+  const encoded = encodeURIComponent(state.currentPath);
+  window.location.href = `/reader.html?path=${encoded}`;
+}
+
+/**
+ * 🖼️ Render grid các folder ra giao diện chính
  */
 export function renderFolderGrid(folders) {
   const app = document.getElementById("app");
   app.innerHTML = "";
 
-  // 🧱 Tạo section giống slider
-  const section = document.createElement("section");
-  section.className = "folder-section grid";
+  const section = createSectionElement();
+  const header = renderFolderHeader();
+  const grid = createGridElement(folders);
 
-  // 🔠 Tạo header có tiêu đề động (VD: "Thư mục", hoặc "One Piece")
+  section.appendChild(header);
+  section.appendChild(grid);
+  app.appendChild(section);
+}
+
+/**
+ * 🧾 Tạo header hiển thị tên thư mục + xử lý back folder cha
+ */
+function renderFolderHeader() {
   const header = document.createElement("div");
   header.className = "folder-section-header";
 
   const title = document.createElement("h3");
   title.className = "folder-section-title";
 
-  // ✅ Tính tên folder hiện tại (hoặc là "Thư mục gốc")
   const pathParts = state.currentPath.split("/").filter(Boolean);
   const currentName = pathParts[pathParts.length - 1];
   title.textContent = pathParts.length === 0 ? "📂 Thư mục" : `📁 ${currentName}`;
 
-  // 🔙 Nếu đang ở trong thư mục con → click để về cha
   if (pathParts.length > 0) {
     title.style.cursor = "pointer";
     title.title = "Click để quay về thư mục cha";
@@ -182,18 +178,27 @@ export function renderFolderGrid(folders) {
   }
 
   header.appendChild(title);
-  section.appendChild(header);
+  return header;
+}
 
-  // 🔳 Grid folder
+/**
+ * 📦 Tạo thẻ section chứa grid thư mục
+ */
+function createSectionElement() {
+  const section = document.createElement("section");
+  section.className = "folder-section grid";
+  return section;
+}
+
+/**
+ * 🔳 Tạo lưới grid chứa danh sách thẻ thư mục
+ */
+function createGridElement(folders) {
   const grid = document.createElement("div");
   grid.className = "grid";
-
   folders.forEach((f) => {
     const card = renderFolderCard(f, true);
     grid.appendChild(card);
   });
-
-  section.appendChild(grid);
-  app.appendChild(section);
+  return grid;
 }
-

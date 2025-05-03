@@ -31,6 +31,21 @@
 #site-header.hidden {
   transform: translateY(-100%);
 }
+/* Có thể thêm vào reader.css */
+
+
+#site-header h1.truncate-folder-name {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50vw; /* ✅ chỉ chiếm tối đa nửa màn hình */
+  margin: 0 12px;
+  font-size: 18px;
+}
+
+
 
 /*  */
 /* Khung reader chính */
@@ -177,4 +192,26 @@
 /* Ẩn image count khi không ở scroll mode */
 .reader:not(.scroll-mode) #image-count-info {
   display: none;
+}
+
+
+/* Có thể thêm vào reader.css */
+#site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #222;
+  color: white;
+}
+
+#site-header h1.truncate-folder-name {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50vw; /* ✅ chỉ chiếm tối đa nửa màn hình */
+  margin: 0 12px;
+  font-size: 18px;
 }
