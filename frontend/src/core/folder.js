@@ -1,7 +1,6 @@
 // 📁 frontend/src/folder.js
 
-import { renderReader } from "./reader.js";
-import { updateFolderPaginationUI, updateBackButtonUI } from "./ui.js";
+import { updateFolderPaginationUI } from "./ui.js";
 import {
   getRootFolder,
   getFolderCache,
@@ -10,7 +9,7 @@ import {
   setAllFoldersList,
 } from "./storage.js";
 import { preloadThumbnails } from "./preload.js";
-import { saveRecentViewed } from "./ui.js";
+import { renderFolderCard } from "../components/folderCard.js";
 
 export const state = {
   currentPath: "",
@@ -132,62 +131,69 @@ function renderFromData(data) {
     // 🆕 update đúng phân trang: dùng tổng số folders
     updateFolderPaginationUI(folderPage, totalFolders, foldersPerPage);
 
-    updateBackButtonUI();
   } else if (data.type === "reader") {
-    document.body.classList.add("reader-mode");
-    document.getElementById("main-footer")?.classList.add("hidden");
-
-    // ✅ THÊM Ở ĐÂY
-    const parts = state.currentPath.split("/");
-    const folderName = parts[parts.length - 1] || "Xem ảnh";
-    saveRecentViewed({
-      name: folderName,
-      path: state.currentPath,
-      thumbnail: data.images[0] || null,
-    });
-    // 📍 Tăng view tại đây là đúng
-    fetch("/api/increase-view", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: state.currentPath }),
-    });
-
-    renderReader(data.images);
+    const encoded = encodeURIComponent(state.currentPath);
+    window.location.href = `/reader.html?path=${encoded}`;
   }
+  
 }
 
 /**
  * 🧱 Hiển thị lưới folder (thẻ card)
  * @param {Array} folders
  */
+/**
+ * Hiển thị danh sách folder theo dạng lưới (grid)
+ * @param {Array} folders - Danh sách folder
+ */
+
+/**
+ * Hiển thị danh sách folder dạng lưới, được wrap giống slider
+ * @param {Array} folders
+ */
 export function renderFolderGrid(folders) {
   const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  // 🧱 Tạo section giống slider
+  const section = document.createElement("section");
+  section.className = "folder-section grid";
+
+  // 🔠 Tạo header có tiêu đề động (VD: "Thư mục", hoặc "One Piece")
+  const header = document.createElement("div");
+  header.className = "folder-section-header";
+
+  const title = document.createElement("h3");
+  title.className = "folder-section-title";
+
+  // ✅ Tính tên folder hiện tại (hoặc là "Thư mục gốc")
+  const pathParts = state.currentPath.split("/").filter(Boolean);
+  const currentName = pathParts[pathParts.length - 1];
+  title.textContent = pathParts.length === 0 ? "📂 Thư mục" : `📁 ${currentName}`;
+
+  // 🔙 Nếu đang ở trong thư mục con → click để về cha
+  if (pathParts.length > 0) {
+    title.style.cursor = "pointer";
+    title.title = "Click để quay về thư mục cha";
+    title.onclick = () => {
+      const parentPath = pathParts.slice(0, -1).join("/");
+      loadFolder(parentPath);
+    };
+  }
+
+  header.appendChild(title);
+  section.appendChild(header);
+
+  // 🔳 Grid folder
   const grid = document.createElement("div");
   grid.className = "grid";
 
   folders.forEach((f) => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const imgTag = f.thumbnail
-      ? `<img src="${f.thumbnail}" alt="${f.name}" loading="lazy">`
-      : "";
-
-    card.innerHTML = `
-      ${imgTag}
-      <div>${f.name}</div>
-    `;
-
-    card.onclick = () => {
-      if (f.isSelfReader && f.images) {
-        renderReader(f.images);
-      } else {
-        loadFolder(f.path);
-      }
-    };
-
+    const card = renderFolderCard(f, true);
     grid.appendChild(card);
   });
 
-  app.appendChild(grid);
+  section.appendChild(grid);
+  app.appendChild(section);
 }
+

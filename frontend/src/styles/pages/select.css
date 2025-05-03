@@ -1,12 +1,16 @@
-/* 📂 frontend/src/styles/select.css */
+/* =============================
+   📂 SELECT PAGE – CHỌN ROOT FOLDER
+============================= */
 
-/* Header chọn folder */
+/* Tiêu đề chọn folder */
 .select-header {
   text-align: center;
   margin-top: 20px;
+  font-size: 20px;
+  font-weight: bold;
 }
 
-/* Layout grid folder */
+/* Grid chọn folder */
 .select-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -14,12 +18,12 @@
   padding: 20px;
 }
 
-/* Thẻ folder */
+/* Card chọn folder */
 .select-card {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  height: 280px;              /* ✅ Giới hạn chiều cao */
+  height: 280px;
   background: #f9f9f9;
   border-radius: 12px;
   overflow: hidden;
@@ -28,19 +32,18 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
+
 .select-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Thumbnail */
+/* Thumbnail hiển thị ảnh đại diện folder */
 .select-thumbnail {
   width: 100%;
   height: 180px;
   object-fit: cover;
-  /* ✅ Ảnh fill đầy ô, không méo */
   background: #ccc;
-  /* fallback nền xám nếu lỗi */
 }
 
 /* Label tên folder */
@@ -51,4 +54,3 @@
   color: #333;
   background: #fff;
 }
-

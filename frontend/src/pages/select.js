@@ -1,6 +1,6 @@
 // 📁 frontend/src/select.js
-import { clearAllFolderCache } from "./storage.js";
-import { getRootFolder } from "./storage.js"; // nếu chưa có
+import { clearAllFolderCache } from "../core/storage.js";
+import { getRootFolder } from "../core/storage.js"; // nếu chưa có
 
 /**
  * 📂 Fetch danh sách folder gốc và render ra giao diện
