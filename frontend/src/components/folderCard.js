@@ -12,8 +12,9 @@ export function renderFolderCard(folder, showViews = false) {
   
     // Ảnh thumbnail (nếu có)
     const imgTag = folder.thumbnail
-      ? `<img src="${folder.thumbnail}" alt="${folder.name}" loading="lazy">`
-      : "";
+  ? `<img src="${folder.thumbnail}" alt="${folder.name}" loading="lazy">`
+  : `<div class="folder-thumb-placeholder">Không có ảnh</div>`;
+
   
     // HTML bên trong card
     card.innerHTML = `

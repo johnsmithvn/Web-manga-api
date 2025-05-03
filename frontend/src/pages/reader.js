@@ -19,7 +19,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const res = await fetch(`/api/list-folder?root=${encodeURIComponent(root)}&path=${encodeURIComponent(path)}`);
+    const res = await fetch(`/api/folder-cache?mode=path&root=${encodeURIComponent(root)}&path=${encodeURIComponent(path)}`);
     const data = await res.json();
 
     if (data.type === "reader" && Array.isArray(data.images)) {

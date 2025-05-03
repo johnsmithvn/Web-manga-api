@@ -1,8 +1,13 @@
+// 📁 backend/api/reset-cache.js
 const express = require("express");
 const router = express.Router();
 const db = require("../utils/db");
 const { scanFolderRecursive } = require("../utils/cache-scan");
 
+/**
+ * 🔁 Xoá cache folder trong DB + quét lại
+ * DELETE /api/reset-cache?root=...
+ */
 router.delete("/reset-cache", (req, res) => {
   const root = req.query.root;
   if (!root) return res.status(400).json({ error: "Thiếu root" });

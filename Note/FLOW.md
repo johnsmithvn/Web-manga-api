@@ -42,6 +42,50 @@ Có rootFolder?
           ↓
        Redirect về select.html để chọn root folder
 ```
+---
+```
+                ┌────────────────────────────┐
+                │   Frontend gọi API HTTP    │
+                └────────────┬───────────────┘
+                             │
+          ┌──────────────────▼──────────────────┐
+          │         Express Router (API)        │
+          └──────────────────┬──────────────────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+        ▼                    ▼                    ▼
+  📁 /api/folder-cache.js   📁 /api/folder-scan.js 📁 /api/reset-cache.js
+  → GET ?mode=...           → GET /api/folder-scan → DELETE /api/reset-cache
+                             │                    │
+                             └────────┬───────────┘
+                                      ▼
+                         📁 /utils/cache-scan.js
+                         → scanFolderRecursive(root)
+                         → Ghi vào DB table `folders`
+
+
+```
+
+| API Route           | Gọi file                           | Vai trò                           |
+| ------------------- | ---------------------------------- | --------------------------------- |
+| `/api/folder-cache` | `folder-cache.js`                  | Gọi DB: `SELECT ... FROM folders` |
+| `/api/folder-scan`  | `folder-scan.js` → `cache-scan.js` | Quét thật từ ổ đĩa, lưu vào DB    |
+| `/api/reset-cache`  | `reset-cache.js` → `cache-scan.js` | Xoá DB rồi quét lại               |
+
+
+| Table     | Dữ liệu                                                              |
+| --------- | -------------------------------------------------------------------- |
+| `folders` | Toàn bộ folder đã cache: tên, path, thumbnail, số ảnh, số folder con |
+| `views`   | Lượt xem reader (ghi khi load truyện)                                |
+
+
+| Tác vụ                           | API gọi                       | Ổ đĩa đụng tới không? | Cache DB dùng không? |
+| -------------------------------- | ----------------------------- | --------------------- | -------------------- |
+| Load thư mục random/search/top   | `/api/folder-cache`           | ❌ Không               | ✅ Có                 |
+| Load folder cụ thể (reader/home) | `/api/folder-cache?mode=path` | ❌ Không               | ✅ Có                 |
+| Quét cache ban đầu               | `/api/folder-scan`            | ✅ Có                  | ✅ Có                 |
+| Reset toàn bộ cache              | `/api/reset-cache`            | ✅ Có                  | ✅ Có                 |
 
 ---
 

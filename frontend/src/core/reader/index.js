@@ -147,16 +147,16 @@ function moveChapter(direction = "next") {
   const root = getRootFolder();
   const cleanPath = targetPath.replace(/\/__self__$/, "");
   fetch(
-    `/api/list-folder?root=${encodeURIComponent(
+    `/api/folder-cache?mode=path&root=${encodeURIComponent(
       root
     )}&path=${encodeURIComponent(cleanPath)}`
   )
     .then((res) => res.json())
     .then((data) => {
-      if (data.type === "reader" && data.images.length > 0) {
+      if (data.images && data.images.length > 0) {
         state.currentPath = cleanPath;
         renderReader(data.images);
-      } else if (data.type === "folder") {
+      } else if (data.folders) {
         loadFolder(cleanPath);
       } else {
         alert("❌ Không tìm thấy chương!");

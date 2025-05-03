@@ -14,6 +14,29 @@ export function renderFolderSlider({ title, folders, showViews = false }) {
   const h3 = document.createElement("h3");
   h3.className = "folder-section-title";
   h3.textContent = title;
+  // ✅ Nếu là Random Banner thì thêm nút refresh và timestamp
+if (title.includes("ngẫu nhiên")) {
+  const controls = document.createElement("div");
+  controls.className = "random-controls";
+  controls.style.display = "flex";
+  controls.style.alignItems = "center";
+  controls.style.gap = "10px";
+  controls.style.marginLeft = "auto";
+
+  const refreshBtn = document.createElement("button");
+  refreshBtn.id = "refresh-random-btn";
+  refreshBtn.textContent = "🔄 Làm mới";
+  controls.appendChild(refreshBtn);
+
+  const timestamp = document.createElement("span");
+  timestamp.id = "random-timestamp";
+  timestamp.style.fontSize = "13px";
+  timestamp.style.opacity = "0.6";
+  controls.appendChild(timestamp);
+
+  header.appendChild(controls);
+}
+
   header.appendChild(h3);
 
   section.appendChild(header);
@@ -100,7 +123,7 @@ export function renderFolderSlider({ title, folders, showViews = false }) {
   };
 
   const startAutoScroll = () => {
-    if (!isMobile && !autoTimer) autoTimer = setInterval(scrollInterval, 30000);
+    if (!isMobile && !autoTimer) autoTimer = setInterval(scrollInterval, 1000);
   };
 
   const stopAutoScroll = () => {

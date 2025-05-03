@@ -20,10 +20,14 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS folders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     root TEXT NOT NULL,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL, 
     path TEXT NOT NULL,
     thumbnail TEXT,
-    lastModified INTEGER
+    lastModified INTEGER,
+    imageCount INTEGER DEFAULT 0,
+    chapterCount INTEGER DEFAULT 0,
+    type TEXT DEFAULT 'folder',
+    createdAt INTEGER
   );
 
   CREATE INDEX IF NOT EXISTS idx_folders_root_path ON folders(root, path);
@@ -34,4 +38,18 @@ db.exec(`
   );
 `);
 
+
 module.exports = db;
+
+// CREATE TABLE IF NOT EXISTS folders (
+//   id INTEGER PRIMARY KEY AUTOINCREMENT,
+//   root TEXT NOT NULL,            -- tên thư mục gốc (1,2,...)
+//   name TEXT NOT NULL,            -- tên folder
+//   path TEXT NOT NULL,            -- đường dẫn từ root
+//   thumbnail TEXT,                -- URL ảnh đầu tiên
+//   imageCount INTEGER DEFAULT 0,  -- số lượng ảnh trong folder
+//   chapterCount INTEGER DEFAULT 0,-- số lượng subfolder trực tiếp
+//   type TEXT DEFAULT 'folder',    -- 'folder' hoặc 'reader'
+//   createdAt INTEGER,             -- timestamp lần đầu insert
+//   updatedAt INTEGER              -- timestamp lần cuối cập nhật
+// );
