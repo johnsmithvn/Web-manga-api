@@ -7,14 +7,9 @@
     <link rel="stylesheet" href="/src/styles/pages/home.css" />
     <link rel="stylesheet" href="/src/styles/dark/home-dark.css" />
     <link rel="stylesheet" href="/src/styles/components/folder-slider.css" />
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-    <!-- trong index.html -->
-    <!-- <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/embla-carousel@8/embla.min.css"
-    /> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/embla-carousel@8/embla-carousel.umd.js"></script> -->
+    <link rel="stylesheet" href="/src/styles/components/folder-card.css" />
 
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
     <script type="module" src="/src/pages/home.js"></script>
   </head>
   <body>
@@ -35,15 +30,15 @@
     <!-- ✅ WRAPPER CHÍNH -->
     <div id="wrapper">
       <aside id="sidebar-menu"></aside>
+      <div class="main-content">
+        <!-- ✅ BANNER / SECTION -->
+        <div id="section-random"></div>
+        <div id="section-topview"></div>
+        <div id="section-recent"></div>
 
-      <!-- ✅ BANNER / SECTION -->
-      <section id="section-random"></section>
-      <section id="section-topview"></section>
-      <section id="section-recent"></section>
-
-      <main id="app">
-        <!-- JS render folder grid và phân trang vào đây -->
-      </main>
+        <!-- ✅ CHỖ HIỂN THỊ FOLDER CHÍNH -->
+        <main id="app"></main>
+      </div>
     </div>
 
     <!-- ✅ FOOTER CHÍNH -->

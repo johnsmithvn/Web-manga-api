@@ -9,6 +9,7 @@ import {
   setAllFoldersList,
 } from "./storage.js";
 import { preloadThumbnails } from "./preload.js";
+import { renderFolderCard } from "../components/folderCard.js";
 
 export const state = {
   currentPath: "",
@@ -141,35 +142,34 @@ function renderFromData(data) {
  * 🧱 Hiển thị lưới folder (thẻ card)
  * @param {Array} folders
  */
+/**
+ * Hiển thị danh sách folder theo dạng lưới (grid)
+ * @param {Array} folders - Danh sách folder
+ */
+
+/**
+ * Hiển thị danh sách folder dạng lưới, được wrap giống slider
+ * @param {Array} folders
+ */
 export function renderFolderGrid(folders) {
   const app = document.getElementById("app");
+
+  // 🔲 Tạo phần wrap giống slider
+  const section = document.createElement("section");
+  section.className = "folder-section grid";
+
+  // 🔳 Grid folder
   const grid = document.createElement("div");
   grid.className = "grid";
 
   folders.forEach((f) => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const imgTag = f.thumbnail
-      ? `<img src="${f.thumbnail}" alt="${f.name}" loading="lazy">`
-      : "";
-
-    card.innerHTML = `
-      ${imgTag}
-      <div>${f.name}</div>
-    `;
-
-    card.onclick = () => {
-      if (f.isSelfReader && f.images) {
-        const encoded = encodeURIComponent(f.path);
-        window.location.href = `/reader.html?path=${encoded}`;
-      } else {
-        loadFolder(f.path);
-      }
-    };
-
+    const card = renderFolderCard(f, true);
     grid.appendChild(card);
   });
 
-  app.appendChild(grid);
+  section.appendChild(grid);
+
+  // 🧹 Xoá cũ, gắn mới
+  app.innerHTML = "";
+  app.appendChild(section);
 }

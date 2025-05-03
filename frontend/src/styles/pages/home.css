@@ -40,6 +40,8 @@
     background-color: rgba(0, 0, 0, 0.05);
   }
   
+  /*  */
+
   /* Wrapper toàn trang */
   #wrapper {
     min-height: 100vh;
@@ -51,6 +53,25 @@
   #app {
     flex: 1;
   }
+
+  .main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  
+  /* ❌ Không căn giữa trên mobile (dưới 768px) */
+  @media (max-width: 768px) {
+    .main-content {
+      max-width: 100%;
+      margin: 0;
+      padding: 0 8px;
+    }
+  }
+  
+
+  /*  */
+  
   
   /* Footer chính */
   #main-footer {
@@ -66,46 +87,9 @@
   /* =============================
      📁 GRID FOLDER + CARD
   ============================= */
+ 
   
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
-    padding: 16px;
-  }
   
-  .card {
-    background: var(--card-bg, #fff);
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-    text-align: center;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-  }
-  
-  .card img {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .card div {
-    padding: 10px;
-    font-weight: bold;
-    font-size: 16px;
-    color: var(--text-color, #333);
-  }
   
   /* =============================
      📄 PAGINATION
