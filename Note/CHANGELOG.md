@@ -11,6 +11,30 @@ Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày ph
 - refactor code lại cấu trúc, css
 - làm button back
 - refactor header
+--
+
+## 🔧 Refactor Backend
+
+- ✅ **Đổi lại cơ chế load ảnh trong reader**:  
+  → `mode=path` dùng `loadFolderFromDisk()` để đọc ảnh từ ổ cứng (không cache)
+
+- ✅ **Giữ nguyên cơ chế cache DB** cho:
+  - `/api/folder-cache?mode=random`
+  - `/api/folder-cache?mode=top`
+  - `/api/folder-cache?mode=search`
+  - `/api/folder-cache?mode=folders`
+
+  ## 🔁 Flow Cập Nhật
+
+### 🧠 Reader Mode (`mode=path`)
+→ Load ảnh trực tiếp từ ổ cứng (`folder-loader.js`)
+
+### 🗃 View Mode (Top, Search, Random)
+→ Lấy folder từ cache DB (`folder-cache.js`)
+
+### 📂 Folder Grid
+→ Chỉ hiển thị folder có thumbnail  
+→ Folder không có ảnh thì ẩn khỏi giao diện
 
 ---
 

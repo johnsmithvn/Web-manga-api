@@ -14,7 +14,6 @@ async function loadRootFolders() {
     const folders = await res.json();
 
     const list = document.getElementById("folder-list");
-    list.innerHTML = "";
 
     folders.forEach((folder) => {
       const card = document.createElement("div");
@@ -22,7 +21,7 @@ async function loadRootFolders() {
 
       const thumbnail = document.createElement("img");
       thumbnail.className = "select-thumbnail";
-      thumbnail.src = `/manga/${encodeURIComponent(folder)}/cover.jpg`;      // ✅ Ảnh cover
+      thumbnail.src = `/manga/${encodeURIComponent(folder)}/cover.jpg`; // ✅ Ảnh cover
       thumbnail.alt = folder;
       thumbnail.loading = "lazy"; // ✅ Lazy load cho nhanh
 
@@ -37,9 +36,25 @@ async function loadRootFolders() {
 
       card.appendChild(thumbnail);
       card.appendChild(label);
-
-      card.onclick = () => {
+      card.onclick = async () => {
         localStorage.setItem("rootFolder", folder);
+
+        // ⚠️ Check nếu DB rỗng thì auto scan
+        const res = await fetch(
+          `/api/folder-cache?mode=folders&root=${encodeURIComponent(folder)}`
+        );
+        const data = await res.json();
+
+        if (Array.isArray(data) && data.length === 0) {
+          console.log("📂 DB rỗng, tiến hành scan...");
+
+          await fetch(`/api/reset-cache?root=${encodeURIComponent(folder)}`, {
+            method: "DELETE",
+          });
+
+          alert("✅ Đã quét cache cho root folder.");
+        }
+
         window.location.href = "/"; // ✅ Redirect về index.html
       };
 
@@ -51,6 +66,3 @@ async function loadRootFolders() {
 }
 
 window.addEventListener("DOMContentLoaded", loadRootFolders);
-
-
-

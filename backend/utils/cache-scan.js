@@ -17,6 +17,9 @@ const {
  */
 function scanFolderRecursive(root, currentPath = "") {
   const fullPath = path.join(getRootPath(root), currentPath);
+   // ⚠️ Bỏ qua nếu cả folder và subfolder đều không có ảnh
+   if (!hasImageRecursively(fullPath)) return;
+
   const entries = fs.readdirSync(fullPath, { withFileTypes: true });
 
   for (const entry of entries) {

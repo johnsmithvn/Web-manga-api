@@ -123,7 +123,7 @@ if (title.includes("ngẫu nhiên")) {
   };
 
   const startAutoScroll = () => {
-    if (!isMobile && !autoTimer) autoTimer = setInterval(scrollInterval, 1000);
+    if (!isMobile && !autoTimer) autoTimer = setInterval(scrollInterval, 20000);
   };
 
   const stopAutoScroll = () => {

@@ -14,8 +14,16 @@ const db = require("../utils/db");
  * - limit, offset: phân trang folder hoặc ảnh
  */
 router.get("/folder-cache", async (req, res) => {
-  const { mode, root, path: folderPath = "", q, limit = 0, offset = 0 } = req.query;
-  if (!mode || !root) return res.status(400).json({ error: "Missing mode or root" });
+  const {
+    mode,
+    root,
+    path: folderPath = "",
+    q,
+    limit = 0,
+    offset = 0,
+  } = req.query;
+  if (!mode || !root)
+    return res.status(400).json({ error: "Missing mode or root" });
 
   try {
     const limitNum = parseInt(limit);
@@ -23,73 +31,86 @@ router.get("/folder-cache", async (req, res) => {
 
     switch (mode) {
       case "folders": {
-        // 📂 Trả về list { name, path } cho allFoldersList
-        const rows = db.prepare("SELECT name, path FROM folders WHERE root = ?").all(root);
+        const rows = db
+          .prepare("SELECT name, path, thumbnail FROM folders WHERE root = ?")
+          .all(root);
         return res.json(rows);
       }
 
       case "random": {
         // 🎲 Lấy ngẫu nhiên 30 folder có thumbnail
-        const rows = db.prepare(`
+        const rows = db
+          .prepare(
+            `
           SELECT name, path, thumbnail FROM folders
           WHERE root = ? AND thumbnail IS NOT NULL
           ORDER BY RANDOM() LIMIT 30
-        `).all(root);
+        `
+          )
+          .all(root);
         return res.json(rows);
       }
 
       case "top": {
         // 📈 Top view từ bảng views + folders
-        const rows = db.prepare(`
+        const rows = db
+          .prepare(
+            `
           SELECT f.name, f.path, f.thumbnail, v.count FROM views v
           JOIN folders f ON f.path = v.path AND f.root = ?
           ORDER BY v.count DESC LIMIT 30
-        `).all(root);
-        return res.json(rows);
-      }
-
-      case "search": {
-        if (!q) return res.status(400).json({ error: "Missing query" });
-        const rows = db.prepare(`
-          SELECT name, path, thumbnail FROM folders
-          WHERE root = ? AND name LIKE ?
-          ORDER BY name ASC LIMIT 50
-        `).all(root, `%${q}%`);
+        `
+          )
+          .all(root);
         return res.json(rows);
       }
 
       case "path": {
-        // 1️⃣ Lấy record chính của folder hiện tại (ảnh/thumbnail/số lượng ảnh)
-        const current = db.prepare(`
-          SELECT name, path, thumbnail, imageCount FROM folders
-          WHERE root = ? AND path = ?
-        `).get(root, folderPath);
-      
-        // 2️⃣ Lấy subfolder cấp con (VD: Naruto/Ch1 là con của Naruto)
-        const depth = folderPath === "" ? 0 : (folderPath.match(/\//g) || []).length;
-        const subfolders = db.prepare(`
-          SELECT name, path, thumbnail FROM folders
-          WHERE root = ? AND path LIKE ? AND
-                LENGTH(path) - LENGTH(REPLACE(path, '/', '')) = ?
-          ORDER BY path ASC
-        `).all(
-          root,
-          folderPath ? `${folderPath}/%` : `%`,
-          depth + 1
-        );
-        
-      
-        // 3️⃣ Trả kết quả
+        const { loadFolderFromDisk } = require("../utils/folder-loader");
+
+        // ✅ Xử lý folder giả (__self__) → load từ folder cha
+        let realPath = folderPath;
+        let isSelf = false;
+        if (folderPath.endsWith("/__self__")) {
+          realPath = folderPath.replace(/\/__self__$/, "");
+          isSelf = true;
+        }
+
+        const result = loadFolderFromDisk(root, realPath, limitNum, offsetNum);
+
+        // ❌ Nếu là folder giả thì không trả folders con (chỉ là reader)
+        if (isSelf) {
+          result.folders = [];
+        }
+
+        const isReader =
+          result.images.length > 0 && result.folders.length === 0;
+
         return res.json({
-          type: "folder", // 🔥 BẮT BUỘC
-          folders: subfolders,
-          images: current?.thumbnail ? [current.thumbnail] : [],
-          total: subfolders.length,
-          totalImages: current?.imageCount || 0
+          type: isReader ? "reader" : "folder",
+          folders: result.folders,
+          images: result.images,
+          total: result.total,
+          totalImages: result.totalImages,
         });
-        
       }
-      
+      case "search": {
+        if (!q || typeof q !== "string") {
+          return res.status(400).json({ error: "Missing query" });
+        }
+
+        const rows = db
+          .prepare(
+            `
+            SELECT name, path, thumbnail FROM folders
+            WHERE root = ? AND name LIKE ?
+            ORDER BY name ASC LIMIT 50
+          `
+          )
+          .all(root, `%${q}%`);
+        return res.json(rows);
+      }
+
 
       default:
         return res.status(400).json({ error: "Invalid mode" });

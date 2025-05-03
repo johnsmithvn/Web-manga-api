@@ -111,6 +111,7 @@ function renderFromData(data) {
         thumbnail: data.images[0],
         isSelfReader: true,
         images: data.images,
+        hasImages: true // ✅ Duy nhất chỗ này có thể check được
       });
     }
 
