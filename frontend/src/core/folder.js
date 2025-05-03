@@ -1,6 +1,6 @@
 // 📁 frontend/src/folder.js
 
-import { updateFolderPaginationUI, updateBackButtonUI } from "./ui.js";
+import { updateFolderPaginationUI } from "./ui.js";
 import {
   getRootFolder,
   getFolderCache,
@@ -153,10 +153,36 @@ function renderFromData(data) {
  */
 export function renderFolderGrid(folders) {
   const app = document.getElementById("app");
+  app.innerHTML = "";
 
-  // 🔲 Tạo phần wrap giống slider
+  // 🧱 Tạo section giống slider
   const section = document.createElement("section");
   section.className = "folder-section grid";
+
+  // 🔠 Tạo header có tiêu đề động (VD: "Thư mục", hoặc "One Piece")
+  const header = document.createElement("div");
+  header.className = "folder-section-header";
+
+  const title = document.createElement("h3");
+  title.className = "folder-section-title";
+
+  // ✅ Tính tên folder hiện tại (hoặc là "Thư mục gốc")
+  const pathParts = state.currentPath.split("/").filter(Boolean);
+  const currentName = pathParts[pathParts.length - 1];
+  title.textContent = pathParts.length === 0 ? "📂 Thư mục" : `📁 ${currentName}`;
+
+  // 🔙 Nếu đang ở trong thư mục con → click để về cha
+  if (pathParts.length > 0) {
+    title.style.cursor = "pointer";
+    title.title = "Click để quay về thư mục cha";
+    title.onclick = () => {
+      const parentPath = pathParts.slice(0, -1).join("/");
+      loadFolder(parentPath);
+    };
+  }
+
+  header.appendChild(title);
+  section.appendChild(header);
 
   // 🔳 Grid folder
   const grid = document.createElement("div");
@@ -168,8 +194,6 @@ export function renderFolderGrid(folders) {
   });
 
   section.appendChild(grid);
-
-  // 🧹 Xoá cũ, gắn mới
-  app.innerHTML = "";
   app.appendChild(section);
 }
+

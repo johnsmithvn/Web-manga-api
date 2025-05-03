@@ -6,7 +6,7 @@ import {
   toggleDarkMode,
   goBack,
   toggleSearchBar,
-  setupSettingsMenu,
+ 
   renderRandomBanner,
   renderTopView,
   renderRecentViewed,
@@ -29,13 +29,11 @@ window.getRootFolder = getRootFolder;
 
 window.addEventListener("DOMContentLoaded", async () => {
   requireRootFolder(); // 🔐 Kiểm tra root
-  setupSettingsMenu();
   setupSidebar();
 
   const root = getRootFolder();
   if (!root) return;
   loadFolder(); // 🧠 Load folder đầu tiên
-  setupHeaderButtons();
   // 👉 Random banner
   const randomKey = `randomView::${root}`;
   let listRandom = null;
@@ -141,45 +139,21 @@ document
     }
   });
 
-function setupHeaderButtons() {
-  const headerBox = document.querySelector(".header-icons");
-  if (!headerBox) return;
-
-  // 🧹 Clear cũ
-  headerBox.innerHTML = "";
-
-  // ☰ Sidebar menu
-  const menuBtn = document.createElement("button");
-  menuBtn.textContent = "☰";
-  menuBtn.onclick = toggleSidebar;
-  headerBox.appendChild(menuBtn);
-
-  // 🌙 Dark mode
-  const darkBtn = document.createElement("button");
-  darkBtn.textContent = "🌙";
-  darkBtn.onclick = toggleDarkMode;
-  headerBox.appendChild(darkBtn);
-  // 🔍 Nút tìm kiếm
-  const searchBtn = document.createElement("button");
-  searchBtn.textContent = "🔍";
-  searchBtn.onclick = toggleSearchBar;
-  headerBox.appendChild(searchBtn);
-
-  // ⬅ Back button
-  const backBtn = document.createElement("button");
-  backBtn.id = "back-button";
-  backBtn.onclick = goBack;
-  headerBox.appendChild(backBtn);
-
-  // ✅ Update back button UI (🏠 hoặc ⬅)
-  import("/src/core/ui.js").then(({ updateBackButtonUI }) => {
-    updateBackButtonUI();
+  //  👉 Nút toggle sidebar
+  document.getElementById("sidebarToggle")?.addEventListener("click", () => {
+    if (typeof toggleSidebar === "function") {
+      toggleSidebar();
+    } else {
+      console.warn("toggleSidebar() not defined");
+    }
   });
-
-  // 🏠 Logo click về Home
-  const logo = document.querySelector("#site-header h1");
-  if (logo) {
-    logo.style.cursor = "pointer";
-    logo.onclick = () => (window.location.href = "index.html");
-  }
-}
+  
+  document.getElementById("searchToggle")?.addEventListener("click", () => {
+    if (typeof toggleSearchBar === "function") {
+      toggleSearchBar();
+    } else {
+      console.warn("toggleSearchBar() not defined");
+    }
+  });
+  
+  

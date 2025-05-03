@@ -6,24 +6,7 @@ import { state, loadFolder } from "/src/core/folder.js"; // 🆕 Import ensureAl
 import { changeRootFolder } from "./storage.js";
 import { renderFolderSlider } from "/src/components/folderSlider.js";
 
-/**
- * 🔙 Cập nhật trạng thái nút Back/Home tuỳ theo vị trí folder
- */
 
-export function updateBackButtonUI() {
-  const backButton = document.getElementById("back-button");
-  if (!backButton) return;
-
-  backButton.style.display = "inline-block";
-
-  if (!state.currentPath || state.currentPath.trim() === "") {
-    backButton.textContent = "🏠";
-    backButton.setAttribute("aria-label", "Về chọn bộ");
-  } else {
-    backButton.textContent = "⬅";
-    backButton.setAttribute("aria-label", "Back về thư mục cha");
-  }
-}
 
 /**
  * 🔍 Lọc danh sách truyện theo từ khóa
@@ -175,22 +158,6 @@ export function toggleSearchBar() {
   }
 }
 
-/**
- * ⚙️ Setup menu đổi bộ truyện
- */
-export function setupSettingsMenu() {
-  const settingsMenu = document.getElementById("settings-menu");
-  if (!settingsMenu) return;
-
-  const changeFolderBtn = document.createElement("button");
-  changeFolderBtn.textContent = "🔄 Đổi Manga Folder";
-  changeFolderBtn.onclick = () => {
-    localStorage.removeItem("rootFolder");
-    window.location.href = "/select.html";
-  };
-
-  settingsMenu.appendChild(changeFolderBtn);
-}
 
 /**
  * 🖼️ Render banner thư mục ngẫu nhiên dạng slider ngang
