@@ -1,15 +1,23 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { increaseView } = require('../utils/views-manager');
+const { increaseView } = require("../utils/views-manager");
 
 /**
  * 📈 Ghi lượt xem cho folder (POST)
  * Body: { path: "1/Naruto" }
  */
-router.post('/increase-view', (req, res) => {
-  const { path } = req.body;
+router.post("/increase-view", (req, res) => {
+  let { path } = req.body;
+  if (!path || typeof path !== "string") {
+    return res.status(400).json({ error: "Missing valid 'path'" });
+  }
 
-  if (!path || typeof path !== 'string') {
+  // ✅ Normalize nếu là folder giả
+  if (path.endsWith("/__self__")) {
+    path = path.replace(/\/__self__$/, "");
+  }
+
+  if (!path || typeof path !== "string") {
     return res.status(400).json({ error: "Missing valid 'path'" });
   }
 

@@ -6,7 +6,8 @@ import { renderReader } from "/src/core/reader.js";
 // 👉 Auto render reader nếu có path trên URL
 window.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const path = urlParams.get("path");
+  const rawPath = urlParams.get("path") || "";
+  const path = rawPath.replace(/\/__self__$/, ""); // ✅ bỏ đuôi __self__ nếu có
   if (!path) {
     alert("❌ Thiếu path đọc truyện!");
     return;
@@ -19,7 +20,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const res = await fetch(`/api/list-folder?root=${encodeURIComponent(root)}&path=${encodeURIComponent(path)}`);
+    const res = await fetch(
+      `/api/folder-cache?mode=path&root=${encodeURIComponent(
+        root
+      )}&path=${encodeURIComponent(path)}`
+    );
     const data = await res.json();
 
     if (data.type === "reader" && Array.isArray(data.images)) {

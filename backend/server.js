@@ -3,69 +3,37 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { listFolder, listAllFolders } = require("./api/list-folder"); // 🆕 Import cả 2 hàm
 const { BASE_DIR } = require("./utils/config");
-const allSubfoldersApi = require("./api/all-subfolders");
-const topViewApi = require("./api/top-view");
 
 const app = express();
 const PORT = 3000;
 
 // ✅ Middleware parse JSON body
 app.use(express.json());
-app.use("/api", allSubfoldersApi);
-app.use("/api", topViewApi);
-app.use("/api", require("./api/increase-view"));
+
+// ✅ API chính
+app.use("/api", require("./api/folder-cache"));      // 🌟 API gộp random, top, search, path, folders
+app.use("/api", require("./api/folder-scan"));       // 🔍 Quét toàn bộ DB
+app.use("/api", require("./api/increase-view"));     // 📈 Ghi lượt xem
+app.use("/api", require("./api/reset-cache"));       // 🔁 Reset cache DB
+
 // ✅ Serve static images từ BASE_DIR (E:/File/Manga)
 app.use("/manga", express.static(BASE_DIR));
 
 // ✅ Serve frontend static files
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 app.use("/src", express.static(path.join(__dirname, "../frontend/src")));
-// api reset cache
-app.use("/api", require("./api/reset-cache"));
-app.use("/api", require("./api/search"));
 
 // ✅ Middleware fix lỗi URL encode (dấu () [] {} ...) khi load ảnh
 app.use("/manga", (req, res, next) => {
   try {
-    req.url = decodeURIComponent(req.url); // 🔥 Decode chuẩn URL ảnh
+    req.url = decodeURIComponent(req.url);
   } catch (e) {
     console.error("❌ Error decoding URL:", e);
     return res.status(400).send("Bad Request");
   }
   next();
 });
-
-
-// 📂 API: Lấy danh sách folder + ảnh trong 1 folder (phân trang)
-app.get("/api/list-folder", async (req, res) => {
-  const { root, path: subPath = "", limit, offset } = req.query;
-  if (!root) return res.status(400).json({ error: "Missing root parameter" });
-
-  try {
-    const result = await listFolder(root, subPath, parseInt(limit) || 0, parseInt(offset) || 0);
-    res.json(result);
-  } catch (err) {
-    console.error("❌ Error in list-folder:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// 📂 API: Lấy toàn bộ folders {name, path} để cache search/random
-app.get("/api/list-all-folders", async (req, res) => {
-  const { root } = req.query;
-  if (!root) return res.status(400).json({ error: "Missing root parameter" });
-
-  try {
-    const folders = await listAllFolders(root);
-    res.json(folders);
-  } catch (err) {
-    console.error("❌ Error in list-all-folders:", err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 
 // 📂 API: Trả về danh sách folder gốc (1,2,3,...)
 app.get("/api/list-roots", (req, res) => {

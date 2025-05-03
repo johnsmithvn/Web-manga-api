@@ -44,7 +44,7 @@ export function loadFolder(path = "", page = 0) {
   }
 
   fetch(
-    `/api/list-folder?root=${encodeURIComponent(
+    `/api/folder-cache?mode=path&root=${encodeURIComponent(
       rootFolder
     )}&path=${encodeURIComponent(path)}`
   )
@@ -74,7 +74,7 @@ export async function ensureAllFoldersList() {
 
   try {
     const res = await fetch(
-      `/api/list-all-folders?root=${encodeURIComponent(root)}`
+      `/api/folder-cache?mode=folders&root=${encodeURIComponent(root)}`
     );
     list = await res.json();
     setAllFoldersList(root, list);
@@ -90,6 +90,7 @@ export async function ensureAllFoldersList() {
  * @param {object} data
  */
 function renderFromData(data) {
+  console.log("📦 Data render:", data); // debug
   const app = document.getElementById("app");
   app.innerHTML = "";
 
@@ -110,6 +111,7 @@ function renderFromData(data) {
         thumbnail: data.images[0],
         isSelfReader: true,
         images: data.images,
+        hasImages: true // ✅ Duy nhất chỗ này có thể check được
       });
     }
 
@@ -152,6 +154,7 @@ function renderFromData(data) {
  * @param {Array} folders
  */
 export function renderFolderGrid(folders) {
+
   const app = document.getElementById("app");
   app.innerHTML = "";
 
@@ -195,5 +198,6 @@ export function renderFolderGrid(folders) {
 
   section.appendChild(grid);
   app.appendChild(section);
+
 }
 

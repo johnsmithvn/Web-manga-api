@@ -6,7 +6,6 @@ import {
   toggleDarkMode,
   goBack,
   toggleSearchBar,
- 
   renderRandomBanner,
   renderTopView,
   renderRecentViewed,
@@ -53,8 +52,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if (!listRandom) {
     const res1 = await fetch(
-      `/api/all-subfolders?root=${encodeURIComponent(root)}`
+      `/api/folder-cache?mode=random&root=${encodeURIComponent(root)}`
     );
+
     listRandom = await res1.json();
     localStorage.setItem(
       randomKey,
@@ -80,7 +80,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // 👉 Top View
   try {
-    const res2 = await fetch(`/api/top-view?root=${encodeURIComponent(root)}`);
+    const res2 = await fetch(
+      `/api/folder-cache?mode=top&root=${encodeURIComponent(root)}`
+    );
     const listTop = await res2.json();
     if (Array.isArray(listTop)) {
       renderTopView(listTop);
@@ -107,7 +109,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (header && wrapper) {
     wrapper.style.paddingTop = `${header.offsetHeight}px`;
   }
-
 });
 
 // 👉 Nút reset cache
@@ -139,21 +140,19 @@ document
     }
   });
 
-  //  👉 Nút toggle sidebar
-  document.getElementById("sidebarToggle")?.addEventListener("click", () => {
-    if (typeof toggleSidebar === "function") {
-      toggleSidebar();
-    } else {
-      console.warn("toggleSidebar() not defined");
-    }
-  });
-  
-  document.getElementById("searchToggle")?.addEventListener("click", () => {
-    if (typeof toggleSearchBar === "function") {
-      toggleSearchBar();
-    } else {
-      console.warn("toggleSearchBar() not defined");
-    }
-  });
-  
-  
+//  👉 Nút toggle sidebar
+document.getElementById("sidebarToggle")?.addEventListener("click", () => {
+  if (typeof toggleSidebar === "function") {
+    toggleSidebar();
+  } else {
+    console.warn("toggleSidebar() not defined");
+  }
+});
+
+document.getElementById("searchToggle")?.addEventListener("click", () => {
+  if (typeof toggleSearchBar === "function") {
+    toggleSearchBar();
+  } else {
+    console.warn("toggleSearchBar() not defined");
+  }
+});

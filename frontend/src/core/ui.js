@@ -33,7 +33,7 @@ export async function filterManga() {
 
   try {
     const res = await fetch(
-      `/api/search?root=${encodeURIComponent(root)}&q=${encodeURIComponent(
+      `/api/folder-cache?mode=search&root=${encodeURIComponent(root)}&q=${encodeURIComponent(
         keyword
       )}`
     );
