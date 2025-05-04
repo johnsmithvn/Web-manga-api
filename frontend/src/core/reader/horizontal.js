@@ -53,10 +53,6 @@ export function renderHorizontalReader(
     if (e.key === "ArrowLeft") updateImage(currentPage - 1);
   };
 
-  // 🤚 Swipe bằng Hammer.js
-  const hammer = new Hammer(container);
-  hammer.on("swipeleft", () => updateImage(currentPage + 1));
-  hammer.on("swiperight", () => updateImage(currentPage - 1));
 
   // 🧩 Cho phép set page từ bên ngoài
   function setCurrentPage(pageIndex) {
