@@ -1,5 +1,6 @@
-// 📁 folderSlider.js (Scroll Native version – with scroll snap, auto-scroll, pause on hover, visibility-aware)
+// 📁 folderSlider.js (Scroll Native version – scroll snap, auto-scroll, hover pause, visibility-aware)
 import { renderFolderCard } from "./folderCard.js";
+import { renderRecentViewed } from "../core/ui.js";
 
 /**
  * Hiển thị slider thư mục truyện bằng scroll native (scroll snap + auto-scroll chỉ khi visible và không hover)
@@ -8,39 +9,59 @@ export function renderFolderSlider({ title, folders, showViews = false }) {
   const section = document.createElement("section");
   section.className = "folder-section slider";
 
+  // === HEADER ===
   const header = document.createElement("div");
   header.className = "folder-section-header";
+
+  const left = document.createElement("div");
+  left.className = "slider-left";
 
   const h3 = document.createElement("h3");
   h3.className = "folder-section-title";
   h3.textContent = title;
-  // ✅ Nếu là Random Banner thì thêm nút refresh và timestamp
-if (title.includes("ngẫu nhiên")) {
-  const controls = document.createElement("div");
-  controls.className = "random-controls";
-  controls.style.display = "flex";
-  controls.style.alignItems = "center";
-  controls.style.gap = "10px";
-  controls.style.marginLeft = "auto";
+  left.appendChild(h3);
 
-  const refreshBtn = document.createElement("button");
-  refreshBtn.id = "refresh-random-btn";
-  refreshBtn.textContent = "🔄 Làm mới";
-  controls.appendChild(refreshBtn);
+  header.appendChild(left);
 
-  const timestamp = document.createElement("span");
-  timestamp.id = "random-timestamp";
-  timestamp.style.fontSize = "13px";
-  timestamp.style.opacity = "0.6";
-  controls.appendChild(timestamp);
-
-  header.appendChild(controls);
-}
-
-  header.appendChild(h3);
+  // === Nếu là Random Banner thì thêm nút Refresh + timestamp ===
+  if (title.includes("ngẫu nhiên") || title.includes("Mới đọc")) {
+    const right = document.createElement("div");
+    right.className = "slider-right";
+  
+    if (title.includes("ngẫu nhiên")) {
+      const refreshBtn = document.createElement("button");
+      refreshBtn.id = "refresh-random-btn";
+      refreshBtn.textContent = "🔄 Refresh";
+      refreshBtn.className = "small-button";
+      right.appendChild(refreshBtn);
+  
+      const timestamp = document.createElement("span");
+      timestamp.id = "random-timestamp";
+      timestamp.className = "random-timestamp";
+      timestamp.textContent = "";
+      right.appendChild(timestamp);
+    }
+  
+    if (title.includes("Mới đọc")) {
+      const clearBtn = document.createElement("button");
+      clearBtn.textContent = "🗑️ Xoá tất cả";
+      clearBtn.className = "small-button";
+      clearBtn.onclick = () => {
+        const root = getRootFolder?.();
+        if (!root) return;
+        localStorage.removeItem(`recentViewed::${root}`);
+        renderRecentViewed([]);
+      };
+      right.appendChild(clearBtn);
+    }
+  
+    header.appendChild(right);
+  }
+  
 
   section.appendChild(header);
 
+  // === SLIDER ===
   const sliderContainer = document.createElement("div");
   sliderContainer.style.position = "relative";
 
@@ -51,7 +72,7 @@ if (title.includes("ngẫu nhiên")) {
 
   folders.forEach((f) => {
     const card = renderFolderCard(f, showViews);
-    card.style.scrollSnapAlign = "start"; // chỉ cần cho slider
+    card.style.scrollSnapAlign = "start";
     wrapper.appendChild(card);
   });
 
@@ -73,6 +94,7 @@ if (title.includes("ngẫu nhiên")) {
 
   section.appendChild(sliderContainer);
 
+  // === PAGINATION DOTS ===
   const dots = document.createElement("div");
   dots.className = "slider-pagination";
   section.appendChild(dots);
@@ -100,18 +122,21 @@ if (title.includes("ngẫu nhiên")) {
     dot.className = "pagination-dot";
     dot.style.cursor = "pointer";
     if (i === 0) dot.classList.add("active");
-    dot.onclick = () => wrapper.scrollTo({ left: i * step * 5, behavior: "smooth" });
+    dot.onclick = () =>
+      wrapper.scrollTo({ left: i * step * 5, behavior: "smooth" });
     dots.appendChild(dot);
   }
 
   wrapper.addEventListener("scroll", () => {
-    const percent = wrapper.scrollLeft / (wrapper.scrollWidth - wrapper.clientWidth);
+    const percent =
+      wrapper.scrollLeft / (wrapper.scrollWidth - wrapper.clientWidth);
     const activeIndex = Math.round(percent * (totalSlides - 1));
     dots.querySelectorAll(".pagination-dot").forEach((d, i) => {
       d.classList.toggle("active", i === activeIndex);
     });
   });
 
+  // === AUTO SCROLL ===
   let currentScroll = 0;
   let autoTimer = null;
 

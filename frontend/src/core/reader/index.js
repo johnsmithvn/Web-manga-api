@@ -226,6 +226,9 @@ function updateReaderHeaderTitle(folderName) {
   titleEl.textContent = folderName;
   titleEl.title = folderName;
 
+  // Gán class để CSS xử lý hover/cursor
+  titleEl.classList.add("clickable-folder");
+
   titleEl.onclick = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const currentPath = urlParams.get("path") || "";
@@ -234,12 +237,9 @@ function updateReaderHeaderTitle(folderName) {
     const parentPath = parts.join("/");
 
     if (!parentPath) {
-      // không còn cha → về trang chủ
       window.location.replace("/index.html");
     } else {
-      window.location.replace(
-        `/index.html?path=${encodeURIComponent(parentPath)}`
-      );
+      window.location.replace(`/index.html?path=${encodeURIComponent(parentPath)}`);
     }
   };
 }

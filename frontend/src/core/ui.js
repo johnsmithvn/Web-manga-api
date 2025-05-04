@@ -176,9 +176,14 @@ export function showRandomUpdatedTime(timestamp) {
   if (!info) return;
 
   const diff = Math.floor((Date.now() - timestamp) / 60000); // phút
-  info.textContent = `🎲 Random cập nhật ${
-    diff === 0 ? "vừa xong" : diff + " phút trước"
-  }`;
+  // ✅ Check nếu mobile thì rút gọn
+  const isMobile = window.innerWidth <= 480;
+
+  if (isMobile) {
+    info.textContent = `🎲 ${diff === 0 ? "now" : `${diff}m`}`;
+  } else {
+    info.textContent = `🎲 Random ${diff === 0 ? "vừa xong" : `${diff} phút trước`}`;
+  }
 }
 
 export function renderRandomBanner(folders) {

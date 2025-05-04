@@ -43,7 +43,34 @@
   margin: 0 12px;
   font-size: 18px;
 }
+#reader-folder-name {
+  font-size: 16px;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
 
+/* ✨ Nếu element có thể click (gán onclick trong JS) */
+#reader-folder-name.clickable-folder {
+  cursor: pointer;
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+#reader-folder-name.clickable-folder:hover {
+  border: 1px solid #ccc;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode #reader-folder-name.clickable-folder:hover {
+  border-color: #555;
+  background: rgba(255, 255, 255, 0.05);
+}
 
 /*  */
 /* Khung reader chính */
