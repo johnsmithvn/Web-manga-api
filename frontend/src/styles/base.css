@@ -69,6 +69,16 @@ img.loading {
 #loading-overlay.hidden {
   display: none !important;
 }
+.loading {
+  text-align: center;
+  padding: 16px;
+  font-size: 16px;
+  color: #666;
+}
+
+.hidden {
+  display: none;
+}
 
 /* =============================
    🔍 TÌM KIẾM NỔI FLOATING
