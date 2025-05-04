@@ -6,9 +6,10 @@ const fs = require("fs");
 const { BASE_DIR } = require("./utils/config");
 
 const app = express();
-const PORT = 3000;  // PORT = process.env.PORT || 3000; // ✅ Lấy từ biến môi trường
+const PORT = 3000; // PORT = process.env.PORT || 3000; // ✅ Lấy từ biến môi trường
 const allowedHostnames = [
-  "xiaomi-redmi-k30-5g-speed" // ✅ mảng hostname được truy cập hoặc dung ip của tailscale
+  "xiaomi-redmi-k30-5g-speed",
+  "desktop-v88j9e0", // ✅ mảng hostname được truy cập hoặc dung ip của tailscale
 ];
 // ✅ Middleware parse JSON body
 app.use(express.json());
@@ -17,14 +18,40 @@ app.use(express.json());
 // 🛡️ CHẶN HOSTNAME TAILSCALE KHÔNG PHẢI ĐIỆN THOẠI
 const dns = require("dns").promises;
 
+function isAllowedClient(clientIP) {
+  // ✅ BỎ COMMENT dòng sau để cho phép toàn bộ nội bộ (LAN + localhost)
+  // return true;
 
+  // ✅ Nếu là localhost
+  if (
+    clientIP === "127.0.0.1" ||
+    clientIP === "192.168.1.111" ||
+    clientIP === "192.168.1.1"
+  )
+    return true;
+
+ // ✅ Nếu IP là mạng LAN (192.168.x.x / 10.x.x.x / 172.16.x.x - 172.31.x.x) → cho qua
+
+  // const isLAN =
+  //   clientIP.startsWith("192.168.") ||
+  //   clientIP.startsWith("10.") ||
+  //   /^172\.(1[6-9]|2\d|3[0-1])\./.test(clientIP);
+
+  // return isLAN;
+}
 
 app.use(async (req, res, next) => {
   let clientIP = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
   if (clientIP.startsWith("::ffff:")) {
-    clientIP = clientIP.replace("::ffff:", ""); // ✅ Fix IPv6-mapped IPv4
+    clientIP = clientIP.replace("::ffff:", "");
   }
 
+  // 🛡️ Cho phép IP nội bộ
+  if (isAllowedClient(clientIP)) {
+    return next();
+  }
+
+  // ✅ Nếu không phải LAN → kiểm tra hostname Tailscale
   try {
     const resolved = await dns.reverse(clientIP);
     const hostname = resolved[0] || "";
@@ -41,14 +68,11 @@ app.use(async (req, res, next) => {
   }
 });
 
-
-
-
 // ✅ API chính
-app.use("/api", require("./api/folder-cache"));      // 🌟 API gộp random, top, search, path, folders
-app.use("/api", require("./api/folder-scan"));       // 🔍 Quét toàn bộ DB
-app.use("/api", require("./api/increase-view"));     // 📈 Ghi lượt xem
-app.use("/api", require("./api/reset-cache"));       // 🔁 Reset cache DB
+app.use("/api", require("./api/folder-cache")); // 🌟 API gộp random, top, search, path, folders
+app.use("/api", require("./api/folder-scan")); // 🔍 Quét toàn bộ DB
+app.use("/api", require("./api/increase-view")); // 📈 Ghi lượt xem
+app.use("/api", require("./api/reset-cache")); // 🔁 Reset cache DB
 
 // ✅ Serve static images từ BASE_DIR (E:/File/Manga)
 app.use("/manga", express.static(BASE_DIR));
@@ -75,7 +99,7 @@ app.get("/api/list-roots", (req, res) => {
   }
 
   const entries = fs.readdirSync(BASE_DIR, { withFileTypes: true });
-  const roots = entries.filter(e => e.isDirectory()).map(e => e.name);
+  const roots = entries.filter((e) => e.isDirectory()).map((e) => e.name);
 
   res.json(roots);
 });
