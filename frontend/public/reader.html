@@ -2,41 +2,49 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đọc truyện - MyLocalManga</title>
     <link rel="stylesheet" href="/src/styles/base.css" />
     <link rel="stylesheet" href="/src/styles/pages/reader.css" />
     <link rel="stylesheet" href="/src/styles/dark/reader-dark.css" />
-    <script type="module" src="/src/pages/reader.js"></script>
   </head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <header id="site-header">
-    <div class="header-icons">
-      <!-- Các nút sẽ được JS gắn tự động từ reader/index.js -->
-    </div>
-    <h1
-      style="margin: 0; cursor: pointer"
-      onclick="window.location.href='index.html'"
-    >
-      📚 MyLocalManga
-    </h1>
-  </header>
-
   <body>
-    <div id="app"></div>
-  </body>
-  <footer id="reader-footer" class="hidden">
-    <div class="reader-footer-inner">
-      <button id="prev-chapter-btn">⬅ Prev</button>
-      <div style="text-align: center">
-        <div id="page-info">Trang ? / ?</div>
-        <div
-          id="image-count-info"
-          style="font-size: 13px; color: #ccc; margin-top: 2px"
-        >
-          ? / ? (Page: ?)
-        </div>
-      </div>
-      <button id="next-chapter-btn">Next ➡</button>
+    <header id="site-header" class="site-header">
+      <aside id="sidebar-menu" class="sidebar"></aside>
+      <button id="sidebarToggle">📚</button>
+      <h1 id="reader-folder-name" title="..." class="truncate-folder-name">...</h1>
+      <button id="searchToggle">🔍</button>
+    </header>
+
+    <div class="floating-search" id="floating-search">
+      <input type="text" id="floatingSearchInput" placeholder="Tìm kiếm truyện..." />
+      <div id="search-dropdown" class="hidden"></div>
     </div>
-  </footer>
+
+    <div id="wrapper">
+      <aside id="sidebar-menu" class="sidebar"></aside>
+      <div class="main-content">
+        <div id="app"></div>
+      </div>
+    </div>
+
+    <footer id="reader-footer" class="hidden">
+      <div class="reader-footer-inner">
+        <button id="prev-chapter-btn">⬅ Prev</button>
+        <div style="text-align: center">
+          <div id="page-info">Trang ? / ?</div>
+          <div
+            id="image-count-info"
+            style="font-size: 13px; color: #ccc; margin-top: 2px"
+          >
+            ? / ? (Page: ?)
+          </div>
+        </div>
+        <button id="next-chapter-btn">Next ➡</button>
+      </div>
+    </footer>
+
+    <!-- ✅ Load JS đúng cách -->
+    <script type="module" src="/src/pages/reader.js"></script>
+  </body>
 </html>

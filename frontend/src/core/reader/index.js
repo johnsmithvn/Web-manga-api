@@ -22,7 +22,7 @@ export function renderReader(
 
   const parts = path.split("/");
   const folderName = parts[parts.length - 1] || "Xem ảnh";
-
+  updateReaderHeaderTitle(folderName);
   saveRecentViewed({
     name: folderName,
     path,
@@ -112,7 +112,6 @@ function setupReaderModeButton() {
   btn.onclick = toggleReaderMode;
   document.body.appendChild(btn);
 }
-
 
 /**
  * 🔁 Toggle giữa scroll/horizontal
@@ -210,5 +209,20 @@ function setupPageInfoClick() {
         controller.setCurrentPage(newPage);
       }
     });
+  };
+}
+
+// update reader page info
+function updateReaderHeaderTitle(folderName, path) {
+  const titleEl = document.getElementById("reader-folder-name");
+  if (!titleEl) return;
+
+  titleEl.textContent = folderName;
+  titleEl.title = folderName;
+
+  titleEl.onclick = () => {
+    const root = getRootFolder();
+    const backUrl = `/index.html?path=${encodeURIComponent(path)}`;
+    window.location.href = backUrl;
   };
 }

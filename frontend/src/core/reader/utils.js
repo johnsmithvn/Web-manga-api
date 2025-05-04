@@ -91,3 +91,4 @@ export function showReaderUI() {
 export function hideReaderUI() {
   updateUIVisibility(UI_ELEMENTS, "add");
 }
+

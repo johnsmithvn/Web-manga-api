@@ -137,3 +137,44 @@ img.loading {
   font-weight: bold;
   font-size: 16px;
 }
+
+
+/* =============================
+     📚 SIDEBAR MENU
+  ============================= */
+
+  #sidebar-menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 0;
+    height: calc(100% - 60px);
+    background: #2e2e2e;
+    overflow-y: auto;
+    transition: 0.3s;
+    z-index: 999;
+    padding-top: 20px;
+    color: white;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  #sidebar-menu.active {
+    width: 250px;
+  }
+  
+  #sidebar-menu button {
+    display: block;
+    background: none;
+    border: none;
+    color: white;
+    text-align: left;
+    padding: 12px 20px;
+    font-size: 16px;
+    width: 100%;
+    cursor: pointer;
+  }
+  
+  #sidebar-menu button:hover {
+    background: #444;
+  }
+  

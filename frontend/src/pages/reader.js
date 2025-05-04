@@ -38,3 +38,4 @@ async function initializeReader() {
 
 // 👉 Initialize reader on DOMContentLoaded
 window.addEventListener("DOMContentLoaded", initializeReader);
+
