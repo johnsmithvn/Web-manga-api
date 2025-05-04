@@ -6,8 +6,6 @@ import { state, loadFolder } from "/src/core/folder.js"; // 🆕 Import ensureAl
 import { changeRootFolder } from "./storage.js";
 import { renderFolderSlider } from "/src/components/folderSlider.js";
 
-
-
 /**
  * 🔍 Lọc danh sách truyện theo từ khóa
  */
@@ -33,9 +31,9 @@ export async function filterManga() {
 
   try {
     const res = await fetch(
-      `/api/folder-cache?mode=search&root=${encodeURIComponent(root)}&q=${encodeURIComponent(
-        keyword
-      )}`
+      `/api/folder-cache?mode=search&root=${encodeURIComponent(
+        root
+      )}&q=${encodeURIComponent(keyword)}`
     );
     const results = await res.json();
 
@@ -55,15 +53,17 @@ export async function filterManga() {
       `;
       item.onclick = () => {
         dropdown.classList.add("hidden");
-      
+
         // Nếu đang trong reader.html thì redirect thủ công
         if (window.location.pathname.includes("reader.html")) {
-          window.location.href = `/index.html?path=${encodeURIComponent(f.path)}`;
+          window.location.href = `/index.html?path=${encodeURIComponent(
+            f.path
+          )}`;
         } else {
           window.loadFolder?.(f.path);
         }
       };
-      
+
       dropdown.appendChild(item);
     });
   } catch (err) {
@@ -165,7 +165,6 @@ export function toggleSearchBar() {
   }
 }
 
-
 /**
  * 🖼️ Render banner thư mục ngẫu nhiên dạng slider ngang
  * @param {Array} folders - Danh sách folder có thumbnail
@@ -182,7 +181,9 @@ export function showRandomUpdatedTime(timestamp) {
   if (isMobile) {
     info.textContent = `🎲 ${diff === 0 ? "now" : `${diff}m`}`;
   } else {
-    info.textContent = `🎲 Random ${diff === 0 ? "vừa xong" : `${diff} phút trước`}`;
+    info.textContent = `🎲 Random ${
+      diff === 0 ? "vừa xong" : `${diff} phút trước`
+    }`;
   }
 }
 
@@ -258,6 +259,37 @@ export function setupSidebar() {
     window.location.href = "/select.html";
   };
   sidebar.appendChild(changeBtn);
+  // 🧹 Nút Dọn Cache
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "🧹 Dọn DB Cache";
+  resetBtn.onclick = () => {
+    const root = getRootFolder();
+    if (!root) return alert("❌ Chưa chọn folder gốc");
+
+    const choice = prompt(
+      `Chọn hành động cho root "${root}":\n1 = Xoá DB\n2 = Scan mới\n3 = Reset (Xoá + Scan)`
+    );
+
+    let mode = null;
+    if (choice === "1") mode = "delete";
+    else if (choice === "2") mode = "scan";
+    else if (choice === "3") mode = "reset";
+    else return alert("❌ Hủy thao tác");
+
+    fetch(`/api/reset-cache?root=${encodeURIComponent(root)}&mode=${mode}`, {
+      method: "DELETE",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.message || "✅ Đã thực hiện xong");
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi reset cache:", err);
+        alert("❌ Lỗi khi gửi yêu cầu");
+      });
+  };
+
+  sidebar.appendChild(resetBtn);
 }
 
 export function toggleSidebar() {

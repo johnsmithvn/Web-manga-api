@@ -6,6 +6,10 @@ Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày ph
 
 > Theo chuẩn Semantic Versioning (SemVer)
 ---
+
+## [1.5.0] - 2025-05-04
+- update security cho app
+---
 ## [1.4.1] - 2025-05-04
 - refactor header
 - update redirect folder
