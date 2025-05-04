@@ -21,7 +21,11 @@ export function renderReader(
   const path = urlParams.get("path");
 
   const parts = path.split("/");
-  const folderName = parts[parts.length - 1] || "Xem ảnh";
+  const folderName =
+    parts[parts.length - 1] === "__self__"
+      ? parts[parts.length - 2] || "Xem ảnh"
+      : parts[parts.length - 1] || "Xem ảnh";
+
   updateReaderHeaderTitle(folderName);
   saveRecentViewed({
     name: folderName,
@@ -233,8 +237,9 @@ function updateReaderHeaderTitle(folderName) {
       // không còn cha → về trang chủ
       window.location.replace("/index.html");
     } else {
-      window.location.replace(`/index.html?path=${encodeURIComponent(parentPath)}`);
+      window.location.replace(
+        `/index.html?path=${encodeURIComponent(parentPath)}`
+      );
     }
   };
 }
-
