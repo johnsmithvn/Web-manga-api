@@ -27,7 +27,7 @@
 Trong `server.js`:
 
 ```js
-const allowedHostnames = ["xiaomi-redmi-k30-5g-speed"];
+const allowedHostnames = ["xiaomi-redmi-k30-5g-speed"]; lưu dạng mảng nhé lấy trong tailscle thay cho ip vì cái này bảo mật hơn
 ```
 
 Middleware kiểm tra client IP và resolve hostname:

@@ -3,7 +3,10 @@
 MyLocalManga là một ứng dụng web giúp bạn đọc truyện tranh từ thư mục trên ổ cứng cá nhân. Giao diện đẹp, nhẹ, dễ sử dụng, tối ưu cho cả máy tính và điện thoại.
 
 ---
+App view bên này
+https://github.com/johnsmithvn/AndroidApp
 
+---
 ## 🛠️ Cấu trúc dự án
 
 ```txt
