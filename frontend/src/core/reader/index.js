@@ -212,8 +212,10 @@ function setupPageInfoClick() {
   };
 }
 
-// update reader page info
-function updateReaderHeaderTitle(folderName, path) {
+/**
+ * 🧾 Tạo header hiển thị tên thư mục + xử lý back folder cha (không thêm history)
+ */
+function updateReaderHeaderTitle(folderName) {
   const titleEl = document.getElementById("reader-folder-name");
   if (!titleEl) return;
 
@@ -221,8 +223,18 @@ function updateReaderHeaderTitle(folderName, path) {
   titleEl.title = folderName;
 
   titleEl.onclick = () => {
-    const root = getRootFolder();
-    const backUrl = `/index.html?path=${encodeURIComponent(path)}`;
-    window.location.href = backUrl;
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPath = urlParams.get("path") || "";
+    const parts = currentPath.split("/").filter(Boolean);
+    parts.pop(); // bỏ folder hiện tại
+    const parentPath = parts.join("/");
+
+    if (!parentPath) {
+      // không còn cha → về trang chủ
+      window.location.replace("/index.html");
+    } else {
+      window.location.replace(`/index.html?path=${encodeURIComponent(parentPath)}`);
+    }
   };
 }
+

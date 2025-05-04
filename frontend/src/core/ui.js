@@ -55,8 +55,15 @@ export async function filterManga() {
       `;
       item.onclick = () => {
         dropdown.classList.add("hidden");
-        window.loadFolder(f.path);
+      
+        // Nếu đang trong reader.html thì redirect thủ công
+        if (window.location.pathname.includes("reader.html")) {
+          window.location.href = `/index.html?path=${encodeURIComponent(f.path)}`;
+        } else {
+          window.loadFolder?.(f.path);
+        }
       };
+      
       dropdown.appendChild(item);
     });
   } catch (err) {

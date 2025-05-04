@@ -1,5 +1,6 @@
 import { getRootFolder } from "/src/core/storage.js";
 import { renderReader } from "/src/core/reader/index.js";
+import { setupSidebar,toggleSidebar,filterManga, toggleSearchBar } from "/src/core/ui.js";
 
 /**
  * Fetch and render reader data based on the URL path.
@@ -27,6 +28,12 @@ async function initializeReader() {
 
     if (data.type === "reader" && Array.isArray(data.images)) {
       renderReader(data.images);
+      setupSidebar()
+       // ✅ Gắn sự kiện toggle
+       document.getElementById("sidebarToggle")?.addEventListener("click", toggleSidebar);
+       document.getElementById("searchToggle")?.addEventListener("click", toggleSearchBar);
+       document.getElementById("floatingSearchInput")?.addEventListener("input", filterManga);
+
     } else {
       alert("❌ Folder này không chứa ảnh hoặc không hợp lệ!");
     }
