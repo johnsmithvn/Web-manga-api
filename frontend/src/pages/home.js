@@ -32,7 +32,11 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const root = getRootFolder();
   if (!root) return;
-  loadFolder(); // 🧠 Load folder đầu tiên
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialPath = urlParams.get("path") || "";
+  
+  loadFolder(initialPath); // 🧠 Load folder theo URL nếu có
   // 👉 Random banner
   const randomKey = `randomView::${root}`;
   let listRandom = null;

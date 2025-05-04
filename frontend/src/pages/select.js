@@ -8,8 +8,10 @@ import { getRootFolder } from "../core/storage.js"; // nếu chưa có
 
 async function loadRootFolders() {
   clearAllFolderCache(); // 🧹 Clear cache folder mỗi lần vào select.html
+  document.getElementById("loading-overlay")?.classList.remove("hidden");
 
   try {
+    // 🔄 Show loading
     const res = await fetch("/api/list-roots");
     const folders = await res.json();
 
@@ -63,6 +65,8 @@ async function loadRootFolders() {
   } catch (err) {
     console.error("❌ Lỗi load root folders:", err);
   }
+  document.getElementById("loading-overlay")?.classList.add("hidden");
+
 }
 
 window.addEventListener("DOMContentLoaded", loadRootFolders);

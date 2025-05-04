@@ -55,8 +55,15 @@ export async function filterManga() {
       `;
       item.onclick = () => {
         dropdown.classList.add("hidden");
-        window.loadFolder(f.path);
+      
+        // Nếu đang trong reader.html thì redirect thủ công
+        if (window.location.pathname.includes("reader.html")) {
+          window.location.href = `/index.html?path=${encodeURIComponent(f.path)}`;
+        } else {
+          window.loadFolder?.(f.path);
+        }
       };
+      
       dropdown.appendChild(item);
     });
   } catch (err) {
@@ -169,9 +176,14 @@ export function showRandomUpdatedTime(timestamp) {
   if (!info) return;
 
   const diff = Math.floor((Date.now() - timestamp) / 60000); // phút
-  info.textContent = `🎲 Random cập nhật ${
-    diff === 0 ? "vừa xong" : diff + " phút trước"
-  }`;
+  // ✅ Check nếu mobile thì rút gọn
+  const isMobile = window.innerWidth <= 480;
+
+  if (isMobile) {
+    info.textContent = `🎲 ${diff === 0 ? "now" : `${diff}m`}`;
+  } else {
+    info.textContent = `🎲 Random ${diff === 0 ? "vừa xong" : `${diff} phút trước`}`;
+  }
 }
 
 export function renderRandomBanner(folders) {

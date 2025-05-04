@@ -2,76 +2,55 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đọc truyện - MyLocalManga</title>
     <link rel="stylesheet" href="/src/styles/base.css" />
     <link rel="stylesheet" href="/src/styles/pages/reader.css" />
     <link rel="stylesheet" href="/src/styles/dark/reader-dark.css" />
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-    <script type="module">
-      import { renderReader } from "/src/core/reader/index.js";
-      import { getRootFolder } from "/src/core/storage.js";
-
-      window.addEventListener("DOMContentLoaded", async () => {
-        const params = new URLSearchParams(window.location.search);
-        const path = params.get("path");
-        if (!path) return alert("Thiếu path!");
-
-        const root = getRootFolder();
-        if (!root) {
-          window.location.href = "/select.html";
-          return;
-        }
-
-        try {
-          const res = await fetch(
-            `/api/folder-cache?mode=path&root=${encodeURIComponent(
-              root
-            )}&path=${encodeURIComponent(path)}`
-          );
-          const data = await res.json();
-
-          if (data.type !== "reader" || !Array.isArray(data.images)) {
-            alert("❌ Folder không hợp lệ hoặc không có ảnh!");
-            return;
-          }
-
-          renderReader(data.images);
-        } catch (err) {
-          console.error("❌ Lỗi load dữ liệu:", err);
-          alert("🚫 Lỗi khi tải ảnh!");
-        }
-      });
-    </script>
   </head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <header id="site-header">
-    <div class="header-icons">
-      <!-- Các nút sẽ được JS gắn tự động từ reader/index.js -->
-    </div>
-    <h1
-      style="margin: 0; cursor: pointer"
-      onclick="window.location.href='index.html'"
-    >
-      📚 MyLocalManga
-    </h1>
-  </header>
-
   <body>
-    <div id="app"></div>
-  </body>
-  <footer id="reader-footer" class="hidden">
-    <div class="reader-footer-inner">
-      <button id="prev-chapter-btn">⬅ Prev</button>
-      <div style="text-align: center">
-        <div id="page-info">Trang ? / ?</div>
-        <div
-          id="image-count-info"
-          style="font-size: 13px; color: #ccc; margin-top: 2px"
-        >
-          ? / ? (Page: ?)
-        </div>
+    <header id="site-header" class="site-header">
+      <div class="header-left">
+        <button class="menu-button" id="sidebarToggle">☰</button>
+        <div class="logo">📚</div>
       </div>
-      <button id="next-chapter-btn">Next ➡</button>
+    
+      <h1 id="reader-folder-name" title="..." class="truncate-folder-name">Tên folder</h1>
+    
+      <div class="header-right">
+        <button class="icon-button" id="searchToggle">🔍</button>
+      </div>
+    </header>
+
+    <div class="floating-search" id="floating-search">
+      <input type="text" id="floatingSearchInput" placeholder="Tìm kiếm truyện..." />
+      <div id="search-dropdown" class="hidden"></div>
     </div>
-  </footer>
+
+    <div id="wrapper">
+      <aside id="sidebar-menu" class="sidebar"></aside>
+      <div class="main-content">
+        <div id="app"></div>
+      </div>
+    </div>
+
+    <footer id="reader-footer" class="hidden">
+      <div class="reader-footer-inner">
+        <button id="prev-chapter-btn">⬅ Prev</button>
+        <div style="text-align: center">
+          <div id="page-info">Trang ? / ?</div>
+          <div
+            id="image-count-info"
+            style="font-size: 13px; color: #ccc; margin-top: 2px"
+          >
+            ? / ? (Page: ?)
+          </div>
+        </div>
+        <button id="next-chapter-btn">Next ➡</button>
+      </div>
+    </footer>
+
+    <!-- ✅ Load JS đúng cách -->
+    <script type="module" src="/src/pages/reader.js"></script>
+  </body>
 </html>

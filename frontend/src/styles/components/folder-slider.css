@@ -3,10 +3,32 @@
 .folder-section {
     margin: 24px 0;
   }
+  .small-button {
+    font-size: 13px;
+    padding: 4px 8px;
+    border: none;
+    background: #eee;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .small-button:hover {
+    background: #ddd;
+  }
+  
+  body.dark-mode .small-button {
+    background: #444;
+    color: white;
+  }
+  
+  body.dark-mode .small-button:hover {
+    background: #666;
+  }
   
   .folder-section-header {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     align-items: center;
     padding: 0 16px;
     margin-bottom: 6px;
@@ -15,13 +37,41 @@
   .folder-section-title {
     font-size: 18px;
     font-weight: bold;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
   }
   
-  .folder-section-right {
+  /* ✨ Khi có thể click (JS đã gán cursor:pointer) */
+  .folder-section-title[style*="cursor: pointer"] {
+    border: 1px solid transparent;
+  }
+  
+  .folder-section-title[style*="cursor: pointer"]:hover {
+    border: 1px solid #ccc;
+    background: rgba(0, 0, 0, 0.03);
+  }
+  
+
+  
+  
+  .slider-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    flex: 1;           /* ✅ ép chiếm hết không gian còn lại */
+    min-width: 0;      /* ✅ tránh overflow khi dài */
   }
+  
+  
+  .slider-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  
   
   .slider-wrapper {
     position: relative;
@@ -181,3 +231,6 @@
       height: 180px;
     }
   }
+
+
+  

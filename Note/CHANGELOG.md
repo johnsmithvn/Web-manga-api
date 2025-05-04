@@ -6,6 +6,11 @@ Tổng hợp các cập nhật, nâng cấp và sửa lỗi theo từng ngày ph
 
 > Theo chuẩn Semantic Versioning (SemVer)
 ---
+## [1.4.1] - 2025-05-04
+- refactor header
+- update redirect folder
+
+---
 ## [1.3.3] - 2025-05-03
 - cấu trúc lại folder
 - refactor code lại cấu trúc, css

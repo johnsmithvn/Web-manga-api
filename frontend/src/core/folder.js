@@ -111,7 +111,7 @@ function renderFromData(data) {
         thumbnail: data.images[0],
         isSelfReader: true,
         images: data.images,
-        hasImages: true // ✅ Duy nhất chỗ này có thể check được
+        hasImages: true, // ✅ Duy nhất chỗ này có thể check được
       });
     }
 
@@ -132,72 +132,72 @@ function renderFromData(data) {
 
     // 🆕 update đúng phân trang: dùng tổng số folders
     updateFolderPaginationUI(folderPage, totalFolders, foldersPerPage);
-
   } else if (data.type === "reader") {
     const encoded = encodeURIComponent(state.currentPath);
     window.location.href = `/reader.html?path=${encoded}`;
   }
-  
 }
 
 /**
- * 🧱 Hiển thị lưới folder (thẻ card)
- * @param {Array} folders
- */
-/**
- * Hiển thị danh sách folder theo dạng lưới (grid)
- * @param {Array} folders - Danh sách folder
- */
-
-/**
- * Hiển thị danh sách folder dạng lưới, được wrap giống slider
- * @param {Array} folders
+ * 📂 Render danh sách folder dưới dạng lưới (grid layout)
+ * @param {Array} folders - Danh sách folder có thumbnail
  */
 export function renderFolderGrid(folders) {
-
+  // 🎯 Lấy thẻ chính (vùng hiển thị) và reset nội dung cũ
   const app = document.getElementById("app");
   app.innerHTML = "";
 
-  // 🧱 Tạo section giống slider
+  // 📦 Tạo section chính cho phần grid, gán class "grid"
   const section = document.createElement("section");
   section.className = "folder-section grid";
 
-  // 🔠 Tạo header có tiêu đề động (VD: "Thư mục", hoặc "One Piece")
+  // 📌 Header cho section: chứa tiêu đề và chức năng back (nếu có)
   const header = document.createElement("div");
   header.className = "folder-section-header";
 
+  // 🏷️ Tạo thẻ tiêu đề
   const title = document.createElement("h3");
   title.className = "folder-section-title";
 
-  // ✅ Tính tên folder hiện tại (hoặc là "Thư mục gốc")
-  const pathParts = state.currentPath.split("/").filter(Boolean);
-  const currentName = pathParts[pathParts.length - 1];
-  title.textContent = pathParts.length === 0 ? "📂 Thư mục" : `📁 ${currentName}`;
+  // 🧠 Xác định tên folder hiện tại dựa trên path
+  const pathParts = state.currentPath.split("/").filter(Boolean); // loại bỏ chuỗi rỗng
+  const currentName = pathParts[pathParts.length - 1]; // tên folder hiện tại
 
-  // 🔙 Nếu đang ở trong thư mục con → click để về cha
+  // 🖋️ Gán nội dung tiêu đề: nếu ở thư mục gốc thì ghi "Thư mục", còn lại là tên folder
+  title.textContent =
+    pathParts.length === 0 ? "📂 Thư mục" : `📁 ${currentName}`;
+
+  // 🔙 Nếu đang trong thư mục con: cho phép click để quay lại thư mục cha
   if (pathParts.length > 0) {
     title.style.cursor = "pointer";
     title.title = "Click để quay về thư mục cha";
+
     title.onclick = () => {
-      const parentPath = pathParts.slice(0, -1).join("/");
-      loadFolder(parentPath);
+      const parentPath = pathParts.slice(0, -1).join("/"); // cắt bỏ tên folder hiện tại
+      loadFolder(parentPath); // tải lại folder cha
     };
+    // ✅ Nếu tên dài → cắt bớt, hiển thị "...", giữ full name trong title
+    title.style.maxWidth = "100%";
+    title.style.overflow = "hidden";
+    title.style.textOverflow = "ellipsis";
+    title.style.whiteSpace = "nowrap";
   }
 
+  // 🧱 Gắn tiêu đề vào header, rồi header vào section
   header.appendChild(title);
   section.appendChild(header);
 
-  // 🔳 Grid folder
+  // 🗂️ Tạo thẻ div dùng để chứa các folder dưới dạng grid
   const grid = document.createElement("div");
-  grid.className = "grid";
+  grid.className = "grid"; // CSS sẽ chia cột tự động
 
+  // 🧩 Tạo từng card folder và thêm vào grid
   folders.forEach((f) => {
-    const card = renderFolderCard(f, true);
+    const card = renderFolderCard(f, true); // true = hiển thị lượt xem
     grid.appendChild(card);
   });
 
+  // 🧱 Gắn grid vào section chính, rồi render vào vùng app
   section.appendChild(grid);
   app.appendChild(section);
-
 }
-
