@@ -16,7 +16,9 @@ const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
 function findFirstImageRecursively(dirPath, baseUrl = '/manga') {
   if (!fs.existsSync(dirPath)) return null;
 
-  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  // Sort theo tên, ưu tiên numeric (1 < 2 < 10)
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true })
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
   for (const entry of entries) {
     const fullPath = path.join(dirPath, entry.name);
@@ -36,6 +38,7 @@ function findFirstImageRecursively(dirPath, baseUrl = '/manga') {
 
   return null;
 }
+
 
 /**
  * 📸 Kiểm tra folder có chứa ít nhất 1 ảnh hợp lệ không
