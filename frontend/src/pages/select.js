@@ -1,5 +1,5 @@
 // 📁 frontend/src/select.js
-// import { clearAllFolderCache } from "../core/storage.js";
+import { clearAllFolderCache } from "../core/storage.js";
 // import { getRootFolder } from "../core/storage.js"; // nếu chưa có
 
 /**
