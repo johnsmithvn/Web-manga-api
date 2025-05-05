@@ -16,10 +16,10 @@ https://github.com/johnsmithvn/AndroidApp
 │   │   ├── folder-cache.js           # API duy nhất (mode = path | folders | random | top | search)
 │   │   ├── increase-view.js          # Ghi lượt xem
 │   │   ├── reset-cache.js            # Reset cache DB theo root
+│   │   ├── folder-scan.js            # Hàm quét thủ công riêng
 │
 │   ├── utils/
 │   │   ├── cache-scan.js             # Đệ quy scan thư mục, lưu folder vào DB
-│   │   ├── folder-scan.js            # Hàm quét thủ công riêng
 │   │   ├── folder-loader.js          # Đọc ảnh/folder trực tiếp từ ổ cứng
 │   │   ├── imageUtils.js             # Hàm xử lý ảnh (check, tìm ảnh)
 │   │   ├── views-manager.js          # Ghi & lấy lượt xem

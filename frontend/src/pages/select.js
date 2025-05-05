@@ -1,6 +1,6 @@
 // 📁 frontend/src/select.js
 import { clearAllFolderCache } from "../core/storage.js";
-import { getRootFolder } from "../core/storage.js"; // nếu chưa có
+// import { getRootFolder } from "../core/storage.js"; // nếu chưa có
 
 /**
  * 📂 Fetch danh sách folder gốc và render ra giao diện
@@ -50,9 +50,10 @@ async function loadRootFolders() {
         if (Array.isArray(data) && data.length === 0) {
           console.log("📂 DB rỗng, tiến hành scan...");
 
-          await fetch(`/api/reset-cache?root=${encodeURIComponent(folder)}`, {
-            method: "DELETE",
-          });
+          await fetch(
+            `/api/reset-cache?root=${encodeURIComponent(folder)}&mode=scan`,
+            { method: "DELETE" }
+          );
 
           alert("✅ Đã quét cache cho root folder.");
         }
