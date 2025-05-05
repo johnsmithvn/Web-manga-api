@@ -3,7 +3,7 @@
 import { getRootFolder } from "./storage.js";
 
 import { state, loadFolder } from "/src/core/folder.js";
-import { changeRootFolder } from "./storage.js";
+import { changeRootFolder ,clearAllFolderCache} from "./storage.js";
 import { renderFolderSlider } from "/src/components/folderSlider.js";
 
 /**
@@ -314,6 +314,7 @@ export function setupSidebar() {
       });
   };
   sidebar.appendChild(scanBtn);
+  
 }
 
 export function toggleSidebar() {

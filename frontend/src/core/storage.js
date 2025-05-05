@@ -55,17 +55,30 @@ export function getFolderCache(root, path) {
 /**
  * 📦 Lưu cache folder
  */
+// 📌 Giới hạn tối đa 100 folder cache
+const MAX_CACHE_KEYS = 300;
+
 export function setFolderCache(root, path, data) {
   const key = `${FOLDER_CACHE_PREFIX}${root}:${path}`;
-  const jsonData = JSON.stringify({
-    timestamp: Date.now(),
-    data: data,
-  });
+  const jsonData = JSON.stringify({ timestamp: Date.now(), data });
 
-  // 🆕 Nếu dữ liệu quá lớn (trên 4MB) thì không lưu cache
-  if (jsonData.length > 4000 * 1024) {
-    console.warn(`⚠️ Folder quá lớn, không cache localStorage: ${path}`);
-    return;
+  if (jsonData.length > 4000 * 1024) return;
+
+  // 🧹 Nếu cache đã quá nhiều → xóa bớt key cũ
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(FOLDER_CACHE_PREFIX));
+  if (keys.length >= MAX_CACHE_KEYS) {
+    // Sắp xếp theo timestamp và xóa bớt key cũ nhất
+    const sorted = keys.map(k => {
+      try {
+        const d = JSON.parse(localStorage.getItem(k));
+        return { k, t: d.timestamp || 0 };
+      } catch {
+        return { k, t: 0 };
+      }
+    }).sort((a, b) => a.t - b.t); // tăng dần
+
+    const toDelete = sorted.slice(0, keys.length - MAX_CACHE_KEYS + 1);
+    toDelete.forEach(({ k }) => localStorage.removeItem(k));
   }
 
   localStorage.setItem(key, jsonData);

@@ -1,5 +1,5 @@
 // 📁 frontend/src/select.js
-import { clearAllFolderCache } from "../core/storage.js";
+// import { clearAllFolderCache } from "../core/storage.js";
 // import { getRootFolder } from "../core/storage.js"; // nếu chưa có
 
 /**
@@ -7,7 +7,7 @@ import { clearAllFolderCache } from "../core/storage.js";
  */
 
 async function loadRootFolders() {
-  // clearAllFolderCache(); // 🧹 Clear cache folder mỗi lần vào select.html
+  clearAllFolderCache(); // 🧹 Clear cache folder mỗi lần vào select.html
   document.getElementById("loading-overlay")?.classList.remove("hidden");
 
   try {
