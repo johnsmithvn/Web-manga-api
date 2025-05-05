@@ -7,7 +7,7 @@ import { clearAllFolderCache } from "../core/storage.js";
  */
 
 async function loadRootFolders() {
-  clearAllFolderCache(); // 🧹 Clear cache folder mỗi lần vào select.html
+  // clearAllFolderCache(); // 🧹 Clear cache folder mỗi lần vào select.html
   document.getElementById("loading-overlay")?.classList.remove("hidden");
 
   try {
