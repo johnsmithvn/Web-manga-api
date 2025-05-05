@@ -4,7 +4,7 @@ import { loadFolder } from "/src/core/folder.js";
 import {
   filterManga,
   toggleDarkMode,
-  goBack,
+  
   toggleSearchBar,
   renderRandomBanner,
   renderTopView,
@@ -20,7 +20,7 @@ import { setupSidebar, toggleSidebar } from "/src/core/ui.js";
 
 // Gắn global nếu HTML cần gọi
 window.loadFolder = loadFolder;
-window.goBack = goBack;
+// window.goBack = goBack;
 window.toggleDarkMode = toggleDarkMode;
 window.toggleSearchBar = toggleSearchBar;
 window.changeRootFolder = changeRootFolder;

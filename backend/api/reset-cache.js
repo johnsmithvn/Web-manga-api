@@ -15,19 +15,21 @@ router.delete("/reset-cache", (req, res) => {
   const root = req.query.root;
   const mode = req.query.mode;
 
-  if (!root || !mode) return res.status(400).json({ error: "Thiếu root hoặc mode" });
+  if (!root || !mode)
+    return res.status(400).json({ error: "Thiếu root hoặc mode" });
 
   try {
+    // ✅ Nếu thiếu cột updatedAt (DB cũ) thì thêm vào
+    try {
+      db.prepare(`ALTER TABLE folders ADD COLUMN updatedAt INTEGER`).run();
+      console.log("➕ Thêm cột updatedAt vào bảng folders");
+    } catch (e) {
+      if (!e.message.includes("duplicate column name")) throw e;
+    }
     if (mode === "delete") {
       db.prepare("DELETE FROM folders WHERE root = ?").run(root);
       console.log(`🗑️ Đã xoá toàn bộ folder cache của root: ${root}`);
       return res.json({ success: true, message: "Xoá DB thành công" });
-    }
-
-    if (mode === "scan") {
-      scanFolderRecursive(root); // không xoá, chỉ insert thêm
-      console.log(`📥 Scan và thêm mới folder cho root: ${root}`);
-      return res.json({ success: true, message: "Scan DB thành công" });
     }
 
     if (mode === "reset") {

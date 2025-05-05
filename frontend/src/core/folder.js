@@ -5,8 +5,8 @@ import {
   getRootFolder,
   getFolderCache,
   setFolderCache,
-  getAllFoldersList,
-  setAllFoldersList,
+  
+  
 } from "./storage.js";
 import { preloadThumbnails } from "./preload.js";
 import { renderFolderCard } from "../components/folderCard.js";
@@ -63,27 +63,27 @@ export function loadFolder(path = "", page = 0) {
 }
 
 /**
- * 🆕 Load danh sách allFoldersList để search/random (cache hoặc fetch)
+ * 🆕 Load danh sách allFoldersList
  */
-export async function ensureAllFoldersList() {
-  const root = getRootFolder();
-  if (!root) return [];
+// export async function ensureAllFoldersList() {
+//   const root = getRootFolder();
+//   if (!root) return [];
 
-  let list = getAllFoldersList(root);
-  if (list) return list;
+//   let list = getAllFoldersList(root);
+//   if (list) return list;
 
-  try {
-    const res = await fetch(
-      `/api/folder-cache?mode=folders&root=${encodeURIComponent(root)}`
-    );
-    list = await res.json();
-    setAllFoldersList(root, list);
-    return list;
-  } catch (err) {
-    console.error("❌ Lỗi fetch allFoldersList:", err);
-    return [];
-  }
-}
+//   try {
+//     const res = await fetch(
+//       `/api/folder-cache?mode=folders&root=${encodeURIComponent(root)}`
+//     );
+//     list = await res.json();
+//     setAllFoldersList(root, list);
+//     return list;
+//   } catch (err) {
+//     console.error("❌ Lỗi fetch allFoldersList:", err);
+//     return [];
+//   }
+// }
 
 /**
  * 🧱 Render dữ liệu folder hoặc reader từ cache hoặc API

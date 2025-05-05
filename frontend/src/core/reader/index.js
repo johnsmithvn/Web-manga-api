@@ -3,13 +3,21 @@ import { getRootFolder } from "/src/core/storage.js";
 import { updateReaderPageInfo, showJumpPageInput } from "./utils.js";
 import { saveRecentViewed } from "/src/core/ui.js";
 
-let currentImages = [];
-let currentPage = 0;
-let readerMode = "horizontal"; // or "vertical"
-let controller = null; // object: { setCurrentPage(page) }
+// let currentImages = [];
+// let currentPage = 0;
+// let readerMode = "horizontal"; // or "vertical"
+// let controller = null; // object: { setCurrentPage(page) }
 
 /**
  * 📖 Gọi từ reader.html – render chế độ đọc
+ */
+let readerContainer = null; // Reuse duy nhất 1 thẻ reader DOM
+let controller = null; // Giữ instance của chế độ đọc
+let currentImages = [];
+let currentPage = 0;
+let readerMode = "horizontal"; // "vertical" or "horizontal"
+/**
+ * 📖 Hàm render chính (gọi khi vào reader.html hoặc đổi mode)
  */
 export function renderReader(
   images,
@@ -44,17 +52,22 @@ export function renderReader(
   if (!preserveCurrentPage) currentPage = 0;
 
   const app = document.getElementById("app");
-  app.innerHTML = "";
 
-  const reader = document.createElement("div");
-  reader.className = "reader";
-  reader.classList.toggle("scroll-mode", readerMode === "vertical");
+  // 🧱 Reuse readerContainer thay vì tạo mới
+  if (!readerContainer) {
+    readerContainer = document.createElement("div");
+    readerContainer.id = "reader";
+    readerContainer.className = "reader";
+    app.appendChild(readerContainer);
 
-  setupReaderUI();
-  setupReaderModeButton();
-  setupPageInfoClick();
-  setupChapterNavigation();
-
+    setupReaderUI();
+    setupReaderModeButton();
+    setupPageInfoClick();
+    setupChapterNavigation();
+  }
+  // 🧽 Xoá nội dung cũ (ảnh cũ)
+  readerContainer.innerHTML = "";
+  readerContainer.classList.toggle("scroll-mode", readerMode === "vertical");
   // Import dynamic mode
   const load =
     readerMode === "vertical"
@@ -64,18 +77,20 @@ export function renderReader(
   load.then(({ renderScrollReader, renderHorizontalReader }) => {
     const renderFn =
       readerMode === "vertical" ? renderScrollReader : renderHorizontalReader;
+
+    // 🧠 Cập nhật controller + onPageChange callback
     controller = renderFn(
       images,
-      reader,
+      readerContainer,
       (newPage) => {
         currentPage = newPage;
       },
       readerMode === "vertical" ? scrollPage : currentPage
     );
+
+    updateReaderPageInfo(currentPage + 1, currentImages.length);
   });
 
-  app.appendChild(reader);
-  updateReaderPageInfo(currentPage + 1, currentImages.length);
 }
 
 /**
@@ -239,7 +254,9 @@ function updateReaderHeaderTitle(folderName) {
     if (!parentPath) {
       window.location.replace("/index.html");
     } else {
-      window.location.replace(`/index.html?path=${encodeURIComponent(parentPath)}`);
+      window.location.replace(
+        `/index.html?path=${encodeURIComponent(parentPath)}`
+      );
     }
   };
 }
