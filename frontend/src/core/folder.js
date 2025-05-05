@@ -133,6 +133,8 @@ function renderFromData(data) {
     // 🆕 update đúng phân trang: dùng tổng số folders
     updateFolderPaginationUI(folderPage, totalFolders, foldersPerPage);
   } else if (data.type === "reader") {
+    document.getElementById("loading-overlay")?.classList.remove("hidden");
+
     const encoded = encodeURIComponent(state.currentPath);
     window.location.href = `/reader.html?path=${encoded}`;
   }

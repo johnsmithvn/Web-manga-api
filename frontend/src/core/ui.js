@@ -247,96 +247,122 @@ export function renderRecentViewed(folders = []) {
 
 // / Side bar
 // 📂 Sidebar functions gộp từ sidebar.js
+function createSidebarButton(text, onClick) {
+  const btn = document.createElement("button");
+  btn.textContent = text;
+  btn.onclick = withLoading(onClick);
+  return btn;
+}
+
 export function setupSidebar() {
   const sidebar = document.getElementById("sidebar-menu");
   if (!sidebar) return;
-
   sidebar.innerHTML = "";
-  const changeBtn = document.createElement("button");
-  changeBtn.textContent = "🔄 Đổi Manga Folder";
-  changeBtn.onclick = () => {
-    changeRootFolder();
-  };
-  sidebar.appendChild(changeBtn);
-  // 🧹 Nút Dọn Cache
-  const resetBtn = document.createElement("button");
-  resetBtn.textContent = "🧹 Dọn DB Cache";
-  resetBtn.onclick = () => {
-    const root = getRootFolder();
-    if (!root) return alert("❌ Chưa chọn folder gốc");
 
-    const choice = prompt(
-      `Chọn hành động cho root "${root}":\n1 = Xoá DB\n2 = Reset (Xoá + Scan)`
-    );
+  const root = getRootFolder();
 
-    let mode = null;
-    if (choice === "1") mode = "delete";
-    else if (choice === "2") mode = "reset";
-    else return alert("❌ Hủy thao tác");
-
-    fetch(`/api/reset-cache?root=${encodeURIComponent(root)}&mode=${mode}`, {
-      method: "DELETE",
+  // 🔄 Đổi Manga Folder
+  sidebar.appendChild(
+    createSidebarButton("🔄 Đổi Manga Folder", () => {
+      changeRootFolder();
     })
-      .then((res) => res.json())
-      .then((data) => {
-        alert(data.message || "✅ Đã thực hiện xong");
+  );
+
+  // 🗑 Xoá DB
+  sidebar.appendChild(
+    createSidebarButton(
+      "🗑 Xoá DB",
+      withLoading(async () => {
+        if (!root) return alert("❌ Chưa chọn folder gốc");
+
+        const res = await fetch(
+          `/api/reset-cache?root=${encodeURIComponent(root)}&mode=delete`,
+          { method: "DELETE" }
+        );
+
+        const data = await res.json();
+        alert(data.message || "✅ Đã xoá DB");
       })
-      .catch((err) => {
-        console.error("❌ Lỗi reset cache:", err);
-        alert("❌ Lỗi khi gửi yêu cầu");
-      });
-  };
+    )
+  );
 
-  sidebar.appendChild(resetBtn);
+  // 🔄 Reset DB (xoá + scan)
+  sidebar.appendChild(
+    createSidebarButton(
+      "🔄 Reset DB (Xoá + Scan)",
+      withLoading(async () => {
+        if (!root) return alert("❌ Chưa chọn folder gốc");
 
-  // 🧹 Nút scan
-  // 📦 Nút Scan DB riêng (POST /api/scan)
-  const scanBtn = document.createElement("button");
-  scanBtn.textContent = "📦 Quét thư mục mới";
-  scanBtn.onclick = () => {
-    const root = getRootFolder();
-    if (!root) return alert("❌ Chưa chọn folder gốc");
+        const res = await fetch(
+          `/api/reset-cache?root=${encodeURIComponent(root)}&mode=reset`,
+          { method: "DELETE" }
+        );
 
-    fetch("/api/scan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ root }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
+        const data = await res.json();
+        alert(data.message || "✅ Reset DB xong");
+      })
+    )
+  );
+
+  // 📦 Quét thư mục mới (Scan DB)
+  sidebar.appendChild(
+    createSidebarButton(
+      "📦 Quét thư mục mới",
+      withLoading(async () => {
+        if (!root) return alert("❌ Chưa chọn folder gốc");
+
+        const res = await fetch("/api/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ root }),
+        });
+
+        const data = await res.json();
+
         alert(
-          `✅ Scan xong: Inserted ${data.stats.inserted}, Updated ${data.stats.updated}, Skipped ${data.stats.skipped}`
+          `✅ Scan xong:\nInserted ${data.stats.inserted}, Updated ${data.stats.updated}, Skipped ${data.stats.skipped}`
         );
       })
-      .catch((err) => {
-        console.error("❌ Lỗi khi scan:", err);
-        alert("❌ Không thể quét folder");
+    )
+  );
+
+  // 🧼 Xoá cache folder localStorage
+  sidebar.appendChild(
+    createSidebarButton("🧼 Xoá cache folder", () => {
+      if (!root) return alert("❌ Chưa chọn folder gốc");
+
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("folderCache::" + root + ":")) {
+          localStorage.removeItem(key);
+        }
       });
-  };
-  sidebar.appendChild(scanBtn);
 
-  // xóa cache localStorage
-  // 🧼 Xoá cache folder localStorage theo root (ngay lập tức)
-  const clearFolderCacheBtn = document.createElement("button");
-  clearFolderCacheBtn.textContent = "🧼 Xoá cache folder";
-  clearFolderCacheBtn.onclick = () => {
-    const root = getRootFolder();
-    if (!root) return alert("❌ Chưa chọn folder gốc");
-
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith("folderCache::" + root + ":")) {
-        localStorage.removeItem(key);
-      }
-    });
-
-    alert("✅ Đã xoá cache folder localStorage của root");
-    location.reload();
-  };
-  sidebar.appendChild(clearFolderCacheBtn);
+      alert("✅ Đã xoá cache folder localStorage của root");
+      location.reload();
+    })
+  );
 }
 
 export function toggleSidebar() {
   const sidebar = document.getElementById("sidebar-menu");
   if (!sidebar) return;
   sidebar.classList.toggle("active");
+}
+
+export function withLoading(fn) {
+  return async (...args) => {
+    const overlay = document.getElementById("loading-overlay");
+    overlay?.classList.remove("hidden");
+
+    // 💥 Ép trình duyệt render overlay trước khi tiếp tục
+    await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+
+    try {
+      await fn(...args);
+    } catch (e) {
+      console.error("❌ withLoading error:", e);
+    } finally {
+      overlay?.classList.add("hidden");
+    }
+  };
 }

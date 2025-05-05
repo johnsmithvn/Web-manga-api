@@ -6,6 +6,7 @@ import { setupSidebar,toggleSidebar,filterManga, toggleSearchBar } from "/src/co
  * Fetch and render reader data based on the URL path.
  */
 async function initializeReader() {
+  document.getElementById("loading-overlay")?.classList.remove("hidden");
   const urlParams = new URLSearchParams(window.location.search);
   const rawPath = urlParams.get("path");
   if (!rawPath) {
@@ -27,7 +28,10 @@ async function initializeReader() {
     const data = await response.json();
 
     if (data.type === "reader" && Array.isArray(data.images)) {
+      document.getElementById("loading-overlay")?.classList.add("hidden"); // ✅ Ẩn overlay sau khi render
+
       renderReader(data.images);
+      
       setupSidebar()
        // ✅ Gắn sự kiện toggle
        document.getElementById("sidebarToggle")?.addEventListener("click", toggleSidebar);
