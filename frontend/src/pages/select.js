@@ -7,7 +7,7 @@ import { clearAllFolderCache } from "../core/storage.js";
  */
 
 async function loadRootFolders() {
-  clearAllFolderCache(); // 🧹 Clear cache folder mỗi lần vào select.html
+  // clearAllFolderCache(); // 🧹 Clear cache folder mỗi lần vào select.html
   document.getElementById("loading-overlay")?.classList.remove("hidden");
 
   try {
@@ -49,12 +49,12 @@ async function loadRootFolders() {
 
         if (Array.isArray(data) && data.length === 0) {
           console.log("📂 DB rỗng, tiến hành scan...");
-
-          await fetch(
-            `/api/reset-cache?root=${encodeURIComponent(folder)}&mode=scan`,
-            { method: "DELETE" }
-          );
-
+          await fetch("/api/scan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ root: folder })
+          });
+          
           alert("✅ Đã quét cache cho root folder.");
         }
 

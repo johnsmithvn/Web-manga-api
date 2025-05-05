@@ -2,7 +2,7 @@
 // 📁 frontend/src/ui.js ➜ renderRandomBanner()
 import { getRootFolder } from "./storage.js";
 
-import { state, loadFolder } from "/src/core/folder.js"; 
+import { state, loadFolder } from "/src/core/folder.js";
 import { changeRootFolder } from "./storage.js";
 import { renderFolderSlider } from "/src/components/folderSlider.js";
 
@@ -266,13 +266,12 @@ export function setupSidebar() {
     if (!root) return alert("❌ Chưa chọn folder gốc");
 
     const choice = prompt(
-      `Chọn hành động cho root "${root}":\n1 = Xoá DB\n2 = Scan mới\n3 = Reset (Xoá + Scan)`
+      `Chọn hành động cho root "${root}":\n1 = Xoá DB\n2 = Reset (Xoá + Scan)`
     );
 
     let mode = null;
     if (choice === "1") mode = "delete";
-    else if (choice === "2") mode = "scan";
-    else if (choice === "3") mode = "reset";
+    else if (choice === "2") mode = "reset";
     else return alert("❌ Hủy thao tác");
 
     fetch(`/api/reset-cache?root=${encodeURIComponent(root)}&mode=${mode}`, {
@@ -289,6 +288,32 @@ export function setupSidebar() {
   };
 
   sidebar.appendChild(resetBtn);
+
+  // 🧹 Nút scan
+  // 📦 Nút Scan DB riêng (POST /api/scan)
+  const scanBtn = document.createElement("button");
+  scanBtn.textContent = "📦 Quét thư mục mới";
+  scanBtn.onclick = () => {
+    const root = getRootFolder();
+    if (!root) return alert("❌ Chưa chọn folder gốc");
+
+    fetch("/api/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ root }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(
+          `✅ Scan xong: Inserted ${data.stats.inserted}, Updated ${data.stats.updated}, Skipped ${data.stats.skipped}`
+        );
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi khi scan:", err);
+        alert("❌ Không thể quét folder");
+      });
+  };
+  sidebar.appendChild(scanBtn);
 }
 
 export function toggleSidebar() {

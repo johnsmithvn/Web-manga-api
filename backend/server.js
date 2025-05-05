@@ -70,9 +70,10 @@ app.use(async (req, res, next) => {
 
 // ✅ API chính
 app.use("/api", require("./api/folder-cache")); // 🌟 API gộp random, top, search, path, folders
-app.use("/api", require("./api/folder-scan")); // 🔍 Quét toàn bộ DB
 app.use("/api", require("./api/increase-view")); // 📈 Ghi lượt xem
 app.use("/api", require("./api/reset-cache")); // 🔁 Reset cache DB
+// ✅ Đăng ký route /api/scan trong server.js:
+app.use("/api/scan", require("./api/scan"));
 
 // ✅ Serve static images từ BASE_DIR (E:/File/Manga)
 app.use("/manga", express.static(BASE_DIR));

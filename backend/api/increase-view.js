@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const db = require("../utils/db");
 
 /**
  * 📈 Ghi lượt xem cho folder (POST)
