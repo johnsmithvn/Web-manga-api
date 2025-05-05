@@ -314,7 +314,25 @@ export function setupSidebar() {
       });
   };
   sidebar.appendChild(scanBtn);
-  
+
+  // xóa cache localStorage
+  // 🧼 Xoá cache folder localStorage theo root (ngay lập tức)
+  const clearFolderCacheBtn = document.createElement("button");
+  clearFolderCacheBtn.textContent = "🧼 Xoá cache folder";
+  clearFolderCacheBtn.onclick = () => {
+    const root = getRootFolder();
+    if (!root) return alert("❌ Chưa chọn folder gốc");
+
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("folderCache::" + root + ":")) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    alert("✅ Đã xoá cache folder localStorage của root");
+    location.reload();
+  };
+  sidebar.appendChild(clearFolderCacheBtn);
 }
 
 export function toggleSidebar() {
