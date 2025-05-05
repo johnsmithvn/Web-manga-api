@@ -2,7 +2,7 @@
 // 📁 frontend/src/ui.js ➜ renderRandomBanner()
 import { getRootFolder } from "./storage.js";
 
-import { state, loadFolder } from "/src/core/folder.js"; // 🆕 Import ensureAllFoldersList
+import { state, loadFolder } from "/src/core/folder.js"; 
 import { changeRootFolder } from "./storage.js";
 import { renderFolderSlider } from "/src/components/folderSlider.js";
 
@@ -82,15 +82,15 @@ export function toggleDarkMode() {
 /**
  * ⬅️ Xử lý hành động Back (về root hoặc folder cha)
  */
-export function goBack() {
-  if (!state.currentPath || state.currentPath.trim() === "") {
-    changeRootFolder();
-  } else {
-    const parts = state.currentPath.split("/").filter(Boolean);
-    parts.pop();
-    loadFolder(parts.join("/"));
-  }
-}
+// export function goBack() {
+//   if (!state.currentPath || state.currentPath.trim() === "") {
+//     changeRootFolder();
+//   } else {
+//     const parts = state.currentPath.split("/").filter(Boolean);
+//     parts.pop();
+//     loadFolder(parts.join("/"));
+//   }
+// }
 
 /**
  * 📄 Cập nhật UI phân trang
@@ -255,8 +255,7 @@ export function setupSidebar() {
   const changeBtn = document.createElement("button");
   changeBtn.textContent = "🔄 Đổi Manga Folder";
   changeBtn.onclick = () => {
-    localStorage.removeItem("rootFolder");
-    window.location.href = "/select.html";
+    changeRootFolder();
   };
   sidebar.appendChild(changeBtn);
   // 🧹 Nút Dọn Cache

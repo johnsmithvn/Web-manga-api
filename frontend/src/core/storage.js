@@ -108,21 +108,21 @@ export function getAllFoldersList(root) {
 /**
  * 🆕 Lưu cache full folders list cho rootFolder
  */
-export function setAllFoldersList(root, list) {
-  const key = `${FOLDERS_LIST_PREFIX}${root}`;
-  localStorage.setItem(
-    key,
-    JSON.stringify({
-      timestamp: Date.now(),
-      data: list,
-    })
-  );
-}
+// export function setAllFoldersList(root, list) {
+//   const key = `${FOLDERS_LIST_PREFIX}${root}`;
+//   localStorage.setItem(
+//     key,
+//     JSON.stringify({
+//       timestamp: Date.now(),
+//       data: list,
+//     })
+//   );
+// }
 
 /**
  * 🆕 Xóa cache full folders list theo root
  */
-export function clearAllFoldersList(root) {
-  const key = `${FOLDERS_LIST_PREFIX}${root}`;
-  localStorage.removeItem(key);
-}
+// export function clearAllFoldersList(root) {
+//   const key = `${FOLDERS_LIST_PREFIX}${root}`;
+//   localStorage.removeItem(key);
+// }
