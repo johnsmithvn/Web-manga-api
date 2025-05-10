@@ -79,18 +79,6 @@ export function toggleDarkMode() {
   document.body.classList.toggle("dark-mode");
 }
 
-/**
- * ⬅️ Xử lý hành động Back (về root hoặc folder cha)
- */
-// export function goBack() {
-//   if (!state.currentPath || state.currentPath.trim() === "") {
-//     changeRootFolder();
-//   } else {
-//     const parts = state.currentPath.split("/").filter(Boolean);
-//     parts.pop();
-//     loadFolder(parts.join("/"));
-//   }
-// }
 
 /**
  * 📄 Cập nhật UI phân trang
@@ -341,6 +329,13 @@ export function setupSidebar() {
       location.reload();
     })
   );
+
+    // ❤️ Mở trang Yêu thích
+    sidebar.appendChild(
+      createSidebarButton("❤️ Danh sách yêu thích", () => {
+        window.location.href = "/favorites.html";
+      })
+    );
 }
 
 export function toggleSidebar() {

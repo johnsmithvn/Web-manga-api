@@ -109,4 +109,9 @@
       height: 180px;
     }
   }
-  
+  /* 📁 Grid hiển thị folder (favorites page) */
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+}

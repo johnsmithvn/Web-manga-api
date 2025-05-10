@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/default/favicon.png" />
+    <title>📚 MyLocalManga</title>
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/pages/home.css" />
+    <link rel="stylesheet" href="/src/styles/components/folder-slider.css" />
+    <link rel="stylesheet" href="/src/styles/components/folder-card.css" />
+    <script type="module" src="/src/pages/favorites.js"></script>
+  </head>
+  <body>
+    <!-- ✅ HEADER GỐC -->
+    <header id="site-header" class="site-header">
+      <div class="header-left">
+        <div class="logo" onclick="location.href='index.html'">
+          📚 <span class="logo-text">MyLocalManga</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ✅ WRAPPER CHÍNH -->
+    <div id="wrapper">
+      <aside id="sidebar-menu"></aside>
+      <div class="main-content">
+        <!-- ✅ CHỖ HIỂN THỊ FOLDER CHÍNH -->
+        <div id="favorites-list" class="folder-list folder-grid"></div>
+      </div>
+    </div>
+
+    <!-- ✅ OVERLAY LOADING -->
+    <div id="loading-overlay" class="hidden">
+      <div class="loader-text">⏳ Đang tải...</div>
+    </div>
+  </body>
+</html>
