@@ -21,7 +21,6 @@ function scanFolderRecursive(
   const db = getDB(root);
   const rootPath = getRootPath(root);
   const fullPath = path.join(rootPath, currentPath);
-
   if (!hasImageRecursively(fullPath)) return stats;
 
   // ✅ Scan folder hiện tại
@@ -54,7 +53,7 @@ function scanFolderRecursive(
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       root,
-      currentPath || "(root)",
+      path.basename(currentPath) || "(root)",
       currentPath,
       thumbnail,
       lastModified,
@@ -94,7 +93,6 @@ function scanFolderRecursive(
   }
 
   return stats;
-
 }
 
 module.exports = { scanFolderRecursive };
