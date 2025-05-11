@@ -1,4 +1,5 @@
 // 📁 folderCard.js – component dùng chung để hiển thị 1 thẻ folder
+import { getSourceKey } from "../core/storage.js";
 
 /**
  * Tạo 1 card HTML cho folder (sử dụng cho slider hoặc grid)
@@ -15,12 +16,11 @@ export function renderFolderCard(folder, showViews = false) {
     ? `<img src="${folder.thumbnail}" alt="${folder.name}" loading="lazy">`
     : `<div class="folder-thumb-placeholder">Không có ảnh</div>`;
 
-
-    let displayName = folder.name;
-    if (folder.name === "__self__") {
-      const parts = folder.path.split("/");
-      displayName = parts.at(-2) || "Ảnh";
-    }
+  let displayName = folder.name;
+  if (folder.name === "__self__") {
+    const parts = folder.path.split("/");
+    displayName = parts.at(-2) || "Ảnh";
+  }
   // HTML bên trong card
   card.innerHTML = `
       <div class="folder-thumb">
@@ -36,11 +36,14 @@ export function renderFolderCard(folder, showViews = false) {
 
   // Xử lý click để vào trang đọc hoặc load folder
   card.onclick = () => {
+    const sourceKey = getSourceKey(); // 📌 Quan trọng để giữ đúng root
+    const fullPath = folder.path; // path đã là tương đối từ root
+
     if (folder.isSelfReader && folder.images) {
-      const encoded = encodeURIComponent(folder.path);
+      const encoded = encodeURIComponent(fullPath);
       window.location.href = `/reader.html?path=${encoded}`;
     } else {
-      window.loadFolder(folder.path);
+      window.loadFolder(fullPath);
     }
   };
 

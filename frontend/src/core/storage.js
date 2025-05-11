@@ -1,11 +1,17 @@
 // 📁 frontend/src/storage.js
 
 /**
- * 📂 Lấy rootFolder hiện tại từ localStorage
- * @returns {string|null}
+ * 📂 Lấy folder hiện tại đang đọc (VD: Naruto)
  */
 export function getRootFolder() {
   return localStorage.getItem("rootFolder");
+}
+
+/**
+ * 🌍 Lấy source key hiện tại (VD: FANTASY, ANIME, ...)
+ */
+export function getSourceKey() {
+  return localStorage.getItem("sourceKey");
 }
 
 /**
@@ -20,21 +26,27 @@ export function changeRootFolder() {
  * 📂 Bắt buộc kiểm tra rootFolder, nếu chưa chọn thì redirect
  */
 export function requireRootFolder() {
-  const root = getRootFolder();
-  if (!root) {
-    window.location.href = "/select.html";
+  const folder = getRootFolder();
+  const source = getSourceKey();
+  if (!folder || !source) {
+    window.location.href = "/home.html";
   }
 }
 
 const FOLDER_CACHE_PREFIX = "folderCache::";
-const FOLDERS_LIST_PREFIX = "allFoldersList::"; // 🆕 Thêm cache full list
+const FOLDERS_LIST_PREFIX = "allFoldersList::";
 const CACHE_TIMEOUT = 24 * 60 * 60 * 1000; // 1 ngày
 
 /**
- * 📦 Lấy cache folder theo path
+ * 📦 Lấy cache folder theo path (dựa trên cả sourceKey)
+ * @param {string} rootFolder - tên folder (VD: Naruto)
+ * @param {string} path - đường dẫn hiện tại trong folder
  */
-export function getFolderCache(root, path) {
-  const key = `${FOLDER_CACHE_PREFIX}${root}:${path}`;
+export function getFolderCache(rootFolder, path) {
+  const sourceKey = getSourceKey();
+  if (!sourceKey) return null;
+
+  const key = `${FOLDER_CACHE_PREFIX}${sourceKey}::${rootFolder}:${path}`;
   const raw = localStorage.getItem(key);
   if (!raw) return null;
 
@@ -54,33 +66,36 @@ export function getFolderCache(root, path) {
 
 /**
  * 📦 Lưu cache folder
+ * @param {string} rootFolder
+ * @param {string} path
+ * @param {object} data
  */
-export function setFolderCache(root, path, data) {
-  const key = `${FOLDER_CACHE_PREFIX}${root}:${path}`;
+export function setFolderCache(rootFolder, path, data) {
+  const sourceKey = getSourceKey();
+  if (!sourceKey) return;
+
+  const key = `${FOLDER_CACHE_PREFIX}${sourceKey}::${rootFolder}:${path}`;
   const jsonData = JSON.stringify({
     timestamp: Date.now(),
     data: data,
   });
 
-  const maxTotalSize = 4 * 1024 * 1024; // ✅ Giới hạn tổng 8MB
+  const maxTotalSize = 4 * 1024 * 1024;
   const currentTotalSize = getCurrentCacheSize();
-  // 🆕 Nếu dữ liệu quá lớn (trên 4MB) thì không lưu cache
   if (jsonData.length > maxTotalSize) {
-    console.warn(`⚠️ Folder quá lớn, không cache localStorage: ${path}`);
+    console.warn(`⚠️ Không cache folder (quá lớn): ${path}`);
     return;
   }
 
-  // Nếu vượt quá tổng → xoá cache cũ cho đến khi đủ chỗ
   if (currentTotalSize + jsonData.length > maxTotalSize) {
-    size = maxTotalSize - jsonData.length;
-    if (size > maxTotalSize / 2) {
-      size = maxTotalSize / 2; // Giới hạn tối đa 50% dung lượng
-    }
-    cleanUpOldCache(size); // giữ lại đủ chỗ
+    let size = maxTotalSize - jsonData.length;
+    if (size > maxTotalSize / 2) size = maxTotalSize / 2;
+    cleanUpOldCache(size);
   }
 
   localStorage.setItem(key, jsonData);
 }
+
 function getCurrentCacheSize() {
   let total = 0;
   for (const key in localStorage) {
@@ -92,9 +107,6 @@ function getCurrentCacheSize() {
   return total;
 }
 
-/**
- * 🧹 Xoá cache cũ theo timestamp cho đến khi trống >= minFreeBytes
- */
 function cleanUpOldCache(minFreeBytes) {
   const entries = [];
 
@@ -109,12 +121,11 @@ function cleanUpOldCache(minFreeBytes) {
           timestamp: parsed.timestamp || 0,
         });
       } catch {
-        localStorage.removeItem(key); // corrupted
+        localStorage.removeItem(key);
       }
     }
   }
 
-  // Sắp xếp theo timestamp tăng dần (cũ nhất trước)
   entries.sort((a, b) => a.timestamp - b.timestamp);
 
   let freed = 0;
@@ -124,10 +135,11 @@ function cleanUpOldCache(minFreeBytes) {
     if (freed >= minFreeBytes) break;
   }
 
-  console.log(`🧹 Dọn cache: đã xoá ${freed} byte`);
+  console.log(`🧹 Đã xoá ${freed} byte cache`);
 }
+
 /**
- * 🧹 Xoá toàn bộ folder cache (theo dạng folderCache::)
+ * 🧹 Xoá toàn bộ cache folder
  */
 export function clearAllFolderCache() {
   Object.keys(localStorage).forEach((key) => {
@@ -138,10 +150,13 @@ export function clearAllFolderCache() {
 }
 
 /**
- * 🆕 Lấy cache full folders list cho rootFolder
+ * 🆕 Lấy danh sách all folders list cache (nếu có)
  */
-export function getAllFoldersList(root) {
-  const key = `${FOLDERS_LIST_PREFIX}${root}`;
+export function getAllFoldersList(rootFolder) {
+  const sourceKey = getSourceKey();
+  if (!sourceKey) return null;
+
+  const key = `${FOLDERS_LIST_PREFIX}${sourceKey}::${rootFolder}`;
   const raw = localStorage.getItem(key);
   if (!raw) return null;
 
@@ -159,24 +174,36 @@ export function getAllFoldersList(root) {
   }
 }
 
-/**
- * 🆕 Lưu cache full folders list cho rootFolder
- */
-// export function setAllFoldersList(root, list) {
-//   const key = `${FOLDERS_LIST_PREFIX}${root}`;
-//   localStorage.setItem(
-//     key,
-//     JSON.stringify({
-//       timestamp: Date.now(),
-//       data: list,
-//     })
-//   );
-// }
 
-/**
- * 🆕 Xóa cache full folders list theo root
- */
-// export function clearAllFoldersList(root) {
-//   const key = `${FOLDERS_LIST_PREFIX}${root}`;
-//   localStorage.removeItem(key);
-// }
+/** ✅ Ghi lại folder vừa đọc vào localStorage */
+export function saveRecentViewed(folder) {
+  try {
+    const root = getRootFolder();
+    const sourceKey = getSourceKey(); // ✅ Thêm dòng này
+
+    const key = `recentViewed::${root}`;
+    //  sửa thành cái này nếu muốn đúng rootFolder và phải sửa trong index nữa
+    // const key = `recentViewed::${sourceKey}::${root}`; // ✅ Gộp sourceKey
+
+    const raw = localStorage.getItem(key);
+    const list = raw ? JSON.parse(raw) : [];
+
+    // Bỏ item cũ nếu trùng path
+    const filtered = list.filter((item) => item.path !== folder.path);
+
+    // Thêm lên đầu
+    filtered.unshift({
+      name: folder.name,
+      path: folder.path,
+      thumbnail: folder.thumbnail,
+    });
+
+    // Giới hạn 10
+    const limited = filtered.slice(0, 30);
+    localStorage.setItem(key, JSON.stringify(limited));
+  } catch (err) {
+    console.warn("❌ Không thể lưu recentViewed:", err);
+  }
+}
+
+

@@ -1,38 +1,27 @@
-// ➕ BỔ SUNG UI FRONTEND RENDER BANNER RANDOM
-// 📁 frontend/src/ui.js ➜ renderRandomBanner()
-import { getRootFolder } from "./storage.js";
-
+import { getRootFolder, getSourceKey } from "./storage.js";
 import { state, loadFolder } from "/src/core/folder.js";
 import { changeRootFolder } from "./storage.js";
 import { renderFolderSlider } from "/src/components/folderSlider.js";
 
 /**
- * 🔍 Lọc danh sách truyện theo từ khóa
+ * 🔍 Tìm kiếm truyện theo từ khóa
  */
-
 export async function filterManga() {
   const keyword = document
     .getElementById("floatingSearchInput")
     ?.value.trim()
     .toLowerCase();
   const dropdown = document.getElementById("search-dropdown");
-  const root = getRootFolder();
-  if (!dropdown || !root) return;
+  const sourceKey = getSourceKey();
+  if (!dropdown || !keyword || !sourceKey) return;
 
-  if (!keyword) {
-    dropdown.classList.add("hidden");
-    dropdown.innerHTML = "";
-    return;
-  }
-
-  // Hiện dropdown + loader
   dropdown.classList.remove("hidden");
   dropdown.innerHTML = `<div id="search-loader">🔍 Đang tìm kiếm...</div>`;
 
   try {
     const res = await fetch(
       `/api/folder-cache?mode=search&root=${encodeURIComponent(
-        root
+        sourceKey
       )}&q=${encodeURIComponent(keyword)}`
     );
     const results = await res.json();
@@ -54,7 +43,6 @@ export async function filterManga() {
       item.onclick = () => {
         dropdown.classList.add("hidden");
 
-        // Nếu đang trong reader.html thì redirect thủ công
         if (window.location.pathname.includes("reader.html")) {
           window.location.href = `/index.html?path=${encodeURIComponent(
             f.path
@@ -73,27 +61,14 @@ export async function filterManga() {
 }
 
 /**
- * 🌙 Bật / tắt chế độ dark mode
+ * 🌙 Bật / tắt dark mode
  */
 export function toggleDarkMode() {
   document.body.classList.toggle("dark-mode");
 }
 
 /**
- * ⬅️ Xử lý hành động Back (về root hoặc folder cha)
- */
-// export function goBack() {
-//   if (!state.currentPath || state.currentPath.trim() === "") {
-//     changeRootFolder();
-//   } else {
-//     const parts = state.currentPath.split("/").filter(Boolean);
-//     parts.pop();
-//     loadFolder(parts.join("/"));
-//   }
-// }
-
-/**
- * 📄 Cập nhật UI phân trang
+ * 📄 Hiển thị phân trang folder
  */
 export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
   const totalPages = Math.ceil(totalItems / perPage);
@@ -150,7 +125,7 @@ export function updateFolderPaginationUI(currentPage, totalItems, perPage) {
 }
 
 /**
- * 🔍 Toggle thanh tìm kiếm nổi (slide xuống giống YouTube)
+ * 🔍 Toggle thanh tìm kiếm nổi
  */
 export function toggleSearchBar() {
   const bar = document.getElementById("floating-search");
@@ -166,27 +141,8 @@ export function toggleSearchBar() {
 }
 
 /**
- * 🖼️ Render banner thư mục ngẫu nhiên dạng slider ngang
- * @param {Array} folders - Danh sách folder có thumbnail
+ * 🖼 Banner random
  */
-// ✅ Hiển thị thời gian cập nhật ngẫu nhiên bên dưới banner random
-export function showRandomUpdatedTime(timestamp) {
-  const info = document.getElementById("random-timestamp");
-  if (!info) return;
-
-  const diff = Math.floor((Date.now() - timestamp) / 60000); // phút
-  // ✅ Check nếu mobile thì rút gọn
-  const isMobile = window.innerWidth <= 480;
-
-  if (isMobile) {
-    info.textContent = `🎲 ${diff === 0 ? "now" : `${diff}m`}`;
-  } else {
-    info.textContent = `🎲 Random ${
-      diff === 0 ? "vừa xong" : `${diff} phút trước`
-    }`;
-  }
-}
-
 export function renderRandomBanner(folders) {
   renderFolderSlider({
     title: "✨ Đề xuất ngẫu nhiên",
@@ -195,12 +151,6 @@ export function renderRandomBanner(folders) {
   });
 }
 
-/**
- * 📈 Render hàng TOP VIEW bên dưới banner random
- * @param {Array} folders - Có dạng {name, path, thumbnail, count}
- */
-
-// ✅ Cập nhật renderTopView để thêm tiêu đề
 export function renderTopView(folders) {
   renderFolderSlider({
     title: "👑 Xem nhiều nhất",
@@ -209,35 +159,6 @@ export function renderTopView(folders) {
   });
 }
 
-// ➕ BỔ SUNG UI FRONTEND - TIÊU ĐỀ + RECENT VIEW
-
-/** ✅ Ghi lại folder vừa đọc vào localStorage */
-export function saveRecentViewed(folder) {
-  try {
-    const root = getRootFolder();
-    const key = `recentViewed::${root}`;
-    const raw = localStorage.getItem(key);
-    const list = raw ? JSON.parse(raw) : [];
-
-    // Bỏ item cũ nếu trùng path
-    const filtered = list.filter((item) => item.path !== folder.path);
-
-    // Thêm lên đầu
-    filtered.unshift({
-      name: folder.name,
-      path: folder.path,
-      thumbnail: folder.thumbnail,
-    });
-
-    // Giới hạn 10
-    const limited = filtered.slice(0, 30);
-    localStorage.setItem(key, JSON.stringify(limited));
-  } catch (err) {
-    console.warn("❌ Không thể lưu recentViewed:", err);
-  }
-}
-
-/** 🧠 Danh sách truy cập gần đây – hiển thị bên phải, vuốt được */
 export function renderRecentViewed(folders = []) {
   renderFolderSlider({
     title: "🕘 Mới đọc",
@@ -245,102 +166,75 @@ export function renderRecentViewed(folders = []) {
   });
 }
 
-// / Side bar
-// 📂 Sidebar functions gộp từ sidebar.js
-function createSidebarButton(text, onClick) {
-  const btn = document.createElement("button");
-  btn.textContent = text;
-  btn.onclick = withLoading(onClick);
-  return btn;
+export function showRandomUpdatedTime(timestamp) {
+  const info = document.getElementById("random-timestamp");
+  if (!info) return;
+  const diff = Math.floor((Date.now() - timestamp) / 60000);
+  const isMobile = window.innerWidth <= 480;
+  info.textContent = isMobile
+    ? `🎲 ${diff === 0 ? "now" : `${diff}m`}`
+    : `🎲 Random ${diff === 0 ? "vừa xong" : `${diff} phút trước`}`;
 }
 
+/**
+ * ⚙️ Sidebar setup
+ */
 export function setupSidebar() {
   const sidebar = document.getElementById("sidebar-menu");
   if (!sidebar) return;
   sidebar.innerHTML = "";
 
-  const root = getRootFolder();
+  const sourceKey = getSourceKey();
+  if (!sourceKey) return;
 
-  // 🔄 Đổi Manga Folder
-  sidebar.appendChild(
-    createSidebarButton("🔄 Đổi Manga Folder", () => {
-      changeRootFolder();
-    })
-  );
+  sidebar.appendChild(createSidebarButton("🔄 Đổi Manga Folder", () => {
+    changeRootFolder();
+  }));
 
-  // 🗑 Xoá DB
-  sidebar.appendChild(
-    createSidebarButton(
-      "🗑 Xoá DB",
-      withLoading(async () => {
-        if (!root) return alert("❌ Chưa chọn folder gốc");
+  sidebar.appendChild(createSidebarButton("🗑 Xoá DB", async () => {
+    const res = await fetch(`/api/reset-cache?root=${encodeURIComponent(sourceKey)}&mode=delete`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    alert(data.message || "✅ Đã xoá DB");
+  }));
 
-        const res = await fetch(
-          `/api/reset-cache?root=${encodeURIComponent(root)}&mode=delete`,
-          { method: "DELETE" }
-        );
+  sidebar.appendChild(createSidebarButton("🔄 Reset DB (Xoá + Scan)", async () => {
+    const res = await fetch(`/api/reset-cache?root=${encodeURIComponent(sourceKey)}&mode=reset`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    alert(data.message || "✅ Reset DB xong");
+  }));
 
-        const data = await res.json();
-        alert(data.message || "✅ Đã xoá DB");
-      })
-    )
-  );
+  sidebar.appendChild(createSidebarButton("📦 Quét thư mục mới", async () => {
+    const res = await fetch(`/api/scan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ root: sourceKey }),
+    });
+    const data = await res.json();
+    alert(
+      `✅ Scan xong:\nInserted ${data.stats.inserted}, Updated ${data.stats.updated}, Skipped ${data.stats.skipped}`
+    );
+  }));
 
-  // 🔄 Reset DB (xoá + scan)
-  sidebar.appendChild(
-    createSidebarButton(
-      "🔄 Reset DB (Xoá + Scan)",
-      withLoading(async () => {
-        if (!root) return alert("❌ Chưa chọn folder gốc");
+  sidebar.appendChild(createSidebarButton("🧼 Xoá cache folder", () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("folderCache::" + sourceKey + "::")) {
+        localStorage.removeItem(key);
+      }
+    });
+    alert("✅ Đã xoá cache folder localStorage của source");
+    location.reload();
+  }));
+}
 
-        const res = await fetch(
-          `/api/reset-cache?root=${encodeURIComponent(root)}&mode=reset`,
-          { method: "DELETE" }
-        );
-
-        const data = await res.json();
-        alert(data.message || "✅ Reset DB xong");
-      })
-    )
-  );
-
-  // 📦 Quét thư mục mới (Scan DB)
-  sidebar.appendChild(
-    createSidebarButton(
-      "📦 Quét thư mục mới",
-      withLoading(async () => {
-        if (!root) return alert("❌ Chưa chọn folder gốc");
-
-        const res = await fetch("/api/scan", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ root }),
-        });
-
-        const data = await res.json();
-
-        alert(
-          `✅ Scan xong:\nInserted ${data.stats.inserted}, Updated ${data.stats.updated}, Skipped ${data.stats.skipped}`
-        );
-      })
-    )
-  );
-
-  // 🧼 Xoá cache folder localStorage
-  sidebar.appendChild(
-    createSidebarButton("🧼 Xoá cache folder", () => {
-      if (!root) return alert("❌ Chưa chọn folder gốc");
-
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith("folderCache::" + root + ":")) {
-          localStorage.removeItem(key);
-        }
-      });
-
-      alert("✅ Đã xoá cache folder localStorage của root");
-      location.reload();
-    })
-  );
+function createSidebarButton(text, onClick) {
+  const btn = document.createElement("button");
+  btn.textContent = text;
+  btn.onclick = withLoading(onClick);
+  return btn;
 }
 
 export function toggleSidebar() {
@@ -353,10 +247,7 @@ export function withLoading(fn) {
   return async (...args) => {
     const overlay = document.getElementById("loading-overlay");
     overlay?.classList.remove("hidden");
-
-    // 💥 Ép trình duyệt render overlay trước khi tiếp tục
     await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
-
     try {
       await fn(...args);
     } catch (e) {

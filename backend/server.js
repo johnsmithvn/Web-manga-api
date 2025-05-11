@@ -3,7 +3,8 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { BASE_DIR } = require("./utils/config");
+const { ROOT_PATHS } = require("./utils/config");
+const { getAllRootKeys } = require("./utils/config");
 
 const app = express();
 const PORT = 3000; // PORT = process.env.PORT || 3000; // ✅ Lấy từ biến môi trường
@@ -75,9 +76,10 @@ app.use("/api", require("./api/reset-cache")); // 🔁 Reset cache DB
 // ✅ Đăng ký route /api/scan trong server.js:
 app.use("/api/scan", require("./api/scan"));
 
-// ✅ Serve static images từ BASE_DIR (E:/File/Manga)
-app.use("/manga", express.static(BASE_DIR));
-
+// ✅ Serve static images từ 
+for (const [key, absPath] of Object.entries(ROOT_PATHS)) {
+  app.use("/manga", express.static(absPath));
+}
 // ✅ Serve frontend static files
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 app.use("/src", express.static(path.join(__dirname, "../frontend/src")));
@@ -93,22 +95,30 @@ app.use("/manga", (req, res, next) => {
   next();
 });
 
-// 📂 API: Trả về danh sách folder gốc (1,2,3,...)
+// 📂 API: Trả về danh sách key nguồn từ .env
 app.get("/api/list-roots", (req, res) => {
-  if (!fs.existsSync(BASE_DIR)) {
-    return res.status(500).json({ error: "BASE_DIR không tồn tại" });
-  }
-
-  const entries = fs.readdirSync(BASE_DIR, { withFileTypes: true });
-  const roots = entries.filter((e) => e.isDirectory()).map((e) => e.name);
-
-  res.json(roots);
+  res.json(getAllRootKeys()); // ✅ Trả về ["FANTASY", "ANIME", ...]
 });
+
 
 // 🔥 Fallback tất cả route không match ➔ trả về index.html (SPA mode)
-app.get(/^\/(?!api|src|manga).*/, (req, res) => {
+// ✅ Trả đúng file cho từng trang tĩnh
+app.get("/select.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/public/select.html"));
+});
+
+app.get("/reader.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/public/reader.html"));
+});
+
+app.get("/index.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/public/index.html"));
 });
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/public/home.html"));
+});
+
 
 // ✅ Start server
 app.listen(PORT, () => {
