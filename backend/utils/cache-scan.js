@@ -48,11 +48,12 @@ function scanFolderRecursive(
   if (!existing) {
     db.prepare(
       `INSERT INTO folders (
-        root, name, path, thumbnail,
+        root,rootFolder, name, path, thumbnail,
         lastModified, imageCount, chapterCount, type, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`
     ).run(
       root,
+      currentPath.split("/")[0], // ✅ rootFolder là folder cấp 1
       path.basename(currentPath) || "(root)",
       currentPath,
       thumbnail,

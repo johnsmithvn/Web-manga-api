@@ -149,30 +149,30 @@ export function clearAllFolderCache() {
   });
 }
 
-/**
- * 🆕 Lấy danh sách all folders list cache (nếu có)
- */
-export function getAllFoldersList(rootFolder) {
-  const sourceKey = getSourceKey();
-  if (!sourceKey) return null;
+// /**
+//  * 🆕 Lấy danh sách all folders list cache (nếu có)
+//  */
+// export function getAllFoldersList(rootFolder) {
+//   const sourceKey = getSourceKey();
+//   if (!sourceKey) return null;
 
-  const key = `${FOLDERS_LIST_PREFIX}${sourceKey}::${rootFolder}`;
-  const raw = localStorage.getItem(key);
-  if (!raw) return null;
+//   const key = `${FOLDERS_LIST_PREFIX}${sourceKey}::${rootFolder}`;
+//   const raw = localStorage.getItem(key);
+//   if (!raw) return null;
 
-  try {
-    const parsed = JSON.parse(raw);
-    const now = Date.now();
-    if (now - parsed.timestamp > CACHE_TIMEOUT) {
-      localStorage.removeItem(key);
-      return null;
-    }
-    return parsed.data;
-  } catch {
-    localStorage.removeItem(key);
-    return null;
-  }
-}
+//   try {
+//     const parsed = JSON.parse(raw);
+//     const now = Date.now();
+//     if (now - parsed.timestamp > CACHE_TIMEOUT) {
+//       localStorage.removeItem(key);
+//       return null;
+//     }
+//     return parsed.data;
+//   } catch {
+//     localStorage.removeItem(key);
+//     return null;
+//   }
+// }
 
 
 /** ✅ Ghi lại folder vừa đọc vào localStorage */

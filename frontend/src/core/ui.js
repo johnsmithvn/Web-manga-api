@@ -184,56 +184,116 @@ export function setupSidebar() {
   if (!sidebar) return;
   sidebar.innerHTML = "";
 
-  const sourceKey = getSourceKey();
-  if (!sourceKey) return;
+  const sourceKey = getSourceKey(); // ví dụ: FANTASY
+  const rootFolder = getRootFolder(); // ví dụ: Naruto
+  if (!sourceKey || !rootFolder) return;
 
-  sidebar.appendChild(createSidebarButton("🔄 Đổi Manga Folder", () => {
-    changeRootFolder();
-  }));
+  sidebar.appendChild(
+    createSidebarButton("🔄 Đổi Manga Folder", () => {
+      changeRootFolder();
+    })
+  );
 
-  sidebar.appendChild(createSidebarButton("🗑 Xoá DB", async () => {
-    const res = await fetch(`/api/reset-cache?root=${encodeURIComponent(sourceKey)}&mode=delete`, {
-      method: "DELETE",
-    });
-    const data = await res.json();
-    alert(data.message || "✅ Đã xoá DB");
-  }));
+  // 🗑️ Xoá cache DB theo rootFolder
+  sidebar.appendChild(
+    createSidebarButton("🗑 Xoá DB", async () => {
+      const ok = await showConfirm("Bạn có chắc muốn xoá toàn bộ DB không?", {
+        loading: true,
+      });
+      if (!ok) return;
 
-  sidebar.appendChild(createSidebarButton("🔄 Reset DB (Xoá + Scan)", async () => {
-    const res = await fetch(`/api/reset-cache?root=${encodeURIComponent(sourceKey)}&mode=reset`, {
-      method: "DELETE",
-    });
-    const data = await res.json();
-    alert(data.message || "✅ Reset DB xong");
-  }));
-
-  sidebar.appendChild(createSidebarButton("📦 Quét thư mục mới", async () => {
-    const res = await fetch(`/api/scan`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ root: sourceKey }),
-    });
-    const data = await res.json();
-    alert(
-      `✅ Scan xong:\nInserted ${data.stats.inserted}, Updated ${data.stats.updated}, Skipped ${data.stats.skipped}`
-    );
-  }));
-
-  sidebar.appendChild(createSidebarButton("🧼 Xoá cache folder", () => {
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith("folderCache::" + sourceKey + "::")) {
-        localStorage.removeItem(key);
+      try {
+        const res = await fetch(
+          `/api/reset-cache?root=${encodeURIComponent(
+            sourceKey
+          )}&folder=${encodeURIComponent(rootFolder)}&mode=delete`,
+          { method: "DELETE" }
+        );
+        const data = await res.json();
+        showToast(data.message || "✅ Đã xoá DB");
+      } catch (err) {
+        showToast("❌ Lỗi khi gọi API");
+      } finally {
+        // ✅ ĐẢM BẢO LUÔN TẮT LOADING
+        const overlay = document.getElementById("loading-overlay");
+        overlay?.classList.add("hidden");
       }
-    });
-    alert("✅ Đã xoá cache folder localStorage của source");
-    location.reload();
-  }));
+    })
+  );
+
+  // 🔁 Reset cache DB + scan lại theo rootFolder
+  sidebar.appendChild(
+    createSidebarButton("🔄 Reset DB (Xoá + Scan)", async () => {
+      const ok = await showConfirm("Bạn chắc muốn reset và scan lại DB?", {
+        loading: true,
+      });
+      if (!ok) return;
+
+      try {
+        const res = await fetch(
+          `/api/reset-cache?root=${encodeURIComponent(
+            sourceKey
+          )}&folder=${encodeURIComponent(rootFolder)}&mode=reset`,
+          { method: "DELETE" }
+        );
+        const data = await res.json();
+        showToast(data.message || "✅ Reset DB xong");
+      } catch (err) {
+        showToast("❌ Lỗi reset DB");
+        console.error(err);
+      } finally {
+        const overlay = document.getElementById("loading-overlay");
+        overlay?.classList.add("hidden");
+      }
+    })
+  );
+
+  // 📦 Scan folder mới (không xoá DB)
+  sidebar.appendChild(
+    createSidebarButton("📦 Quét thư mục mới", async () => {
+      const ok = await showConfirm("Quét folder mới (không xoá DB)?", {
+        loading: true,
+      });
+      if (!ok) return;
+
+      try {
+        const res = await fetch("/api/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ root: sourceKey }),
+        });
+        const data = await res.json();
+        showToast(
+          `✅ Scan xong:\nInserted ${data.stats.inserted}, Updated ${data.stats.updated}, Skipped ${data.stats.skipped}`
+        );
+      } catch (err) {
+        showToast("❌ Lỗi khi quét folder");
+        console.error(err);
+      } finally {
+        const overlay = document.getElementById("loading-overlay");
+        overlay?.classList.add("hidden");
+      }
+    })
+  );
+
+  // 🧼 Xoá cache folder localStorage
+  sidebar.appendChild(
+    createSidebarButton("🧼 Xoá cache folder", () => {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("folderCache::" + sourceKey + "::")) {
+          localStorage.removeItem(key);
+        }
+      });
+      alert("✅ Đã xoá cache folder localStorage của source");
+      location.reload();
+    })
+  );
 }
 
 function createSidebarButton(text, onClick) {
   const btn = document.createElement("button");
   btn.textContent = text;
-  btn.onclick = withLoading(onClick);
+  btn.onclick = onClick;
   return btn;
 }
 
@@ -256,4 +316,81 @@ export function withLoading(fn) {
       overlay?.classList.add("hidden");
     }
   };
+}
+
+export function showToast(msg) {
+  let toast = document.getElementById("global-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "global-toast";
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.left = "50%";
+    toast.style.transform = "translateX(-50%)";
+    toast.style.background = "#333";
+    toast.style.color = "white";
+    toast.style.padding = "10px 20px";
+    toast.style.borderRadius = "8px";
+    toast.style.zIndex = "9999";
+    toast.style.fontSize = "14px";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.display = "block";
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 3000);
+}
+
+export function showConfirm(message, options = {}) {
+  let modal = document.getElementById("global-confirm");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "global-confirm";
+    modal.className = "modal-overlay hidden";
+    modal.innerHTML = `
+      <div class="modal-box">
+        <p id="confirm-text"></p>
+        <div class="buttons">
+          <button class="ok">OK</button>
+          <button class="cancel">Huỷ</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  modal.querySelector("#confirm-text").textContent = message;
+  modal.classList.remove("hidden");
+
+  return new Promise((resolve) => {
+    const okBtn = modal.querySelector("button.ok");
+    const cancelBtn = modal.querySelector("button.cancel");
+
+    const cleanup = () => {
+      modal.classList.add("hidden");
+      okBtn.removeEventListener("click", onOK);
+      cancelBtn.removeEventListener("click", onCancel);
+    };
+
+    const onOK = () => {
+      cleanup();
+
+      // ✅ Nếu options.loading = true thì bật overlay sau khi OK
+      if (options.loading) {
+        const overlay = document.getElementById("loading-overlay");
+        overlay?.classList.remove("hidden");
+      }
+
+      resolve(true);
+    };
+
+    const onCancel = () => {
+      cleanup();
+      resolve(false);
+    };
+
+    okBtn.addEventListener("click", onOK);
+    cancelBtn.addEventListener("click", onCancel);
+  });
 }

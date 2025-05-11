@@ -1,6 +1,5 @@
-import { clearAllFolderCache } from "../core/storage.js";
-import { withLoading } from "/src/core/ui.js";
-
+import { withLoading, showToast, showConfirm } from "/src/core/ui.js";
+import { getSourceKey } from "/src/core/storage.js";
 /**
  * 📦 Tạo card cho từng folder con
  * @param {string} folder - Tên folder (VD: Naruto)
@@ -95,5 +94,33 @@ async function loadRootFolders() {
     console.error("❌ Lỗi load folder trong nguồn:", err);
   }
 }
+
+document
+  .getElementById("reset-all-db-btn")
+  ?.addEventListener("click", async () => {
+    const ok = await showConfirm("Bạn có chắc muốn xoá toàn bộ DB không?", {
+      loading: true,
+    });
+    if (!ok) return;
+
+    try {
+      const sourceKey = getSourceKey();
+      if (!sourceKey) return showToast("❌ Thiếu sourceKey");
+
+      const res = await fetch(
+        `/api/reset-cache/all?root=${encodeURIComponent(sourceKey)}`,
+        { method: "DELETE" }
+      );
+
+      const data = await res.json();
+      showToast(data.message || "✅ Đã xoá toàn bộ DB thành công!");
+    } catch (err) {
+      showToast("❌ Lỗi khi xoá DB");
+      console.error("❌ reset-all-db:", err);
+    } finally {
+      const overlay = document.getElementById("loading-overlay");
+      overlay?.classList.add("hidden");
+    }
+  });
 
 window.addEventListener("DOMContentLoaded", loadRootFolders);

@@ -25,6 +25,7 @@ function getDB(rootKey) {
     CREATE TABLE IF NOT EXISTS folders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       root TEXT NOT NULL,
+      rootFolder TEXT NOT NULL,
       name TEXT NOT NULL,
       path TEXT NOT NULL,
       thumbnail TEXT,
