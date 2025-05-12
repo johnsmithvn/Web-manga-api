@@ -1,4 +1,5 @@
 // 📁 frontend/src/storage.js
+const FOLDER_CACHE_PREFIX = "folderCache::";
 
 /**
  * 📂 Lấy folder hiện tại đang đọc (VD: Naruto)
@@ -33,10 +34,6 @@ export function requireRootFolder() {
   }
 }
 
-const FOLDER_CACHE_PREFIX = "folderCache::";
-const FOLDERS_LIST_PREFIX = "allFoldersList::";
-const CACHE_TIMEOUT = 24 * 60 * 60 * 1000; // 1 ngày
-
 /**
  * 📦 Lấy cache folder theo path (dựa trên cả sourceKey)
  * @param {string} rootFolder - tên folder (VD: Naruto)
@@ -52,11 +49,6 @@ export function getFolderCache(rootFolder, path) {
 
   try {
     const parsed = JSON.parse(raw);
-    const now = Date.now();
-    if (now - parsed.timestamp > CACHE_TIMEOUT) {
-      localStorage.removeItem(key);
-      return null;
-    }
     return parsed.data;
   } catch {
     localStorage.removeItem(key);
@@ -80,7 +72,7 @@ export function setFolderCache(rootFolder, path, data) {
     data: data,
   });
 
-  const maxTotalSize = 4 * 1024 * 1024;
+  const maxTotalSize = 4 * 1024 * 1024 + 500;
   const currentTotalSize = getCurrentCacheSize();
   if (jsonData.length > maxTotalSize) {
     console.warn(`⚠️ Không cache folder (quá lớn): ${path}`);
@@ -149,32 +141,6 @@ export function clearAllFolderCache() {
   });
 }
 
-// /**
-//  * 🆕 Lấy danh sách all folders list cache (nếu có)
-//  */
-// export function getAllFoldersList(rootFolder) {
-//   const sourceKey = getSourceKey();
-//   if (!sourceKey) return null;
-
-//   const key = `${FOLDERS_LIST_PREFIX}${sourceKey}::${rootFolder}`;
-//   const raw = localStorage.getItem(key);
-//   if (!raw) return null;
-
-//   try {
-//     const parsed = JSON.parse(raw);
-//     const now = Date.now();
-//     if (now - parsed.timestamp > CACHE_TIMEOUT) {
-//       localStorage.removeItem(key);
-//       return null;
-//     }
-//     return parsed.data;
-//   } catch {
-//     localStorage.removeItem(key);
-//     return null;
-//   }
-// }
-
-
 /** ✅ Ghi lại folder vừa đọc vào localStorage */
 export function saveRecentViewed(folder) {
   try {
@@ -205,5 +171,3 @@ export function saveRecentViewed(folder) {
     console.warn("❌ Không thể lưu recentViewed:", err);
   }
 }
-
-
