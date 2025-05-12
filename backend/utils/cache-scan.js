@@ -1,7 +1,6 @@
-// 📁 backend/utils/cache-scan.js
 const fs = require("fs");
 const path = require("path");
-const db = require("./db");
+const getDB = require("./db");
 const { getRootPath } = require("./config");
 const {
   hasImageRecursively,
@@ -13,89 +12,84 @@ const {
  * 📌 Nếu folder có ảnh thì thêm vào DB (nếu chưa có)
  * 📌 Nếu lastModified mới hơn thì update thumbnail
  * 📌 Trả về stats: inserted / updated / skipped / scanned
- * @param {string} root - tên thư mục gốc (VD: "1", "OnePiece")
- * @param {string} currentPath - thư mục con bên trong root
- * @param {object} stats - thống kê kết quả
  */
-function scanFolderRecursive(root, currentPath = "", stats = { scanned: 0, inserted: 0, updated: 0, skipped: 0 }) {
-  const fullPath = path.join(getRootPath(root), currentPath);
-
-  // ⚠️ Bỏ qua nếu cả folder và subfolder đều không có ảnh
+function scanFolderRecursive(
+  root,
+  currentPath = "",
+  stats = { scanned: 0, inserted: 0, updated: 0, skipped: 0 }
+) {
+  const db = getDB(root);
+  const rootPath = getRootPath(root);
+  const fullPath = path.join(rootPath, currentPath);
   if (!hasImageRecursively(fullPath)) return stats;
 
-  const entries = fs.readdirSync(fullPath, { withFileTypes: true });
-  const skipNames = [".git", "node_modules", "__MACOSX", ".Trash", ".DS_Store"];
+  // ✅ Scan folder hiện tại
+  stats.scanned++;
+  const statsInfo = fs.statSync(fullPath);
+  const lastModified = statsInfo.mtimeMs;
+  const thumbnail = findFirstImageRecursively(fullPath, rootPath);
 
-  for (const entry of entries) {
+  const childEntries = fs.readdirSync(fullPath, { withFileTypes: true });
+
+  const imageCount = childEntries.filter(
+    (e) =>
+      e.isFile() &&
+      [".jpg", ".jpeg", ".png", ".webp", ".avif"].includes(
+        path.extname(e.name).toLowerCase()
+      )
+  ).length;
+
+  const chapterCount = childEntries.filter((e) => e.isDirectory()).length;
+
+  const existing = db
+    .prepare(`SELECT * FROM folders WHERE root = ? AND path = ?`)
+    .get(root, currentPath);
+
+  if (!existing) {
+    db.prepare(
+      `INSERT INTO folders (
+        root,rootFolder, name, path, thumbnail,
+        lastModified, imageCount, chapterCount, type, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`
+    ).run(
+      root,
+      currentPath.split("/")[0], // ✅ rootFolder là folder cấp 1
+      path.basename(currentPath) || "(root)",
+      currentPath,
+      thumbnail,
+      lastModified,
+      imageCount,
+      chapterCount,
+      currentPath === "" ? "root" : "folder",
+      Date.now(),
+      Date.now()
+    );
+    stats.inserted++;
+  } else if (existing.lastModified < lastModified) {
+    db.prepare(
+      `UPDATE folders
+       SET thumbnail = ?, lastModified = ?, imageCount = ?, chapterCount = ?, updatedAt = ?
+       WHERE root = ? AND path = ?`
+    ).run(
+      thumbnail,
+      lastModified,
+      imageCount,
+      chapterCount,
+      Date.now(),
+      root,
+      currentPath
+    );
+    stats.updated++;
+  } else {
+    stats.skipped++;
+  }
+
+  // ✅ Đệ quy vào folder con
+  const skipNames = [".git", "node_modules", "__MACOSX", ".Trash", ".DS_Store"];
+  for (const entry of childEntries) {
     if (!entry.isDirectory() || skipNames.includes(entry.name)) continue;
 
     const relativePath = path.posix.join(currentPath, entry.name);
-    const fullChildPath = path.join(fullPath, entry.name);
-
-    if (hasImageRecursively(fullChildPath)) {
-      stats.scanned++;
-      const statsInfo = fs.statSync(fullChildPath);
-      const lastModified = statsInfo.mtimeMs;
-      const thumbnail = findFirstImageRecursively(fullChildPath);
-
-      const existing = db
-        .prepare(`SELECT * FROM folders WHERE root = ? AND path = ?`)
-        .get(root, relativePath);
-
-      const childEntries = fs.readdirSync(fullChildPath, {
-        withFileTypes: true,
-      });
-
-      const imageCount = childEntries.filter(
-        (e) =>
-          e.isFile() &&
-          [".jpg", ".jpeg", ".png", ".webp", ".avif"].includes(
-            path.extname(e.name).toLowerCase()
-          )
-      ).length;
-
-      const chapterCount = childEntries.filter((e) => e.isDirectory()).length;
-
-      if (!existing) {
-        db.prepare(
-          `INSERT INTO folders (
-            root, name, path, thumbnail,
-            lastModified, imageCount, chapterCount, type, createdAt, updatedAt
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).run(
-          root,
-          entry.name,
-          relativePath,
-          thumbnail,
-          lastModified,
-          imageCount,
-          chapterCount,
-          "folder",
-          Date.now(),
-          Date.now()
-        );
-        stats.inserted++;
-      } else if (existing.lastModified < lastModified) {
-        db.prepare(
-          `UPDATE folders
-           SET thumbnail = ?, lastModified = ?, imageCount = ?, chapterCount = ?, updatedAt = ?
-           WHERE root = ? AND path = ?`
-        ).run(
-          thumbnail,
-          lastModified,
-          imageCount,
-          chapterCount,
-          Date.now(),
-          root,
-          relativePath
-        );
-        stats.updated++;
-      } else {
-        stats.skipped++;
-      }
-    }
-
-    // 🔁 Đệ quy tiếp
     scanFolderRecursive(root, relativePath, stats);
   }
 

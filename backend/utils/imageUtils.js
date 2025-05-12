@@ -13,7 +13,7 @@ const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
  * @param {string} baseUrl - URL gốc để convert (ví dụ "/manga")
  * @returns {string|null} - URL public tới ảnh hoặc null nếu không có
  */
-function findFirstImageRecursively(dirPath, baseUrl = "/manga") {
+function findFirstImageRecursively(dirPath, rootPath, baseUrl = "/manga") {
   if (!fs.existsSync(dirPath)) return null;
 
   const naturalCompare = require("string-natural-compare");
@@ -28,13 +28,14 @@ function findFirstImageRecursively(dirPath, baseUrl = "/manga") {
   for (const file of files) {
     const ext = path.extname(file.name).toLowerCase();
     if (IMAGE_EXTENSIONS.includes(ext)) {
-      return convertToUrl(path.join(dirPath, file.name), baseUrl);
+      return convertToUrl(path.join(dirPath, file.name), rootPath, baseUrl);
     }
   }
 
   for (const folder of folders) {
     const found = findFirstImageRecursively(
       path.join(dirPath, folder.name),
+      rootPath,
       baseUrl
     );
     if (found) return found;
@@ -42,6 +43,7 @@ function findFirstImageRecursively(dirPath, baseUrl = "/manga") {
 
   return null;
 }
+
 
 /**
  * 📸 Kiểm tra folder có chứa ít nhất 1 ảnh hợp lệ không
@@ -77,8 +79,10 @@ function hasImageRecursively(dirPath) {
  * @param {string} baseUrl - Ví dụ "/manga"
  * @returns {string}
  */
-function convertToUrl(filePath, baseUrl = "/manga") {
-  const relativePath = path.relative(BASE_DIR, filePath).replace(/\\/g, "/");
+function convertToUrl(filePath, rootPath, baseUrl = "/manga") {
+  if (!rootPath) return null;
+
+  const relativePath = path.relative(rootPath, filePath).replace(/\\/g, "/");
   return `${baseUrl}/${relativePath}`;
 }
 

@@ -1,10 +1,7 @@
-// 📄 frontend/src/pages/home.js
-
 import { loadFolder } from "/src/core/folder.js";
 import {
   filterManga,
   toggleDarkMode,
-  
   toggleSearchBar,
   renderRandomBanner,
   renderTopView,
@@ -13,32 +10,34 @@ import {
 } from "/src/core/ui.js";
 import {
   getRootFolder,
+  getSourceKey,
   requireRootFolder,
   changeRootFolder,
 } from "/src/core/storage.js";
 import { setupSidebar, toggleSidebar } from "/src/core/ui.js";
 
-// Gắn global nếu HTML cần gọi
+// ✅ Expose global nếu HTML cần gọi
 window.loadFolder = loadFolder;
-// window.goBack = goBack;
 window.toggleDarkMode = toggleDarkMode;
 window.toggleSearchBar = toggleSearchBar;
 window.changeRootFolder = changeRootFolder;
 window.getRootFolder = getRootFolder;
 
 window.addEventListener("DOMContentLoaded", async () => {
-  requireRootFolder(); // 🔐 Kiểm tra root
+  requireRootFolder(); // 🔐 Check rootFolder + sourceKey
   setupSidebar();
 
-  const root = getRootFolder();
-  if (!root) return;
-  
+  const rootFolder = getRootFolder(); // VD: Naruto
+  const sourceKey = getSourceKey(); // VD: FANTASY
+  if (!rootFolder || !sourceKey) return;
+
   const urlParams = new URLSearchParams(window.location.search);
-  const initialPath = urlParams.get("path") || "";
-  
-  loadFolder(initialPath); // 🧠 Load folder theo URL nếu có
-  // 👉 Random banner
-  const randomKey = `randomView::${root}`;
+  const initialPath = urlParams.get("path");
+  const fullPath = initialPath || getRootFolder(); // ✅ Nếu không có path → lấy rootFolder
+  loadFolder(fullPath);
+
+  // 👉 CACHE RANDOM VIEW
+  const randomKey = `randomView::${sourceKey}::${rootFolder}`;
   let listRandom = null;
 
   try {
@@ -54,9 +53,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     console.warn("❌ Lỗi đọc cache random:", err);
   }
 
+  // 👉 Nếu chưa có cache → fetch API random
   if (!listRandom) {
     const res1 = await fetch(
-      `/api/folder-cache?mode=random&root=${encodeURIComponent(root)}`
+      `/api/folder-cache?mode=random&root=${encodeURIComponent(
+        sourceKey
+      )}&path=${encodeURIComponent(rootFolder)}`
     );
 
     listRandom = await res1.json();
@@ -66,6 +68,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     );
   }
 
+  // 👉 Render banner random
   if (Array.isArray(listRandom)) {
     renderRandomBanner(listRandom);
     const cache = localStorage.getItem(randomKey);
@@ -82,11 +85,14 @@ window.addEventListener("DOMContentLoaded", async () => {
       });
   }
 
-  // 👉 Top View
+  // 👉 Fetch TOP view
   try {
     const res2 = await fetch(
-      `/api/folder-cache?mode=top&root=${encodeURIComponent(root)}`
+      `/api/folder-cache?mode=top&root=${encodeURIComponent(
+        sourceKey
+      )}&path=${encodeURIComponent(rootFolder)}`
     );
+
     const listTop = await res2.json();
     if (Array.isArray(listTop)) {
       renderTopView(listTop);
@@ -95,8 +101,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     console.error("❌ Lỗi fetch top view:", err);
   }
 
-  // 👉 Recent Viewed
-  const recentRaw = localStorage.getItem(`recentViewed::${root}`);
+  // 👉 Load recent viewed từ cache
+  const recentRaw = localStorage.getItem(`recentViewed::${rootFolder}`);
+  //  const recentRaw = localStorage.getItem(`recentViewed::${sourceKey}::${rootFolder}`);
+
   if (recentRaw) {
     const list = JSON.parse(recentRaw);
     renderRecentViewed(list);
@@ -107,7 +115,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     .getElementById("floatingSearchInput")
     ?.addEventListener("input", filterManga);
 
-  // 👉 Header padding fix
+  // 👉 Fix padding header
   const header = document.getElementById("site-header");
   const wrapper = document.getElementById("wrapper");
   if (header && wrapper) {
@@ -115,21 +123,19 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// 👉 Nút reset cache
+// 👉 Nút reset cache (theo sourceKey)
 document
   .getElementById("reset-cache-btn")
   ?.addEventListener("click", async () => {
-    const root = getRootFolder();
-    if (!root) return alert("❌ Chưa chọn root!");
+    const sourceKey = getSourceKey();
+    if (!sourceKey) return alert("❌ Chưa chọn source!");
 
-    if (!confirm(`Reset cache cho '${root}'?`)) return;
+    if (!confirm(`Reset cache cho '${sourceKey}'?`)) return;
 
     try {
       const res = await fetch(
-        `/api/reset-cache?root=${encodeURIComponent(root)}`,
-        {
-          method: "DELETE",
-        }
+        `/api/reset-cache?root=${encodeURIComponent(sourceKey)}`,
+        { method: "DELETE" }
       );
       const json = await res.json();
       if (json.success) {
@@ -144,7 +150,7 @@ document
     }
   });
 
-//  👉 Nút toggle sidebar
+// 👉 Sidebar toggle
 document.getElementById("sidebarToggle")?.addEventListener("click", () => {
   if (typeof toggleSidebar === "function") {
     toggleSidebar();

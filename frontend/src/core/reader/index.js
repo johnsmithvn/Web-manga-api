@@ -1,7 +1,8 @@
 import { state, loadFolder } from "/src/core/folder.js";
 import { getRootFolder } from "/src/core/storage.js";
 import { updateReaderPageInfo, showJumpPageInput } from "./utils.js";
-import { saveRecentViewed } from "/src/core/ui.js";
+import { getSourceKey } from "/src/core/storage.js"; // ✅ Bổ sung trên đầu file
+import { saveRecentViewed } from "/src/core/storage.js";
 
 // let currentImages = [];
 // let currentPage = 0;
@@ -41,12 +42,11 @@ export function renderReader(
     thumbnail: images[0] || null,
   });
 
-  fetch("/api/increase-view", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path }),
-  });
-
+ fetch("/api/increase-view", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ path, root: getSourceKey() }), // ✅ truyền sourceKey làm root
+});
   //
   currentImages = images;
   if (!preserveCurrentPage) currentPage = 0;

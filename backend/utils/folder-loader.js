@@ -1,23 +1,47 @@
-// 📁 backend/utils/folder-loader.js
 const fs = require("fs");
 const path = require("path");
 const { getRootPath } = require("./config");
 const naturalCompare = require("string-natural-compare");
-const { findFirstImageRecursively } = require("./imageUtils");
+const {
+  findFirstImageRecursively,
+} = require("./imageUtils");
+
+/**
+ * 🔁 Tìm toàn bộ ảnh trong folder và subfolder
+ */
+// function findAllImagesRecursively(dirPath, rootPath) {
+//   if (!fs.existsSync(dirPath)) return [];
+
+//   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+//   const images = [];
+
+//   for (const entry of entries) {
+//     const fullPath = path.join(dirPath, entry.name);
+
+//     if (entry.isFile()) {
+//       const ext = path.extname(entry.name).toLowerCase();
+//       if ([".jpg", ".jpeg", ".png", ".webp", ".avif"].includes(ext)) {
+//         const rel = path.relative(rootPath, fullPath).replace(/\\/g, "/");
+//         images.push(`/manga/${rel}`);
+//       }
+//     }
+
+//     if (entry.isDirectory()) {
+//       images.push(...findAllImagesRecursively(fullPath, rootPath));
+//     }
+//   }
+
+//   return images;
+// }
 
 /**
  * 📂 Đọc folder thật từ ổ đĩa
  * Trả về danh sách subfolder và ảnh trong thư mục gốc
- * Dùng cho API mode=path
- *
- * @param {string} root - tên thư mục gốc (VD: "1")
- * @param {string} folderPath - đường dẫn bên trong root (VD: "OnePiece")
- * @param {number} limit - số lượng ảnh cần lấy (0 = all)
- * @param {number} offset - bắt đầu từ ảnh thứ mấy
- * @returns {{ folders: Array, images: Array, total: number, totalImages: number }}
  */
 function loadFolderFromDisk(root, folderPath = "", limit = 0, offset = 0) {
-  const basePath = path.join(getRootPath(root), folderPath);
+  const rootPath = getRootPath(root);
+  const basePath = path.join(rootPath, folderPath);
+
   if (!fs.existsSync(basePath)) {
     return { folders: [], images: [], total: 0, totalImages: 0 };
   }
@@ -32,8 +56,8 @@ function loadFolderFromDisk(root, folderPath = "", limit = 0, offset = 0) {
     const fullPath = path.join(basePath, entry.name);
 
     if (entry.isDirectory()) {
-      const thumb = findFirstImageRecursively(fullPath); // ✅ Dùng đúng biến đã có
-      if (!thumb) continue; // 🔥 Bỏ qua folder không có ảnh
+      const thumb = findFirstImageRecursively(fullPath, rootPath);
+      if (!thumb) continue;
 
       folders.push({
         name: entry.name,
@@ -45,13 +69,17 @@ function loadFolderFromDisk(root, folderPath = "", limit = 0, offset = 0) {
     if (entry.isFile()) {
       const ext = path.extname(entry.name).toLowerCase();
       if ([".jpg", ".jpeg", ".png", ".webp", ".avif"].includes(ext)) {
-        const rel = path
-          .relative(getRootPath(""), fullPath)
-          .replace(/\\/g, "/");
+        const rel = path.relative(rootPath, fullPath).replace(/\\/g, "/");
         images.push(`/manga/${rel}`);
       }
     }
   }
+
+  // // ✅ Nếu không có ảnh trực tiếp → tìm ảnh sâu
+  // if (images.length === 0) {
+  //   const deepImages = findAllImagesRecursively(basePath, rootPath);
+  //   images.push(...deepImages);
+  // }
 
   return {
     folders,
