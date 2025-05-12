@@ -27,7 +27,8 @@ db.exec(`
     imageCount INTEGER DEFAULT 0,
     chapterCount INTEGER DEFAULT 0,
     type TEXT DEFAULT 'folder',
-    createdAt INTEGER
+    createdAt INTEGER,
+    updatedAt INTEGER
   );
 
   CREATE INDEX IF NOT EXISTS idx_folders_root_path ON folders(root, path);
