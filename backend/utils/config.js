@@ -6,8 +6,6 @@ const fs = require("fs");
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 // ✅ Debug log rõ ràng toàn bộ env đầu vào
-console.log("📁 Root dir:", __dirname);
-console.log("📄 ENV PATH:", process.env.FANTASY);// ✅ Parse toàn bộ env để lấy các path hợp lệ
 const ROOT_PATHS = {};
 
 for (const [key, value] of Object.entries(process.env)) {
