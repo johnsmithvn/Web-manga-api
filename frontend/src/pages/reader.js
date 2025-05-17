@@ -1,6 +1,6 @@
 import {
   getRootFolder,
-  getRootFolder,
+  getSourceKey,
   requireRootFolder,
 } from "/src/core/storage.js";
 import { renderReader } from "/src/core/reader/index.js";

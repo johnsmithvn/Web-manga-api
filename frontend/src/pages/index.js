@@ -15,6 +15,7 @@ import {
   requireRootFolder,
   getSourceKey,
   changeRootFolder,
+  recentViewedKey,
 } from "/src/core/storage.js";
 import { setupSidebar, toggleSidebar } from "/src/core/ui.js";
 
@@ -99,9 +100,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // 👉 Recent Viewed
-  const recentRaw = localStorage.getItem(
-    `recentViewed::${sourceKey}${rootFolder}`
-  );
+  const recentRaw = localStorage.getItem(recentViewedKey());
   if (recentRaw) {
     const list = JSON.parse(recentRaw);
     renderRecentViewed(list);

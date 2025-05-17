@@ -44,8 +44,6 @@ export function requireSourceKey() {
  * 📦 Lấy cache folder theo path
  */
 export function getFolderCache(sourceKey, rootFolder, path) {
-
-
   const key = `${FOLDER_CACHE_PREFIX}${sourceKey}::${rootFolder}:${path}`;
   const raw = localStorage.getItem(key);
   if (!raw) return null;
@@ -142,4 +140,32 @@ export function clearAllFolderCache() {
       localStorage.removeItem(key);
     }
   });
+}
+
+export function recentViewedKey() {
+  return `recentViewed::${getRootFolder()}::${getRootFolder()}`;
+}
+/** ✅ Ghi lại folder vừa đọc vào localStorage */
+export function saveRecentViewed(folder) {
+  const key =recentViewedKey()
+  try {
+    const raw = localStorage.getItem(key);
+    const list = raw ? JSON.parse(raw) : [];
+
+    // Bỏ item cũ nếu trùng path
+    const filtered = list.filter((item) => item.path !== folder.path);
+
+    // Thêm lên đầu
+    filtered.unshift({
+      name: folder.name,
+      path: folder.path,
+      thumbnail: folder.thumbnail,
+    });
+
+    // Giới hạn 30 item
+    const limited = filtered.slice(0, 30);
+    localStorage.setItem(key, JSON.stringify(limited));
+  } catch (err) {
+    console.warn("❌ Không thể lưu recentViewed:", err);
+  }
 }

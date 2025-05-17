@@ -1,10 +1,14 @@
 // 📁 frontend/src/folder.js
 
 import { updateFolderPaginationUI } from "./ui.js";
-import { getRootFolder, getFolderCache, setFolderCache } from "./storage.js";
+import {
+  getRootFolder,
+  getSourceKey,
+  getFolderCache,
+  setFolderCache,
+} from "./storage.js";
 import { preloadThumbnails } from "./preload.js";
 import { renderFolderCard } from "../components/folderCard.js";
-import { requireRootFolder, getSourceKey } from "./storage.js";
 export const state = {
   currentPath: "",
   allFolders: [],
@@ -21,8 +25,7 @@ let totalFolders = 0; // 🆕 Tổng số folder thực tế không bị slice
 export function loadFolder(path = "", page = 0) {
   const rootFolder = getRootFolder();
   const sourceKey = getSourceKey(); // VD: FANTASY
-  requireRootFolder(); // 🔐 Kiểm tra root
-  
+
   state.currentPath = path;
   folderPage = page;
 
@@ -31,21 +34,21 @@ export function loadFolder(path = "", page = 0) {
   const readerBtn = document.getElementById("readerModeButton");
   if (readerBtn) readerBtn.remove();
 
-  const cached = getFolderCache(sourceKey,rootFolder, path);
+  const cached = getFolderCache(sourceKey, rootFolder, path);
   if (cached) {
     renderFromData(cached);
     document.getElementById("loading-overlay")?.classList.add("hidden");
     return;
   }
 
- fetch(
+  fetch(
     `/api/folder-cache?mode=path&key=${encodeURIComponent(
       sourceKey
     )}&root=${encodeURIComponent(rootFolder)}&path=${encodeURIComponent(path)}`
   )
     .then((res) => res.json())
     .then((data) => {
-      setFolderCache(sourceKey,rootFolder, path, data);
+      setFolderCache(sourceKey, rootFolder, path, data);
       renderFromData(data);
     })
     .catch((err) => {

@@ -34,7 +34,7 @@ function loadFolderFromDisk(dbkey,root, folderPath = "", limit = 0, offset = 0) 
     const fullPath = path.join(basePath, entry.name);
 
     if (entry.isDirectory()) {
-      const thumb = findFirstImageRecursively(rootPath,fullPath); // ✅ Dùng đúng biến đã có
+      const thumb = findFirstImageRecursively(root,rootPath,fullPath); // ✅ Dùng đúng biến đã có
       if (!thumb) continue; // 🔥 Bỏ qua folder không có ảnh
 
       folders.push({
@@ -50,7 +50,7 @@ function loadFolderFromDisk(dbkey,root, folderPath = "", limit = 0, offset = 0) 
         const rel = path
           .relative(rootPath, fullPath)
           .replace(/\\/g, "/");
-        images.push(`/manga/${rel}`);
+        images.push(`/manga/${root}/${rel}`);
       }
     }
   }

@@ -3,7 +3,8 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { getAllRootKeys,getRootPath } = require("./utils/config");
+const { getAllRootKeys, getRootPath } = require("./utils/config");
+const { ROOT_PATHS } = require("./utils/config");
 
 const app = express();
 const PORT = 3000; // PORT = process.env.PORT || 3000; // ✅ Lấy từ biến môi trường
@@ -77,7 +78,9 @@ app.use("/api/scan", require("./api/scan"));
 
 // // ✅ Serve static images từ BASE_DIR (E:/File/Manga)
 // app.use("/manga", express.static(BASE_DIR));
-
+for (const [key, absPath] of Object.entries(ROOT_PATHS)) {
+  app.use(`/manga`, express.static(absPath));
+}
 // ✅ Serve frontend static files
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 app.use("/src", express.static(path.join(__dirname, "../frontend/src")));

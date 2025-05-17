@@ -1,7 +1,6 @@
 import { state, loadFolder } from "/src/core/folder.js";
-import { getRootFolder } from "/src/core/storage.js";
+import { getRootFolder,saveRecentViewed, getSourceKey } from "/src/core/storage.js";
 import { updateReaderPageInfo, showJumpPageInput } from "./utils.js";
-import { saveRecentViewed } from "/src/core/ui.js";
 
 // let currentImages = [];
 // let currentPage = 0;
@@ -27,7 +26,6 @@ export function renderReader(
   // tang view
   const urlParams = new URLSearchParams(window.location.search);
   const path = urlParams.get("path");
-
   const parts = path.split("/");
   const folderName =
     parts[parts.length - 1] === "__self__"
@@ -40,11 +38,13 @@ export function renderReader(
     path,
     thumbnail: images[0] || null,
   });
+  const sourceKey = getSourceKey();
+  if (!sourceKey) return;
 
   fetch("/api/increase-view", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path }),
+    body: JSON.stringify({ path: path, dbkey: sourceKey }),
   });
 
   //
@@ -90,7 +90,6 @@ export function renderReader(
 
     updateReaderPageInfo(currentPage + 1, currentImages.length);
   });
-
 }
 
 /**

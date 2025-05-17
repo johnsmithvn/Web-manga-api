@@ -1,6 +1,6 @@
 // 📁 frontend/src/select.js
-import { withLoading } from "/src/core/ui.js";
-import { requireSourceKey,getSourceKey } from "/src/core/storage.js";
+import { withLoading, showToast, showConfirm } from "/src/core/ui.js";
+import { requireSourceKey, getSourceKey } from "/src/core/storage.js";
 /**
  * 📂 Fetch danh sách folder gốc và render ra giao diện
  */
@@ -89,4 +89,31 @@ async function loadRootFolders() {
   }
 }
 
+document
+  .getElementById("reset-all-db-btn")
+  ?.addEventListener("click", async () => {
+    const ok = await showConfirm("Bạn có chắc muốn xoá toàn bộ DB không?", {
+      loading: true,
+    });
+    if (!ok) return;
+
+    try {
+      const sourceKey = getSourceKey();
+      if (!sourceKey) return showToast("❌ Thiếu sourceKey");
+
+      const res = await fetch(
+        `/api/reset-cache/all?key=${encodeURIComponent(sourceKey)}`,
+        { method: "DELETE" }
+      );
+
+      const data = await res.json();
+      showToast(data.message || "✅ Đã xoá toàn bộ DB thành công!");
+    } catch (err) {
+      showToast("❌ Lỗi khi xoá DB");
+      console.error("❌ reset-all-db:", err);
+    } finally {
+      const overlay = document.getElementById("loading-overlay");
+      overlay?.classList.add("hidden");
+    }
+  });
 window.addEventListener("DOMContentLoaded", loadRootFolders);

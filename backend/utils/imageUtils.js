@@ -13,7 +13,9 @@ const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
  * @param {string} rootPath - Đường dẫn tuyệt đối của env join folder root
  * @returns {string|null} - URL public tới ảnh hoặc null nếu không có
  */
-function findFirstImageRecursively(rootPath, dirPath, baseUrl = "/manga") {
+function findFirstImageRecursively(rootFolder, rootPath, dirPath) {
+  const baseUrl = `/manga/${rootFolder}`; // Đường dẫn public tới ảnh
+
   if (!fs.existsSync(dirPath)) return null;
 
   const naturalCompare = require("string-natural-compare");
@@ -37,8 +39,9 @@ function findFirstImageRecursively(rootPath, dirPath, baseUrl = "/manga") {
   }
   for (const folder of folders) {
     const found = findFirstImageRecursively(
-      path.join(rootPath, dirPath, folder.name),
-      baseUrl
+      rootFolder,
+      rootPath,
+      path.join(dirPath, folder.name)
     );
     if (found) return found;
   }

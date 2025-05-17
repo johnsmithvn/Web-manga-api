@@ -50,7 +50,7 @@ const {
         stats.scanned++;
         const statsInfo = fs.statSync(fullChildPath);
         const lastModified = statsInfo.mtimeMs;
-        const thumbnail = findFirstImageRecursively(rootPath,fullChildPath);
+        const thumbnail = findFirstImageRecursively(root,rootPath,fullChildPath);
 
         const existing = db
           .prepare(`SELECT * FROM folders WHERE root = ? AND path = ?`)

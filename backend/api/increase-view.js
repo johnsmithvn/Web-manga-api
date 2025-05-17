@@ -11,7 +11,7 @@ const { getRootPath } = require("../utils/config");
 router.post("/increase-view", (req, res) => {
   let { path, dbkey } = req.body;
   // ❌ Thiếu dữ liệu
-  if (!path || typeof path !== "string" || !dbkey || typeof dbkey !== "string") {
+  if (!path || typeof path !== "string" || !dbkey) {
     return res.status(400).json({ error: "Missing valid 'root' or 'path'" });
   }
   // ❌ Kiểm tra rootKey có tồn tại trong .env không
@@ -30,8 +30,8 @@ router.post("/increase-view", (req, res) => {
   }
 
   try {
-    db = getDB(dbkey);
-    increaseView(path);
+    const db = getDB(dbkey);
+    increaseView(db, path);
     res.json({ success: true });
   } catch (err) {
     console.error("❌ Lỗi tăng lượt xem:", err);
@@ -43,10 +43,10 @@ router.post("/increase-view", (req, res) => {
  * Nếu chưa có trong bảng `views` ➜ thêm mới
  * Nếu đã có ➜ tăng count lên 1
  * @param {string} folderPath - Đường path đầy đủ (VD: '1/Naruto')
-  * @param {Database} db - SQLite instance
-*/
+ * @param {Database} db - SQLite instance
+ */
 
-function increaseView(db,folderPath) {
+function increaseView(db, folderPath) {
   try {
     const existing = db
       .prepare(`SELECT count FROM views WHERE path = ?`)
