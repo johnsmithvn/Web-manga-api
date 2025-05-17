@@ -43,8 +43,20 @@ export function requireSourceKey() {
 /**
  * 📦 Lấy cache folder theo path
  */
+
+export function getFolderCacheKey(sourceKey, rootFolder, path) {
+  if (!sourceKey) return null;
+
+  let key = `${FOLDER_CACHE_PREFIX}${sourceKey}`;
+
+  if (rootFolder) key += `::${rootFolder}`;
+  if (path) key += `:${path}`;
+
+  return key;
+}
+
 export function getFolderCache(sourceKey, rootFolder, path) {
-  const key = `${FOLDER_CACHE_PREFIX}${sourceKey}::${rootFolder}:${path}`;
+  const key =getFolderCacheKey(sourceKey, rootFolder, path);
   const raw = localStorage.getItem(key);
   if (!raw) return null;
 
@@ -61,7 +73,7 @@ export function getFolderCache(sourceKey, rootFolder, path) {
  * 📦 Lưu cache folder
  */
 export function setFolderCache(sourceKey, rootFolder, path, data) {
-  const key = `${FOLDER_CACHE_PREFIX}${sourceKey}::${rootFolder}:${path}`;
+  const key =getFolderCacheKey(sourceKey, rootFolder, path);
   const jsonData = JSON.stringify({
     timestamp: Date.now(),
     data: data,
@@ -136,7 +148,7 @@ function cleanUpOldCache(minFreeBytes) {
  */
 export function clearAllFolderCache() {
   Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith(FOLDER_CACHE_PREFIX)) {
+    if (key.startsWith(getFolderCacheKey(getSourceKey()))) {
       localStorage.removeItem(key);
     }
   });

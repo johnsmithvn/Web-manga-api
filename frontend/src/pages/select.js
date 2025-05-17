@@ -1,6 +1,10 @@
 // 📁 frontend/src/select.js
 import { withLoading, showToast, showConfirm } from "/src/core/ui.js";
-import { requireSourceKey, getSourceKey } from "/src/core/storage.js";
+import {
+  requireSourceKey,
+  getSourceKey,
+  clearAllFolderCache,
+} from "/src/core/storage.js";
 /**
  * 📂 Fetch danh sách folder gốc và render ra giao diện
  */
@@ -116,4 +120,21 @@ document
       overlay?.classList.add("hidden");
     }
   });
+
+document
+  .getElementById("clear-all-folder-cache-btn")
+  ?.addEventListener("click", async () => {
+    const ok = await showConfirm(
+      "Bạn có chắc muốn xoá toàn bộ folder cache localStorage?"
+    );
+    if (!ok) return;
+
+    const sourceKey = getSourceKey();
+    if (!sourceKey) return showToast("❌ Thiếu sourceKey");
+
+    clearAllFolderCache(); // ✅ Dùng hàm có sẵn
+    showToast("🧼 Đã xoá toàn bộ folder cache");
+    location.reload();
+  });
+
 window.addEventListener("DOMContentLoaded", loadRootFolders);

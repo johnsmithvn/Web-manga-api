@@ -314,24 +314,26 @@ export function setupSidebar() {
   );
 
   // 🧼 Xoá cache folder localStorage
- sidebar.appendChild(
-  createSidebarButton("🧼 Xoá cache folder", async () => {
-    if (!confirm("Bạn có chắc muốn xoá cache folder localStorage?")) return;
+  sidebar.appendChild(
+    createSidebarButton("🧼 Xoá cache folder", async () => {
+      const ok = await showConfirm(
+        "Bạn có chắc muốn xoá cache folder localStorage?"
+      );
+      if (!ok) return;
 
-    const sourceKey = getSourceKey();
-    let count = 0;
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith(`folderCache::${sourceKey}::`)) {
-        localStorage.removeItem(key);
-        count++;
-      }
-    });
+      const sourceKey = getSourceKey();
+      let count = 0;
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith(`folderCache::${sourceKey}::`)) {
+          localStorage.removeItem(key);
+          count++;
+        }
+      });
 
-    showToast(`✅ Đã xoá ${count} cache folder`);
-    location.reload();
-  })
-);
-
+      showToast(`✅ Đã xoá ${count} cache folder`);
+      changeRootFolder(); // ✅ Quay lại chọn root
+    })
+  );
 }
 
 export function toggleSidebar() {
