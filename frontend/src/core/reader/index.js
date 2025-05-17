@@ -64,7 +64,6 @@ export function renderReader(
     readerContainer.className = "reader";
     app.appendChild(readerContainer);
 
-    setupReaderUI();
     setupReaderModeButton();
     setupPageInfoClick();
     setupChapterNavigation();
@@ -104,14 +103,7 @@ export function renderReader(
   });
 }
 
-/**
- * 🧩 Setup ban đầu khi vào reader
- */
-function setupReaderUI() {
-  document.body.classList.add("reader-mode");
-  document.getElementById("site-header")?.classList.remove("hidden");
-  document.getElementById("reader-footer")?.classList.remove("hidden");
-}
+
 
 /**
  * 🧩 Gắn nút đổi chế độ đọc 📖

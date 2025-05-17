@@ -70,10 +70,7 @@ function renderFromData(data) {
   app.innerHTML = "";
 
   if (data.type === "folder") {
-    document.body.classList.remove("reader-mode");
-    document.getElementById("main-footer")?.classList.remove("hidden");
-    document.getElementById("reader-footer")?.classList.add("hidden");
-
+   
     state.allFolders = [];
 
     if (data.images && data.images.length > 0) {
