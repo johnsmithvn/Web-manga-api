@@ -33,7 +33,11 @@ export function renderHorizontalReader(
   preloadAroundPage(currentPage, images);
 
   // Gộp xử lý click và keyboard
-  setupReaderInteraction(img, () => updateImage(currentPage + 1), () => updateImage(currentPage - 1));
+  setupReaderInteraction(
+    img,
+    () => updateImage(currentPage + 1),
+    () => updateImage(currentPage - 1)
+  );
 
   function updateImage(index) {
     updateReaderImage({
@@ -46,6 +50,7 @@ export function renderHorizontalReader(
   }
 
   function setCurrentPage(pageIndex) {
+    currentPage = pageIndex; // ✅ Gán lại để đồng bộ
     updateImage(pageIndex);
   }
 
@@ -78,7 +83,13 @@ function setupReaderInteraction(img, onNext, onPrev) {
   };
 }
 
-function updateReaderImage({ index, images, img, onPageChange, onIndexChange }) {
+function updateReaderImage({
+  index,
+  images,
+  img,
+  onPageChange,
+  onIndexChange,
+}) {
   if (index < 0 || index >= images.length) return;
   onIndexChange(index);
   img.classList.add("loading");
@@ -88,7 +99,6 @@ function updateReaderImage({ index, images, img, onPageChange, onIndexChange }) 
   preloadAroundPage(index, images);
   onPageChange(index);
 }
-
 
 /**
  * 📱 Bắt gesture swipe trái/phải đơn giản không cần thư viện

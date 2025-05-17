@@ -39,6 +39,7 @@ export function renderScrollReader(
   const pageInfo = document.getElementById("page-info");
   if (pageInfo) {
     pageInfo.style.cursor = "pointer";
+    pageInfo.onclick = null; // 🧹 xoá sự kiện cũ trước khi gán mới
     pageInfo.onclick = () => showPageModal();
     updateReaderPageInfo(currentPageIndex + 1, totalPages);
   }
@@ -193,7 +194,9 @@ export function renderScrollReader(
 
   function setCurrentPage(index) {
     const targetPage = Math.floor(index / imagesPerPage);
+    currentPageIndex = targetPage; // 🛠️ cập nhật page chính xác
     switchScrollPage(targetPage);
+    updateReaderPageInfo(currentPageIndex + 1, totalPages); // 🧠 cập nhật lại Trang X/Y
   }
 
   return { setCurrentPage };

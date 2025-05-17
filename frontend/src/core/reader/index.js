@@ -1,5 +1,9 @@
 import { state, loadFolder } from "/src/core/folder.js";
-import { getRootFolder,saveRecentViewed, getSourceKey } from "/src/core/storage.js";
+import {
+  getRootFolder,
+  saveRecentViewed,
+  getSourceKey,
+} from "/src/core/storage.js";
 import { updateReaderPageInfo, showJumpPageInput } from "./utils.js";
 
 // let currentImages = [];
@@ -88,7 +92,15 @@ export function renderReader(
       readerMode === "vertical" ? scrollPage : currentPage
     );
 
-    updateReaderPageInfo(currentPage + 1, currentImages.length);
+    if (readerMode === "horizontal") {
+      updateReaderPageInfo(currentPage + 1, currentImages.length);
+      setupPageInfoClick(); // ✅ Gán lại click Trang X/Y về dạng input
+    }
+    const imageCountInfo = document.getElementById("image-count-info");
+    if (imageCountInfo) {
+      imageCountInfo.style.display =
+        readerMode === "vertical" ? "block" : "none";
+    }
   });
 }
 
@@ -151,10 +163,13 @@ export function toggleReaderMode() {
 
   renderReader(currentImages, true, scrollPage);
 
-  // delay set lại trang
   setTimeout(() => {
     if (controller?.setCurrentPage) {
-      controller.setCurrentPage(currentPage);
+      if (readerMode === "horizontal") {
+        controller.setCurrentPage(currentPage);
+      } else {
+        controller.setCurrentPage(scrollPage * 200); // → scroll page đầu tiên chứa ảnh đang xem
+      }
     }
   }, 0);
 }
