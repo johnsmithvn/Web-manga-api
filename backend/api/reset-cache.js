@@ -34,7 +34,7 @@ router.delete("/reset-cache", (req, res) => {
 
     if (mode === "reset") {
       db.prepare("DELETE FROM folders WHERE root = ?").run(root);
-      scanFolderRecursive(root);
+      scanFolderRecursive(dbkey,root);
       console.log(`🔁 Reset cache: xoá + scan lại cho root: ${root}`);
       return res.json({ success: true, message: "Reset DB thành công" });
     }

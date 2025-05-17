@@ -1,4 +1,5 @@
 // 📁 frontend/src/storage.js
+const FOLDER_CACHE_PREFIX = "folderCache::";
 
 /**
  * 📂 Lấy rootFolder hiện tại từ localStorage
@@ -6,6 +7,10 @@
  */
 export function getRootFolder() {
   return localStorage.getItem("rootFolder");
+}
+
+export function getSourceKey() {
+  return localStorage.getItem("sourceKey");
 }
 
 /**
@@ -21,30 +26,32 @@ export function changeRootFolder() {
  */
 export function requireRootFolder() {
   const root = getRootFolder();
+
   if (!root) {
+    alert("⚠️ Chưa chọn thư mục gốc, vui lòng chọn lại!");
     window.location.href = "/select.html";
   }
 }
-
-const FOLDER_CACHE_PREFIX = "folderCache::";
-const FOLDERS_LIST_PREFIX = "allFoldersList::"; // 🆕 Thêm cache full list
-const CACHE_TIMEOUT = 24 * 60 * 60 * 1000; // 1 ngày
+export function requireSourceKey() {
+  const source = getSourceKey();
+  if (!source) {
+    alert("⚠️ Chưa chọn nguồn dữ liệu, vui lòng chọn lại!");
+    window.location.href = "/home.html";
+  }
+}
 
 /**
  * 📦 Lấy cache folder theo path
  */
-export function getFolderCache(root, path) {
-  const key = `${FOLDER_CACHE_PREFIX}${root}:${path}`;
+export function getFolderCache(sourceKey, rootFolder, path) {
+
+
+  const key = `${FOLDER_CACHE_PREFIX}${sourceKey}::${rootFolder}:${path}`;
   const raw = localStorage.getItem(key);
   if (!raw) return null;
 
   try {
     const parsed = JSON.parse(raw);
-    const now = Date.now();
-    if (now - parsed.timestamp > CACHE_TIMEOUT) {
-      localStorage.removeItem(key);
-      return null;
-    }
     return parsed.data;
   } catch {
     localStorage.removeItem(key);
@@ -55,14 +62,14 @@ export function getFolderCache(root, path) {
 /**
  * 📦 Lưu cache folder
  */
-export function setFolderCache(root, path, data) {
-  const key = `${FOLDER_CACHE_PREFIX}${root}:${path}`;
+export function setFolderCache(sourceKey, rootFolder, path, data) {
+  const key = `${FOLDER_CACHE_PREFIX}${sourceKey}::${rootFolder}:${path}`;
   const jsonData = JSON.stringify({
     timestamp: Date.now(),
     data: data,
   });
 
-  const maxTotalSize = 4 * 1024 * 1024; // ✅ Giới hạn tổng 8MB
+  const maxTotalSize = 4 * 1024 * 1024 + 300; // ✅ Giới hạn tổng 8MB
   const currentTotalSize = getCurrentCacheSize();
   // 🆕 Nếu dữ liệu quá lớn (trên 4MB) thì không lưu cache
   if (jsonData.length > maxTotalSize) {
@@ -136,47 +143,3 @@ export function clearAllFolderCache() {
     }
   });
 }
-
-/**
- * 🆕 Lấy cache full folders list cho rootFolder
- */
-export function getAllFoldersList(root) {
-  const key = `${FOLDERS_LIST_PREFIX}${root}`;
-  const raw = localStorage.getItem(key);
-  if (!raw) return null;
-
-  try {
-    const parsed = JSON.parse(raw);
-    const now = Date.now();
-    if (now - parsed.timestamp > CACHE_TIMEOUT) {
-      localStorage.removeItem(key);
-      return null;
-    }
-    return parsed.data;
-  } catch {
-    localStorage.removeItem(key);
-    return null;
-  }
-}
-
-/**
- * 🆕 Lưu cache full folders list cho rootFolder
- */
-// export function setAllFoldersList(root, list) {
-//   const key = `${FOLDERS_LIST_PREFIX}${root}`;
-//   localStorage.setItem(
-//     key,
-//     JSON.stringify({
-//       timestamp: Date.now(),
-//       data: list,
-//     })
-//   );
-// }
-
-/**
- * 🆕 Xóa cache full folders list theo root
- */
-// export function clearAllFoldersList(root) {
-//   const key = `${FOLDERS_LIST_PREFIX}${root}`;
-//   localStorage.removeItem(key);
-// }

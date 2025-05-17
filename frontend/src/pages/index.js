@@ -1,10 +1,9 @@
-// 📄 frontend/src/pages/home.js
+// 📄 frontend/src/pages/index.js
 
 import { loadFolder } from "/src/core/folder.js";
 import {
   filterManga,
   toggleDarkMode,
-  
   toggleSearchBar,
   renderRandomBanner,
   renderTopView,
@@ -14,6 +13,7 @@ import {
 import {
   getRootFolder,
   requireRootFolder,
+  getSourceKey,
   changeRootFolder,
 } from "/src/core/storage.js";
 import { setupSidebar, toggleSidebar } from "/src/core/ui.js";
@@ -27,18 +27,17 @@ window.changeRootFolder = changeRootFolder;
 window.getRootFolder = getRootFolder;
 
 window.addEventListener("DOMContentLoaded", async () => {
+  const sourceKey = getSourceKey();
+  const rootFolder = getRootFolder();
   requireRootFolder(); // 🔐 Kiểm tra root
   setupSidebar();
 
-  const root = getRootFolder();
-  if (!root) return;
-  
   const urlParams = new URLSearchParams(window.location.search);
   const initialPath = urlParams.get("path") || "";
-  
+
   loadFolder(initialPath); // 🧠 Load folder theo URL nếu có
   // 👉 Random banner
-  const randomKey = `randomView::${root}`;
+  const randomKey = `randomView::${sourceKey}::${rootFolder}`;
   let listRandom = null;
 
   try {
@@ -56,7 +55,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if (!listRandom) {
     const res1 = await fetch(
-      `/api/folder-cache?mode=random&root=${encodeURIComponent(root)}`
+      `/api/folder-cache?mode=random&key=${encodeURIComponent(
+        sourceKey
+      )}&root=${encodeURIComponent(rootFolder)}`
     );
 
     listRandom = await res1.json();
@@ -85,7 +86,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   // 👉 Top View
   try {
     const res2 = await fetch(
-      `/api/folder-cache?mode=top&root=${encodeURIComponent(root)}`
+      `/api/folder-cache?mode=top&key=${encodeURIComponent(
+        sourceKey
+      )}&root=${encodeURIComponent(rootFolder)}`
     );
     const listTop = await res2.json();
     if (Array.isArray(listTop)) {
@@ -96,7 +99,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // 👉 Recent Viewed
-  const recentRaw = localStorage.getItem(`recentViewed::${root}`);
+  const recentRaw = localStorage.getItem(
+    `recentViewed::${sourceKey}${rootFolder}`
+  );
   if (recentRaw) {
     const list = JSON.parse(recentRaw);
     renderRecentViewed(list);

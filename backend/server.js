@@ -3,7 +3,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { BASE_DIR } = require("./utils/config");
+const { getAllRootKeys,getRootPath } = require("./utils/config");
 
 const app = express();
 const PORT = 3000; // PORT = process.env.PORT || 3000; // ✅ Lấy từ biến môi trường
@@ -30,7 +30,7 @@ function isAllowedClient(clientIP) {
   )
     return true;
 
- // ✅ Nếu IP là mạng LAN (192.168.x.x / 10.x.x.x / 172.16.x.x - 172.31.x.x) → cho qua
+  // ✅ Nếu IP là mạng LAN (192.168.x.x / 10.x.x.x / 172.16.x.x - 172.31.x.x) → cho qua
 
   // const isLAN =
   //   clientIP.startsWith("192.168.") ||
@@ -75,12 +75,15 @@ app.use("/api", require("./api/reset-cache")); // 🔁 Reset cache DB
 // ✅ Đăng ký route /api/scan trong server.js:
 app.use("/api/scan", require("./api/scan"));
 
-// ✅ Serve static images từ BASE_DIR (E:/File/Manga)
-app.use("/manga", express.static(BASE_DIR));
+// // ✅ Serve static images từ BASE_DIR (E:/File/Manga)
+// app.use("/manga", express.static(BASE_DIR));
 
 // ✅ Serve frontend static files
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 app.use("/src", express.static(path.join(__dirname, "../frontend/src")));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/public/home.html"));
+});
 
 // ✅ Middleware fix lỗi URL encode (dấu () [] {} ...) khi load ảnh
 app.use("/manga", (req, res, next) => {
@@ -95,19 +98,35 @@ app.use("/manga", (req, res, next) => {
 
 // 📂 API: Trả về danh sách folder gốc (1,2,3,...)
 app.get("/api/list-roots", (req, res) => {
-  if (!fs.existsSync(BASE_DIR)) {
-    return res.status(500).json({ error: "BASE_DIR không tồn tại" });
+  const dbkey = req.query.key?.toUpperCase();
+  const rootDir = getRootPath(dbkey);
+  if (!dbkey) {
+    return res.status(400).json({ error: "Thiếu key trong query" });
+  }
+  if (!rootDir || !fs.existsSync(rootDir)) {
+    return res.status(400).json({ error: "Root path không tồn tại" });
   }
 
-  const entries = fs.readdirSync(BASE_DIR, { withFileTypes: true });
-  const roots = entries.filter((e) => e.isDirectory()).map((e) => e.name);
-
-  res.json(roots);
+  try {
+    const entries = fs.readdirSync(rootDir, { withFileTypes: true });
+    const roots = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+    res.json(roots);
+  } catch (err) {
+    console.error("❌ Lỗi đọc thư mục:", err);
+    res.status(500).json({ error: "Lỗi đọc thư mục", detail: err.message });
+  }
 });
 
 // 🔥 Fallback tất cả route không match ➔ trả về index.html (SPA mode)
 app.get(/^\/(?!api|src|manga).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/public/index.html"));
+});
+
+// API get source keys
+app.get("/api/source-keys-inline.js", (req, res) => {
+  const keys = getAllRootKeys();
+  const js = `window.sourceKeys = ${JSON.stringify(keys)};`;
+  res.type("application/javascript").send(js);
 });
 
 // ✅ Start server

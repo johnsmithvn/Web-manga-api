@@ -1,6 +1,6 @@
 // ➕ BỔ SUNG UI FRONTEND RENDER BANNER RANDOM
 // 📁 frontend/src/ui.js ➜ renderRandomBanner()
-import { getRootFolder } from "./storage.js";
+import { getRootFolder,getSourceKey } from "./storage.js";
 
 import { state, loadFolder } from "/src/core/folder.js";
 import { changeRootFolder } from "./storage.js";
@@ -16,9 +16,8 @@ export async function filterManga() {
     ?.value.trim()
     .toLowerCase();
   const dropdown = document.getElementById("search-dropdown");
-  const root = getRootFolder();
-  if (!dropdown || !root) return;
-
+  const rootFolder = getRootFolder();
+  const sourceKey = getSourceKey();
   if (!keyword) {
     dropdown.classList.add("hidden");
     dropdown.innerHTML = "";
@@ -31,8 +30,10 @@ export async function filterManga() {
 
   try {
     const res = await fetch(
-      `/api/folder-cache?mode=search&root=${encodeURIComponent(
-        root
+      `/api/folder-cache?mode=search&key=${encodeURIComponent(
+        sourceKey
+      )}&root=${encodeURIComponent(
+        rootFolder
       )}&q=${encodeURIComponent(keyword)}`
     );
     const results = await res.json();
@@ -215,7 +216,8 @@ export function renderTopView(folders) {
 export function saveRecentViewed(folder) {
   try {
     const root = getRootFolder();
-    const key = `recentViewed::${root}`;
+    const sourceKey = getSourceKey();
+    const key = `recentViewed::${sourceKey}::${root}`;
     const raw = localStorage.getItem(key);
     const list = raw ? JSON.parse(raw) : [];
 
@@ -229,7 +231,7 @@ export function saveRecentViewed(folder) {
       thumbnail: folder.thumbnail,
     });
 
-    // Giới hạn 10
+    // Giới hạn 30 item
     const limited = filtered.slice(0, 30);
     localStorage.setItem(key, JSON.stringify(limited));
   } catch (err) {
