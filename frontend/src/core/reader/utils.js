@@ -2,20 +2,23 @@
  * ⚡ Preload ảnh quanh currentPage
  */
 export function preloadAroundPage(currentPage, images, range = 10) {
+  // 🧹 Xoá preload ảnh cũ
+  document.querySelectorAll('link[rel="preload"][as="image"]').forEach((link) => {
+    link.remove();
+  });
+
+  // 🔁 Thêm preload mới quanh currentPage
   const start = Math.max(0, currentPage - range);
   const end = Math.min(images.length - 1, currentPage + range);
 
   for (let i = start; i <= end; i++) {
     if (i === currentPage) continue;
+
     const link = document.createElement("link");
     link.rel = "preload";
     link.as = "image";
     link.href = images[i];
-    if (
-      !document.head.querySelector(`link[rel="preload"][href="${images[i]}"]`)
-    ) {
-      document.head.appendChild(link);
-    }
+    document.head.appendChild(link);
   }
 }
 
