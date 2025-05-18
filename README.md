@@ -9,60 +9,61 @@ https://github.com/johnsmithvn/AndroidApp
 ---
 ## 🛠️ Cấu trúc dự án
 
-```txt
-📦 MyLocalManga
+📦 MyLocalManga/
 ├── backend/
-│   ├── api/                       # 📡 Các route API chính
-│   │   ├── folder-cache.js           # API duy nhất (mode = path | folders | random | top | search)
-│   │   ├── increase-view.js          # Ghi lượt xem
-│   │   ├── reset-cache.js            # Reset cache DB theo root
-│   │   ├── folder-scan.js            # Hàm quét thủ công riêng
+│   ├── api/                # 📡 API chính
+│   │   ├── folder-cache.js      ⇨ API duy nhất xử lý: path, folders, random, top, search
+│   │   ├── increase-view.js     ⇨ Ghi lượt xem (views)
+│   │   ├── reset-cache.js       ⇨ Xoá hoặc scan lại DB cache
+│   │   └── scan.js              ⇨ Scan rootFolder nếu chưa có DB
 │
 │   ├── utils/
-│   │   ├── cache-scan.js             # Đệ quy scan thư mục, lưu folder vào DB
-│   │   ├── folder-loader.js          # Đọc ảnh/folder trực tiếp từ ổ cứng
-│   │   ├── imageUtils.js             # Hàm xử lý ảnh (check, tìm ảnh)
-│   │   ├── views-manager.js          # Ghi & lấy lượt xem
-│   │   ├── config.js                 # BASE_DIR, timeout cache,...
-│   │   ├── db.js                     # Kết nối SQLite
-│   │   └── pathToUrl.js              # Chuyển path → URL
+│   │   ├── config.js            ⇨ Đọc .env, map sourceKey → path gốc (ROOT_PATHS)
+│   │   ├── db.js                ⇨ Mỗi dbkey tạo 1 file .db riêng (better-sqlite3)
+│   │   ├── cache-scan.js       ⇨ Đệ quy quét thư mục, insert/update folder vào DB
+│   │   ├── folder-loader.js    ⇨ Đọc thư mục thực (subfolder + ảnh)
+│   │   ├── imageUtils.js       ⇨ Tìm ảnh đầu tiên (thumbnail), check folder có ảnh
+│   │   └── views-manager.js    ⇨ (optional) xử lý view count nâng cao (chưa dùng)
 │
-│   └── server.js                     # 🎯 Server Express.js chính
-│   ├── data/
-│   │   └── cache.db               # 🔸 SQLite DB cache folders/views (RAM + ổ cứng)
-│   │   
-│   └── server.js              # 🎯 Node.js server chính (Express + router)
+│   └── server.js               ⇨ Khởi tạo server, cấu hình static + API, middleware chặn IP
 │
-📁 frontend/
-├── public/
-│   ├── index.html           # Trang chính (hiển thị folder, banner)
-│   ├── reader.html          # Trang đọc truyện (scroll / horizontal)
-│   └── select.html          # Trang chọn thư mục root
+├── frontend/
+│   ├── public/
+│   │   ├── home.html            ⇨ Chọn source (.env)
+│   │   ├── select.html          ⇨ Chọn rootFolder
+│   │   └── index.html           ⇨ Trang chính (folder + banner)
+│   │   └── reader.html          ⇨ Trang đọc ảnh (swipe/scroll)
 │
-├── src/
-│   ├── styles/
-│   │   ├── base.css         # CSS reset + style dùng chung
+│   ├── src/
+│   │   ├── styles/
+│   │   │   ├── base.css               ⇨ Global style + reset
+│   │   │   ├── pages/home.css        ⇨ Giao diện home.html
+│   │   │   ├── pages/index.css       ⇨ UI trang index
+│   │   │   ├── pages/reader.css      ⇨ UI reader
+│   │   │   ├── pages/select.css      ⇨ UI trang chọn rootFolder
+│   │   │   ├── dark/home-dark.css    ⇨ dark mode cho index
+│   │   │   └── dark/reader-dark.css  ⇨ dark mode cho reader
+│   │   │
+│   │   ├── components/
+│   │   │   ├── folderCard.js         ⇨ 1 card folder (ảnh, tên, click vào)
+│   │   │   └── folderSlider.js       ⇨ slider banner cho random, top, recent
+│   │   │
+│   │   ├── core/
+│   │   │   ├── folder.js             ⇨ Load folder từ API/cache + render
+│   │   │   ├── preload.js            ⇨ preload ảnh
+│   │   │   ├── storage.js            ⇨ localStorage: root, cache, recentViewed
+│   │   │   ├── ui.js                 ⇨ sidebar, toast, confirm modal, darkmode, pagination
+│   │   │   └── reader/
+│   │   │       ├── index.js          ⇨ renderReader(), toggle scroll/swipe
+│   │   │       ├── horizontal.js     ⇨ swipe mode (1 ảnh/trang)
+│   │   │       ├── scroll.js         ⇨ scroll mode (lazy load)
+│   │   │       └── utils.js          ⇨ preload quanh trang, toggle UI, jump page
+│   │   │
 │   │   ├── pages/
-│   │   │   ├── home.css           # style cho index.html
-│   │   │   ├── reader.css         # style cho reader.html
-│   │   │   └── select.css         # style cho select.html
-│   │   └── dark/
-│   │       ├── home-dark.css      # dark mode riêng cho index
-│   │       └── reader-dark.css    # dark mode riêng cho reader
-│   ├── pages/
-│   │   ├── home.js           # logic cho index.html (load folder, sidebar, banner...)
-│   │   ├── reader.js         # logic cho reader.html (gọi renderReader)
-│   │   └── select.js         # logic cho select.html
-│   ├── core/
-│   │   ├── folder.js         # Load folder từ API hoặc cache
-│   │   ├── storage.js        # Lưu rootFolder, allFoldersList, cache
-│   │   ├── ui.js             # Giao diện folder, search, sidebar, back
-│   │   ├── preload.js        # preload ảnh
-│   │   ├── reader/
-│   │   │   ├── index.js         # renderReader(), toggle mode, move chapter
-│   │   │   ├── horizontal.js     # swipe mode
-│   │   │   ├── scroll.js         # scroll mode
-│   │   │   └── utils.js          # toggle UI, preload, jump page modal
+│   │   │   ├── home.js               ⇨ chọn sourceKey
+│   │   │   ├── select.js             ⇨ chọn rootFolder
+│   │   │   ├── index.js              ⇨ load random, top, folder
+│   │   │   └── reader.js             ⇨ gọi renderReader + fetch ảnh từ API
 
 ```
 ### ✅ TỔNG KẾT CHỨC NĂNG

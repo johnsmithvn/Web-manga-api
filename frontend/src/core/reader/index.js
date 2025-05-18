@@ -103,8 +103,6 @@ export function renderReader(
   });
 }
 
-
-
 /**
  * 🧩 Gắn nút đổi chế độ đọc 📖
  */
@@ -179,45 +177,92 @@ function setupChapterNavigation() {
 }
 
 function moveChapter(direction = "next") {
-  const targetPath = getAdjacentChapterPath(direction);
-  if (!targetPath) {
-    alert(direction === "next" ? "🚫 Hết chương!" : "🚫 Đây là chương đầu!");
+  const root = getRootFolder();
+  const key = getSourceKey();
+  const urlParams = new URLSearchParams(window.location.search);
+  let path = urlParams.get("path") || "";
+  path = path.replace(/\/__self__$/, "");
+
+  if (!key || !root || !path) {
+    alert("❌ Thiếu key, root hoặc path!");
     return;
   }
 
-  const root = getRootFolder();
-  const cleanPath = targetPath.replace(/\/__self__$/, "");
   fetch(
-    `/api/folder-cache?mode=path&root=${encodeURIComponent(
+    `/api/next-chapter?key=${encodeURIComponent(key)}&root=${encodeURIComponent(
       root
-    )}&path=${encodeURIComponent(cleanPath)}`
+    )}&path=${encodeURIComponent(path)}&dir=${direction}`
   )
     .then((res) => res.json())
     .then((data) => {
-      if (data.images && data.images.length > 0) {
-        state.currentPath = cleanPath;
-        renderReader(data.images);
-      } else if (data.folders) {
-        loadFolder(cleanPath);
-      } else {
-        alert("❌ Không tìm thấy chương!");
+      if (!data.path) {
+        alert(
+          direction === "next" ? "🚫 Hết chương!" : "🚫 Đây là chương đầu!"
+        );
+        return;
       }
+
+      fetch(
+        `/api/folder-cache?mode=path&key=${encodeURIComponent(
+          key
+        )}&root=${encodeURIComponent(root)}&path=${encodeURIComponent(
+          data.path
+        )}`
+      )
+        .then((res) => res.json())
+        .then((chapter) => {
+          const normalize = (p) => p.replace(/\/__self__$/, "");
+          const isReader =
+            Array.isArray(chapter.images) && chapter.images.length > 0;
+          const isSame = normalize(data.path) === normalize(path);
+          const isEmpty =
+            !isReader && (!chapter.folders || chapter.folders.length === 0);
+
+          if (isSame && isEmpty) {
+            const parts = path.split("/").filter(Boolean);
+            if (parts.length >= 2) {
+              const parentPath = parts.slice(0, -1).join("/");
+              loadFolder(parentPath);
+            } else {
+              alert("❌ Không còn folder cha!");
+            }
+            return;
+          }
+
+          const isFolderView =
+            !isReader &&
+            Array.isArray(chapter.folders) &&
+            chapter.folders.length > 0;
+
+          if (isReader) {
+            let readerPath = data.path;
+            if (chapter.folders?.length > 0) {
+              readerPath += "/__self__";
+            }
+
+            const newURL = `${
+              window.location.pathname
+            }?path=${encodeURIComponent(readerPath)}`;
+            window.history.replaceState({}, "", newURL);
+
+            renderReader(chapter.images);
+          } else if (isFolderView) {
+            // ✅ Nếu đang trong reader.html mà gặp folder chỉ có subfolder
+            // → redirect về index.html để hiện list folder
+            window.location.href = `/index.html?path=${encodeURIComponent(
+              data.path
+            )}`;
+            return;
+          }
+        });
     })
     .catch((err) => {
-      console.error("❌ Lỗi load chapter:", err);
-      alert("❌ Không thể chuyển chương!");
+      console.error("❌ Lỗi chuyển chương:", err);
+      alert("❌ Lỗi kết nối server");
     });
 }
 
-function getAdjacentChapterPath(direction = "next") {
-  const index = state.allFolders.findIndex(
-    (f) =>
-      f.path === state.currentPath || f.path === state.currentPath + "/__self__"
-  );
-  if (index === -1) return null;
-  const target = direction === "next" ? index + 1 : index - 1;
-  return state.allFolders[target]?.path || null;
-}
+
 
 /**
  * 🧩 Click vào Trang X/Y để chuyển nhanh
