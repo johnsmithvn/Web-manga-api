@@ -111,6 +111,16 @@ img {
   margin: 0 auto;
 }
 
+/* reader.css */
+.swiper-slide {
+  position: relative;
+  z-index: 10;
+}
+.pinch-zoom img {
+  z-index: 10;
+  position: relative;
+  display: block;
+}
 
 /* Scroll mode */
 .reader.scroll-mode {
