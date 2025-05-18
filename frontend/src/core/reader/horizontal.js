@@ -5,12 +5,7 @@ import {
 } from "./utils.js";
 
 /**
- * 📖 Horizontal/Swipe Mode Reader
- * @param {Array} images
- * @param {HTMLElement} container
- * @param {function} onPageChange - callback để sync lại currentPage bên reader chính
- * @param {number} initialPage
- * @returns {{ setCurrentPage: function }}
+ * 📖 Horizontal/Swipe Mode Reader – Virtual Slide + Zoom + Preload
  */
 export function renderHorizontalReader(
   images,
@@ -18,111 +13,134 @@ export function renderHorizontalReader(
   onPageChange = () => {},
   initialPage = 0
 ) {
+  if (!images || images.length === 0) return;
+  console.log("✅ Swiper version:", window.Swiper?.version);
+
+  container.innerHTML = "";
+  container.classList.add("reader");
+
+  const swiperContainer = document.createElement("div");
+  swiperContainer.className = "swiper";
+
+  const swiperWrapper = document.createElement("div");
+  swiperWrapper.className = "swiper-wrapper";
+  swiperContainer.appendChild(swiperWrapper);
+  container.appendChild(swiperContainer);
+
+  // ⚠️ Tránh renderSlide gây lỗi → dùng HTML chuỗi trực tiếp
+  const slides = images.map(
+    (src) => `
+    <div class="swiper-slide" style="position: relative; z-index: 10;">
+      <div class="pinch-zoom">
+        <img src="${src}" class="loading" 
+             onload="this.classList.remove('loading')" 
+             style="z-index: 10; position: relative;" />
+      </div>
+    </div>`
+  );
+
+  let swiper = null;
   let currentPage = initialPage;
 
-  const img = createImageElement(images[currentPage]);
-  container.appendChild(img);
+  setTimeout(() => {
+    swiper = new Swiper(swiperContainer, {
+      initialSlide: currentPage,
+      loop: false,
+      virtual: {
+        slides, // HTML dạng string
+      },
+      on: {
+        slideChange: () => {
+          if (!swiper) return; // 👈 fix chắc chắn
 
-  enableSwipeGesture(
-    container,
-    () => updateImage(currentPage + 1),
-    () => updateImage(currentPage - 1)
-  );
+          currentPage = swiper.activeIndex;
+          preloadAroundPage(currentPage, images);
+          updateReaderPageInfo(currentPage + 1, images.length);
+          onPageChange(currentPage);
 
-  updateReaderPageInfo(currentPage + 1, images.length);
-  preloadAroundPage(currentPage, images);
-
-  // Gộp xử lý click và keyboard
-  setupReaderInteraction(
-    img,
-    () => updateImage(currentPage + 1),
-    () => updateImage(currentPage - 1)
-  );
-
-  function updateImage(index) {
-    updateReaderImage({
-      index,
-      images,
-      img,
-      onPageChange,
-      onIndexChange: (i) => (currentPage = i),
+          setTimeout(initPinchZoom, 100);
+        },
+      },
     });
-  }
 
-  function setCurrentPage(pageIndex) {
-    currentPage = pageIndex; // ✅ Gán lại để đồng bộ
-    updateImage(pageIndex);
-  }
+    // Đảm bảo render xong DOM
+    setTimeout(() => {
+      swiper.virtual.update();
+      console.log(
+        "🧩 DOM slide count:",
+        document.querySelectorAll(".swiper-slide").length
+      );
+    }, 100);
 
-  return { setCurrentPage };
-}
+    setTimeout(() => {
+      const img = document.querySelector(".swiper-slide img");
+      if (img) {
+        img.onload = () => {
+          document.getElementById("loading-overlay")?.classList.add("hidden");
+        };
+      }
+    }, 1000);
 
-function createImageElement(src) {
-  const img = document.createElement("img");
-  img.src = src;
-  img.classList.add("loading");
-  img.style.display = "block";
-  img.onload = () => img.classList.remove("loading");
-  return img;
-}
+    // Gọi lần đầu
+    preloadAroundPage(currentPage, images);
+    updateReaderPageInfo(currentPage + 1, images.length);
+    onPageChange(currentPage);
+    setTimeout(initPinchZoom, 100);
 
-function setupReaderInteraction(img, onNext, onPrev) {
-  // 🖱️ Click trái/giữa/phải ảnh
-  img.addEventListener("click", (e) => {
-    const rect = img.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    if (x < rect.width / 3) return onPrev();
-    if (x > (rect.width * 2) / 3) return onNext();
+    container.__readerControl = {
+      setCurrentPage: (pageIndex) => {
+        if (swiper) swiper.slideTo(pageIndex);
+      },
+    };
+  }, 50);
+  // 🖱 Toggle UI khi click ảnh
+  swiperContainer.addEventListener("click", (e) => {
+    const scale = e.target.closest(".pinch-zoom")?.style?.transform;
+    if (scale?.includes("scale") && !scale.includes("scale(1")) return;
+
     toggleReaderUI();
   });
 
-  // 🎹 Phím tắt
-  document.onkeydown = (e) => {
-    if (e.key === "ArrowRight") onNext();
-    if (e.key === "ArrowLeft") onPrev();
-  };
-}
+  // 🖱 Click trái/phải để next/prev ảnh
+  swiperContainer.addEventListener("click", (e) => {
+    const { clientX } = e;
+    const { width, left } = swiperContainer.getBoundingClientRect();
+    const x = clientX - left;
 
-function updateReaderImage({
-  index,
-  images,
-  img,
-  onPageChange,
-  onIndexChange,
-}) {
-  if (index < 0 || index >= images.length) return;
-  onIndexChange(index);
-  img.classList.add("loading");
-  img.src = images[index];
-  img.onload = () => img.classList.remove("loading");
-  updateReaderPageInfo(index + 1, images.length);
-  preloadAroundPage(index, images);
-  onPageChange(index);
-}
+    const THRESHOLD = width * 0.25; // 25% vùng bên trái/phải
 
-/**
- * 📱 Bắt gesture swipe trái/phải đơn giản không cần thư viện
- * @param {HTMLElement} container
- * @param {function} onSwipeLeft
- * @param {function} onSwipeRight
- */
-function enableSwipeGesture(container, onSwipeLeft, onSwipeRight) {
-  let touchStartX = 0;
-  let touchEndX = 0;
-
-  container.addEventListener("touchstart", (e) => {
-    if (e.touches.length === 1) {
-      touchStartX = e.touches[0].clientX;
+    if (x < THRESHOLD) {
+      swiper.slidePrev();
+    } else if (x > width - THRESHOLD) {
+      swiper.slideNext();
     }
   });
 
-  container.addEventListener("touchend", (e) => {
-    touchEndX = e.changedTouches[0].clientX;
-    const deltaX = touchEndX - touchStartX;
+  return {
+    setCurrentPage(pageIndex) {
+      if (swiper) {
+        currentPage = pageIndex;
+        swiper.slideTo(pageIndex);
+      } else {
+        setTimeout(() => {
+          container.__readerControl?.setCurrentPage?.(pageIndex);
+        }, 100);
+      }
+    },
+  };
+}
 
-    if (Math.abs(deltaX) > 50) {
-      if (deltaX < 0) onSwipeLeft?.();
-      else onSwipeRight?.();
+/**
+ * 🧠 Init lại pinch zoom cho ảnh hiển thị sau mỗi lần slide
+ */
+function initPinchZoom() {
+  document.querySelectorAll(".pinch-zoom").forEach((el) => {
+    if (!el.__pinchZoomInitialized) {
+      el.__pinchZoomInitialized = true;
+      new window.PinchZoom.default(el, {
+        draggableUnzoomed: false,
+        tapZoomFactor: 2,
+      });
     }
   });
 }
