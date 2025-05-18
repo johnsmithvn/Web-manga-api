@@ -2,7 +2,6 @@
 
 const fs = require("fs");
 const path = require("path");
-const { BASE_DIR } = require("./config");
 
 // Các định dạng file ảnh hợp lệ
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
@@ -11,9 +10,12 @@ const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
  * 📂 Đệ quy tìm ảnh đầu tiên trong folder hoặc subfolder
  * @param {string} dirPath - Đường dẫn tuyệt đối cần tìm
  * @param {string} baseUrl - URL gốc để convert (ví dụ "/manga")
+ * @param {string} rootPath - Đường dẫn tuyệt đối của env join folder root
  * @returns {string|null} - URL public tới ảnh hoặc null nếu không có
  */
-function findFirstImageRecursively(dirPath, baseUrl = "/manga") {
+function findFirstImageRecursively(rootFolder, rootPath, dirPath) {
+  const baseUrl = `/manga/${rootFolder}`; // Đường dẫn public tới ảnh
+
   if (!fs.existsSync(dirPath)) return null;
 
   const naturalCompare = require("string-natural-compare");
@@ -28,14 +30,18 @@ function findFirstImageRecursively(dirPath, baseUrl = "/manga") {
   for (const file of files) {
     const ext = path.extname(file.name).toLowerCase();
     if (IMAGE_EXTENSIONS.includes(ext)) {
-      return convertToUrl(path.join(dirPath, file.name), baseUrl);
+      const relativePath = path
+        .relative(rootPath, path.join(dirPath, file.name))
+        .replace(/\\/g, "/");
+
+      return `${baseUrl}/${relativePath}`;
     }
   }
-
   for (const folder of folders) {
     const found = findFirstImageRecursively(
-      path.join(dirPath, folder.name),
-      baseUrl
+      rootFolder,
+      rootPath,
+      path.join(dirPath, folder.name)
     );
     if (found) return found;
   }
@@ -69,17 +75,6 @@ function hasImageRecursively(dirPath) {
   }
 
   return false;
-}
-
-/**
- * 🔗 Chuyển đường dẫn vật lý sang URL public
- * @param {string} filePath
- * @param {string} baseUrl - Ví dụ "/manga"
- * @returns {string}
- */
-function convertToUrl(filePath, baseUrl = "/manga") {
-  const relativePath = path.relative(BASE_DIR, filePath).replace(/\\/g, "/");
-  return `${baseUrl}/${relativePath}`;
 }
 
 module.exports = {

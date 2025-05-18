@@ -50,9 +50,8 @@ export function showJumpPageInput(currentPage, totalPages, onChange) {
   input.onblur = input.onchange = () => {
     const page = parseInt(input.value, 10);
     if (!isNaN(page) && page >= 1 && page <= totalPages) {
-      onChange(page - 1); // callback nhận page mới (index)
+      onChange(page - 1); // chỉ gọi callback, việc update giao diện để reader lo
     }
-    updateReaderPageInfo(currentPage + 1, totalPages);
   };
 }
 
@@ -91,4 +90,3 @@ export function showReaderUI() {
 export function hideReaderUI() {
   updateUIVisibility(UI_ELEMENTS, "add");
 }
-

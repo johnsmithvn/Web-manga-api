@@ -1,6 +1,7 @@
 // 📁 folderSlider.js (Scroll Native version – scroll snap, auto-scroll, hover pause, visibility-aware)
 import { renderFolderCard } from "./folderCard.js";
 import { renderRecentViewed } from "../core/ui.js";
+import { getRootFolder, recentViewedKey } from "../core/storage.js";
 
 /**
  * Hiển thị slider thư mục truyện bằng scroll native (scroll snap + auto-scroll chỉ khi visible và không hover)
@@ -27,37 +28,37 @@ export function renderFolderSlider({ title, folders, showViews = false }) {
   if (title.includes("ngẫu nhiên") || title.includes("Mới đọc")) {
     const right = document.createElement("div");
     right.className = "slider-right";
-  
+
     if (title.includes("ngẫu nhiên")) {
       const refreshBtn = document.createElement("button");
       refreshBtn.id = "refresh-random-btn";
       refreshBtn.textContent = "🔄 Refresh";
       refreshBtn.className = "small-button";
       right.appendChild(refreshBtn);
-  
+
       const timestamp = document.createElement("span");
       timestamp.id = "random-timestamp";
       timestamp.className = "random-timestamp";
       timestamp.textContent = "";
       right.appendChild(timestamp);
     }
-  
+
     if (title.includes("Mới đọc")) {
+
       const clearBtn = document.createElement("button");
       clearBtn.textContent = "🗑️ Xoá tất cả";
       clearBtn.className = "small-button";
       clearBtn.onclick = () => {
         const root = getRootFolder?.();
         if (!root) return;
-        localStorage.removeItem(`recentViewed::${root}`);
+        localStorage.removeItem(recentViewedKey());
         renderRecentViewed([]);
       };
       right.appendChild(clearBtn);
     }
-  
+
     header.appendChild(right);
   }
-  
 
   section.appendChild(header);
 

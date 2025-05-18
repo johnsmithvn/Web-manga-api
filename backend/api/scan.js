@@ -9,11 +9,12 @@ const { scanFolderRecursive } = require("../utils/cache-scan");
  * Body: { root: "1" }
  */
 router.post("/", async (req, res) => {
-  const { root } = req.body;
-  if (!root) return res.status(400).json({ error: "Missing root" });
+  const { root,key } = req.body;
+  const dbkey =key;
+  if (!root||!dbkey) return res.status(400).json({ error: "Missing root or db" });
 
   try {
-    const stats = await scanFolderRecursive(root);
+    const stats = await scanFolderRecursive(dbkey,root);
     console.log(`\u2705 Scan hoàn tất cho root '${root}':`, stats);
     res.json({ success: true, stats });
   } catch (err) {

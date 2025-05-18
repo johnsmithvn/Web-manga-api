@@ -1,7 +1,10 @@
 import { state, loadFolder } from "/src/core/folder.js";
-import { getRootFolder } from "/src/core/storage.js";
+import {
+  getRootFolder,
+  saveRecentViewed,
+  getSourceKey,
+} from "/src/core/storage.js";
 import { updateReaderPageInfo, showJumpPageInput } from "./utils.js";
-import { saveRecentViewed } from "/src/core/ui.js";
 
 // let currentImages = [];
 // let currentPage = 0;
@@ -27,7 +30,6 @@ export function renderReader(
   // tang view
   const urlParams = new URLSearchParams(window.location.search);
   const path = urlParams.get("path");
-
   const parts = path.split("/");
   const folderName =
     parts[parts.length - 1] === "__self__"
@@ -40,11 +42,13 @@ export function renderReader(
     path,
     thumbnail: images[0] || null,
   });
+  const sourceKey = getSourceKey();
+  if (!sourceKey) return;
 
   fetch("/api/increase-view", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path }),
+    body: JSON.stringify({ path: path, dbkey: sourceKey }),
   });
 
   //
@@ -60,7 +64,6 @@ export function renderReader(
     readerContainer.className = "reader";
     app.appendChild(readerContainer);
 
-    setupReaderUI();
     setupReaderModeButton();
     setupPageInfoClick();
     setupChapterNavigation();
@@ -88,19 +91,19 @@ export function renderReader(
       readerMode === "vertical" ? scrollPage : currentPage
     );
 
-    updateReaderPageInfo(currentPage + 1, currentImages.length);
+    if (readerMode === "horizontal") {
+      updateReaderPageInfo(currentPage + 1, currentImages.length);
+      setupPageInfoClick(); // ✅ Gán lại click Trang X/Y về dạng input
+    }
+    const imageCountInfo = document.getElementById("image-count-info");
+    if (imageCountInfo) {
+      imageCountInfo.style.display =
+        readerMode === "vertical" ? "block" : "none";
+    }
   });
-
 }
 
-/**
- * 🧩 Setup ban đầu khi vào reader
- */
-function setupReaderUI() {
-  document.body.classList.add("reader-mode");
-  document.getElementById("site-header")?.classList.remove("hidden");
-  document.getElementById("reader-footer")?.classList.remove("hidden");
-}
+
 
 /**
  * 🧩 Gắn nút đổi chế độ đọc 📖
@@ -152,10 +155,13 @@ export function toggleReaderMode() {
 
   renderReader(currentImages, true, scrollPage);
 
-  // delay set lại trang
   setTimeout(() => {
     if (controller?.setCurrentPage) {
-      controller.setCurrentPage(currentPage);
+      if (readerMode === "horizontal") {
+        controller.setCurrentPage(currentPage);
+      } else {
+        controller.setCurrentPage(scrollPage * 200); // → scroll page đầu tiên chứa ảnh đang xem
+      }
     }
   }, 0);
 }

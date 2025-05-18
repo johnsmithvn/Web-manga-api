@@ -3,14 +3,12 @@
 import { updateFolderPaginationUI } from "./ui.js";
 import {
   getRootFolder,
+  getSourceKey,
   getFolderCache,
   setFolderCache,
-  
-  
 } from "./storage.js";
 import { preloadThumbnails } from "./preload.js";
 import { renderFolderCard } from "../components/folderCard.js";
-
 export const state = {
   currentPath: "",
   allFolders: [],
@@ -26,7 +24,7 @@ let totalFolders = 0; // 🆕 Tổng số folder thực tế không bị slice
  */
 export function loadFolder(path = "", page = 0) {
   const rootFolder = getRootFolder();
-  if (!rootFolder) return;
+  const sourceKey = getSourceKey(); // VD: FANTASY
 
   state.currentPath = path;
   folderPage = page;
@@ -36,7 +34,7 @@ export function loadFolder(path = "", page = 0) {
   const readerBtn = document.getElementById("readerModeButton");
   if (readerBtn) readerBtn.remove();
 
-  const cached = getFolderCache(rootFolder, path);
+  const cached = getFolderCache(sourceKey, rootFolder, path);
   if (cached) {
     renderFromData(cached);
     document.getElementById("loading-overlay")?.classList.add("hidden");
@@ -44,13 +42,13 @@ export function loadFolder(path = "", page = 0) {
   }
 
   fetch(
-    `/api/folder-cache?mode=path&root=${encodeURIComponent(
-      rootFolder
-    )}&path=${encodeURIComponent(path)}`
+    `/api/folder-cache?mode=path&key=${encodeURIComponent(
+      sourceKey
+    )}&root=${encodeURIComponent(rootFolder)}&path=${encodeURIComponent(path)}`
   )
     .then((res) => res.json())
     .then((data) => {
-      setFolderCache(rootFolder, path, data);
+      setFolderCache(sourceKey, rootFolder, path, data);
       renderFromData(data);
     })
     .catch((err) => {
@@ -63,29 +61,6 @@ export function loadFolder(path = "", page = 0) {
 }
 
 /**
- * 🆕 Load danh sách allFoldersList
- */
-// export async function ensureAllFoldersList() {
-//   const root = getRootFolder();
-//   if (!root) return [];
-
-//   let list = getAllFoldersList(root);
-//   if (list) return list;
-
-//   try {
-//     const res = await fetch(
-//       `/api/folder-cache?mode=folders&root=${encodeURIComponent(root)}`
-//     );
-//     list = await res.json();
-//     setAllFoldersList(root, list);
-//     return list;
-//   } catch (err) {
-//     console.error("❌ Lỗi fetch allFoldersList:", err);
-//     return [];
-//   }
-// }
-
-/**
  * 🧱 Render dữ liệu folder hoặc reader từ cache hoặc API
  * @param {object} data
  */
@@ -95,10 +70,7 @@ function renderFromData(data) {
   app.innerHTML = "";
 
   if (data.type === "folder") {
-    document.body.classList.remove("reader-mode");
-    document.getElementById("main-footer")?.classList.remove("hidden");
-    document.getElementById("reader-footer")?.classList.add("hidden");
-
+   
     state.allFolders = [];
 
     if (data.images && data.images.length > 0) {

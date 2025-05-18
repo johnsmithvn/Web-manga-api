@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📚 Chọn nguồn Manga</title>
+    <link rel="stylesheet" href="/src/styles/base.css" />
+        <link rel="stylesheet" href="/src/styles/pages/home.css" />
+
+  </head>
+  <body>
+    <h1>📚 Chọn nguồn Manga</h1>
+
+    <div id="source-list" class="source-list">
+      <!-- Các lựa chọn sẽ render bằng JS -->
+    </div>
+
+    <div id="loading-overlay" class="hidden">
+      <div class="loader-text">⏳ Đang tải...</div>
+    </div>
+
+    <!-- Gắn script này để có window.sourceKeys -->
+    <script src="/api/source-keys-inline.js"></script>
+
+    <script type="module">
+      const list = document.getElementById("source-list");
+
+      window.sourceKeys.forEach((key) => {
+        const btn = document.createElement("div");
+        btn.className = "source-btn";
+        btn.textContent = `📁 ${key}`;
+        btn.onclick = () => {
+          localStorage.setItem("sourceKey", key);
+          window.location.href = "/select.html";
+        };
+        list.appendChild(btn);
+      });
+    </script>
+  </body>
+</html>
