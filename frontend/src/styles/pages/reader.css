@@ -39,10 +39,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 50vw; /* ✅ chỉ chiếm tối đa nửa màn hình */
+  max-width: 50vw;
+  /* ✅ chỉ chiếm tối đa nửa màn hình */
   margin: 0 12px;
   font-size: 18px;
 }
+
 #reader-folder-name {
   font-size: 16px;
   font-weight: bold;
@@ -87,18 +89,28 @@ img {
   background-color: #000;
 }
 
+.swiper,
+.swiper-wrapper,
+.swiper-slide {
+  height: 100%;
+}
+
+.swiper-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
+}
+
 /* Ảnh 1 trang (swipe mode) */
 .reader:not(.scroll-mode) img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  display: none;
+  display: block; /* ✅ hoặc flex nếu muốn */
   margin: 0 auto;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
+
 
 /* Scroll mode */
 .reader.scroll-mode {
@@ -212,7 +224,7 @@ img {
   bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: white;
   padding: 6px 12px;
   border-radius: 8px;
