@@ -74,11 +74,11 @@ export function renderHorizontalReader(
 
     setTimeout(() => {
       const img = document.querySelector(".swiper-slide img");
-      console.log(
-        "📷 Ảnh đầu tiên:",
-        img?.src,
-        img?.offsetParent ? "✅ Visible" : "❌ Hidden"
-      );
+      if (img) {
+        img.onload = () => {
+          document.getElementById("loading-overlay")?.classList.add("hidden");
+        };
+      }
     }, 1000);
 
     // Gọi lần đầu
