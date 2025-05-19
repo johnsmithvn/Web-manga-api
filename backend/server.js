@@ -91,7 +91,18 @@ app.get("/", (req, res) => {
 // ✅ Middleware fix lỗi URL encode (dấu () [] {} ...) khi load ảnh
 app.use("/manga", (req, res, next) => {
   try {
-    req.url = decodeURIComponent(req.url);
+    const decodedPath = req.url
+      .split("/")
+      .map((part) => {
+        try {
+          return decodeURIComponent(part);
+        } catch {
+          return part; // fallback nếu lỗi
+        }
+      })
+      .join("/");
+
+    req.url = decodedPath;
   } catch (e) {
     console.error("❌ Error decoding URL:", e);
     return res.status(400).send("Bad Request");

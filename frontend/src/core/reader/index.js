@@ -44,13 +44,14 @@ export function renderReader(
   });
   const sourceKey = getSourceKey();
   if (!sourceKey) return;
-
-  fetch("/api/increase-view", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path: path, dbkey: sourceKey }),
-  });
-
+  
+  if (!preserveCurrentPage) {
+    fetch("/api/increase-view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: path, dbkey: sourceKey }),
+    });
+  }
   //
   currentImages = images;
   if (!preserveCurrentPage) currentPage = 0;
@@ -261,8 +262,6 @@ function moveChapter(direction = "next") {
       alert("❌ Lỗi kết nối server");
     });
 }
-
-
 
 /**
  * 🧩 Click vào Trang X/Y để chuyển nhanh

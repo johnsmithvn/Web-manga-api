@@ -3,6 +3,7 @@ import {
   preloadAroundPage,
   updateReaderPageInfo,
 } from "./utils.js";
+let clickTimer = null;
 
 /**
  * 📖 Horizontal/Swipe Mode Reader – Virtual Slide + Zoom + Preload
@@ -94,27 +95,10 @@ export function renderHorizontalReader(
     };
   }, 50);
   // 🖱 Toggle UI khi click ảnh
-  swiperContainer.addEventListener("click", (e) => {
-    const scale = e.target.closest(".pinch-zoom")?.style?.transform;
-    if (scale?.includes("scale") && !scale.includes("scale(1")) return;
 
-    toggleReaderUI();
-  });
-
-  // 🖱 Click trái/phải để next/prev ảnh
-  swiperContainer.addEventListener("click", (e) => {
-    const { clientX } = e;
-    const { width, left } = swiperContainer.getBoundingClientRect();
-    const x = clientX - left;
-
-    const THRESHOLD = width * 0.25; // 25% vùng bên trái/phải
-
-    if (x < THRESHOLD) {
-      swiper.slidePrev();
-    } else if (x > width - THRESHOLD) {
-      swiper.slideNext();
-    }
-  });
+  swiperContainer.addEventListener("click", (e) =>
+    handleReaderClickEvent(e, swiperContainer, swiper)
+  );
 
   return {
     setCurrentPage(pageIndex) {
@@ -143,4 +127,44 @@ function initPinchZoom() {
       });
     }
   });
+}
+
+/**
+ * 📌 Xử lý click 1 lần để prev/next/toggle UI
+ *      và bỏ qua nếu là double click (zoom)
+ * @param {MouseEvent} e
+ * @param {HTMLElement} swiperContainer
+ * @param {Swiper} swiper
+ */
+function handleReaderClickEvent(e, swiperContainer, swiper) {
+  if (clickTimer !== null) {
+    // 👉 double click → zoom → bỏ qua click đơn
+    clickTimer = clearTimeout(clickTimer);
+    return;
+  }
+
+  clickTimer = setTimeout(() => {
+    clickTimer = null;
+
+    const pinch = e.target.closest(".pinch-zoom");
+    const scale = pinch?.style?.transform;
+
+    if (!scale || scale.includes("scale(1")) {
+      // 👉 Not zoomed → xử lý next/prev
+      const { clientX } = e;
+      const { width, left } = swiperContainer.getBoundingClientRect();
+      const x = clientX - left;
+
+      const THRESHOLD = width * 0.25;
+
+      if (x < THRESHOLD) {
+        swiper.slidePrev();
+      } else if (x > width - THRESHOLD) {
+        swiper.slideNext();
+      } else {
+        toggleReaderUI();
+      }
+    }
+    // 👉 Nếu đang zoom thì không next/prev
+  }, 120); // set timeout đẻ tránh conflig dbclic và click
 }
