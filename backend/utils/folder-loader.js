@@ -16,7 +16,13 @@ const { findFirstImageRecursively } = require("./imageUtils");
  * @param {number} offset - bắt đầu từ ảnh thứ mấy
  * @returns {{ folders: Array, images: Array, total: number, totalImages: number }}
  */
-function loadFolderFromDisk(dbkey,root, folderPath = "", limit = 0, offset = 0) {
+function loadFolderFromDisk(
+  dbkey,
+  root,
+  folderPath = "",
+  limit = 0,
+  offset = 0
+) {
   const rootPath = path.join(getRootPath(dbkey), root); // Lấy đường dẫn root từ config
   const basePath = path.join(rootPath, folderPath);
   // const basePath = path.join(getRootPath(dbkey), folderPath);
@@ -34,7 +40,7 @@ function loadFolderFromDisk(dbkey,root, folderPath = "", limit = 0, offset = 0) 
     const fullPath = path.join(basePath, entry.name);
 
     if (entry.isDirectory()) {
-      const thumb = findFirstImageRecursively(root,rootPath,fullPath); // ✅ Dùng đúng biến đã có
+      const thumb = findFirstImageRecursively(root, rootPath, fullPath); // ✅ Dùng đúng biến đã có
       if (!thumb) continue; // 🔥 Bỏ qua folder không có ảnh
 
       folders.push({
@@ -47,10 +53,10 @@ function loadFolderFromDisk(dbkey,root, folderPath = "", limit = 0, offset = 0) 
     if (entry.isFile()) {
       const ext = path.extname(entry.name).toLowerCase();
       if ([".jpg", ".jpeg", ".png", ".webp", ".avif"].includes(ext)) {
-        const rel = path
-          .relative(rootPath, fullPath)
-          .replace(/\\/g, "/");
-        images.push(`/manga/${root}/${rel}`);
+        const rel = path.relative(rootPath, fullPath).replace(/\\/g, "/");
+        const safePath = rel.split("/").map(encodeURIComponent).join("/");
+
+        images.push(`/manga/${root}/${safePath}`);
       }
     }
   }

@@ -34,7 +34,8 @@ function findFirstImageRecursively(rootFolder, rootPath, dirPath) {
         .relative(rootPath, path.join(dirPath, file.name))
         .replace(/\\/g, "/");
 
-      return `${baseUrl}/${relativePath}`;
+      const safe = relativePath.split("/").map(encodeURIComponent).join("/");
+      return `${baseUrl}/${safe}`;
     }
   }
   for (const folder of folders) {
