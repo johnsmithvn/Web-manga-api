@@ -336,3 +336,31 @@ body.dark-mode .icon-button:hover {
   padding: 12px 20px;
   margin-top: 40px;
 }
+
+
+/*  favorite */
+/* ❤️ Style nút yêu thích trong card */
+.folder-fav {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 20px;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.folder-fav:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.folder-fav.active {
+  color: red;
+}
+
+.folder-thumb {
+  position: relative; /* để .folder-fav bám góc ảnh */
+}

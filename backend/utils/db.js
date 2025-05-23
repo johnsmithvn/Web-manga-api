@@ -39,7 +39,9 @@ function getDB(dbkey) {
       chapterCount INTEGER DEFAULT 0,
       type TEXT DEFAULT 'folder',
       createdAt INTEGER,
-      updatedAt INTEGER
+      updatedAt INTEGER,
+      isFavorite INTEGER DEFAULT 0
+
     );
 
     CREATE INDEX IF NOT EXISTS idx_folders_root_path ON folders(root, path);
