@@ -1,5 +1,6 @@
 // 📁 frontend/src/storage.js
 const FOLDER_CACHE_PREFIX = "folderCache::";
+import { showToast } from "./ui.js";
 
 /**
  * 📂 Lấy rootFolder hiện tại từ localStorage
@@ -28,14 +29,14 @@ export function requireRootFolder() {
   const root = getRootFolder();
 
   if (!root) {
-    alert("⚠️ Chưa chọn thư mục gốc, vui lòng chọn lại!");
+    showToast("⚠️ Chưa chọn thư mục gốc, vui lòng chọn lại!");
     window.location.href = "/select.html";
   }
 }
 export function requireSourceKey() {
   const source = getSourceKey();
   if (!source) {
-    alert("⚠️ Chưa chọn nguồn dữ liệu, vui lòng chọn lại!");
+    showToast("⚠️ Chưa chọn nguồn dữ liệu, vui lòng chọn lại!");
     window.location.href = "/home.html";
   }
 }
@@ -56,7 +57,7 @@ export function getFolderCacheKey(sourceKey, rootFolder, path) {
 }
 
 export function getFolderCache(sourceKey, rootFolder, path) {
-  const key =getFolderCacheKey(sourceKey, rootFolder, path);
+  const key = getFolderCacheKey(sourceKey, rootFolder, path);
   const raw = localStorage.getItem(key);
   if (!raw) return null;
 
@@ -73,7 +74,7 @@ export function getFolderCache(sourceKey, rootFolder, path) {
  * 📦 Lưu cache folder
  */
 export function setFolderCache(sourceKey, rootFolder, path, data) {
-  const key =getFolderCacheKey(sourceKey, rootFolder, path);
+  const key = getFolderCacheKey(sourceKey, rootFolder, path);
   const jsonData = JSON.stringify({
     timestamp: Date.now(),
     data: data,
@@ -159,7 +160,7 @@ export function recentViewedKey() {
 }
 /** ✅ Ghi lại folder vừa đọc vào localStorage */
 export function saveRecentViewed(folder) {
-  const key =recentViewedKey()
+  const key = recentViewedKey();
   try {
     const raw = localStorage.getItem(key);
     const list = raw ? JSON.parse(raw) : [];

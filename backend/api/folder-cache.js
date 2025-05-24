@@ -67,7 +67,7 @@ router.get("/folder-cache", async (req, res) => {
         const rows = db
           .prepare(
             `
-          SELECT f.name, f.path, f.thumbnail, v.count FROM views v
+          SELECT f.name, f.path, f.thumbnail, v.count ,f.isFavorite FROM views v
           JOIN folders f ON f.path = v.path AND f.root = ?
           ORDER BY v.count DESC LIMIT 30
         `

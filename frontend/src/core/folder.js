@@ -1,6 +1,6 @@
 // 📁 frontend/src/folder.js
 
-import { updateFolderPaginationUI } from "./ui.js";
+import { showToast, updateFolderPaginationUI } from "./ui.js";
 import {
   getRootFolder,
   getSourceKey,
@@ -53,7 +53,7 @@ export function loadFolder(path = "", page = 0) {
     })
     .catch((err) => {
       console.error("❌ Lỗi khi load folder:", err);
-      alert("🚫 Lỗi khi tải thư mục, vui lòng thử lại!");
+      showToast("🚫 Lỗi khi tải thư mục, vui lòng thử lại!");
     })
     .finally(() => {
       document.getElementById("loading-overlay")?.classList.add("hidden");

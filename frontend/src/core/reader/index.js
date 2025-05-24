@@ -1,11 +1,11 @@
-import { state, loadFolder } from "/src/core/folder.js";
+import {  loadFolder } from "/src/core/folder.js";
 import {
   getRootFolder,
   saveRecentViewed,
   getSourceKey,
 } from "/src/core/storage.js";
 import { updateReaderPageInfo, showJumpPageInput } from "./utils.js";
-
+import { showToast } from "../ui.js";
 // let currentImages = [];
 // let currentPage = 0;
 // let readerMode = "horizontal"; // or "vertical"
@@ -185,7 +185,7 @@ function moveChapter(direction = "next") {
   path = path.replace(/\/__self__$/, "");
 
   if (!key || !root || !path) {
-    alert("❌ Thiếu key, root hoặc path!");
+    showToast("❌ Thiếu key, root hoặc path!");
     return;
   }
 
@@ -197,7 +197,7 @@ function moveChapter(direction = "next") {
     .then((res) => res.json())
     .then((data) => {
       if (!data.path) {
-        alert(
+        showToast(
           direction === "next" ? "🚫 Hết chương!" : "🚫 Đây là chương đầu!"
         );
         return;
@@ -225,7 +225,7 @@ function moveChapter(direction = "next") {
               const parentPath = parts.slice(0, -1).join("/");
               loadFolder(parentPath);
             } else {
-              alert("❌ Không còn folder cha!");
+              showToast("❌ Không còn folder cha!");
             }
             return;
           }
@@ -259,7 +259,7 @@ function moveChapter(direction = "next") {
     })
     .catch((err) => {
       console.error("❌ Lỗi chuyển chương:", err);
-      alert("❌ Lỗi kết nối server");
+      showToast("❌ Lỗi kết nối server");
     });
 }
 
