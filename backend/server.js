@@ -5,69 +5,16 @@ const path = require("path");
 const fs = require("fs");
 const { getAllRootKeys, getRootPath } = require("./utils/config");
 const { ROOT_PATHS } = require("./utils/config");
+const authMiddleware = require("./middleware/auth"); // 🆕 Middleware kiểm tra IP/hostname
 
 const app = express();
 const PORT = 3000; // PORT = process.env.PORT || 3000; // ✅ Lấy từ biến môi trường
-const allowedHostnames = [
-  "xiaomi-redmi-k30-5g-speed",
-  "desktop-v88j9e0", // ✅ mảng hostname được truy cập hoặc dung ip của tailscale
-];  
+
 // ✅ Middleware parse JSON body
 app.use(express.json());
 
-// 🛡️ CHẶN IP KHÔNG ĐƯỢC PHÉP (trừ đúng IP Tailscale điện thoại)
-// 🛡️ CHẶN HOSTNAME TAILSCALE KHÔNG PHẢI ĐIỆN THOẠI
-const dns = require("dns").promises;
-
-function isAllowedClient(clientIP) {
-  // ✅ BỎ COMMENT dòng sau để cho phép toàn bộ nội bộ (LAN + localhost)
-  // return true;
-
-  // ✅ Nếu là localhost
-  if (
-    clientIP === "127.0.0.1" ||
-    clientIP === "192.168.1.111" ||
-    clientIP === "192.168.1.1"
-  )
-    return true;
-
-  // ✅ Nếu IP là mạng LAN (192.168.x.x / 10.x.x.x / 172.16.x.x - 172.31.x.x) → cho qua
-
-  // const isLAN =
-  //   clientIP.startsWith("192.168.") ||
-  //   clientIP.startsWith("10.") ||
-  //   /^172\.(1[6-9]|2\d|3[0-1])\./.test(clientIP);
-
-  // return isLAN;
-}
-
-app.use(async (req, res, next) => {
-  let clientIP = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  if (clientIP.startsWith("::ffff:")) {
-    clientIP = clientIP.replace("::ffff:", "");
-  }
-
-  // 🛡️ Cho phép IP nội bộ
-  if (isAllowedClient(clientIP)) {
-    return next();
-  }
-
-  // ✅ Nếu không phải LAN → kiểm tra hostname Tailscale
-  try {
-    const resolved = await dns.reverse(clientIP);
-    const hostname = resolved[0] || "";
-
-    if (!allowedHostnames.includes(hostname)) {
-      console.warn("❌ Truy cập bị chặn từ hostname:", hostname);
-      return res.status(403).send("Forbidden (blocked)");
-    }
-
-    next();
-  } catch (err) {
-    console.error("❌ Reverse DNS failed:", err.message);
-    return res.status(403).send("Forbidden (lookup failed)");
-  }
-});
+// 🛡️ Middleware kiểm tra IP/hostname (tách riêng ra file middleware/auth.js)
+app.use(authMiddleware);
 
 // ✅ API chính
 app.use("/api", require("./api/folder-cache")); // 🌟 API gộp random, top, search, path, folders

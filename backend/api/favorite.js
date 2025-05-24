@@ -10,11 +10,10 @@ const getDB = require("../utils/db");
  */
 router.post("/favorite", (req, res) => {
   const { dbkey, path, value } = req.body;
-
+  // --- Validate đầu vào ---
   if (!dbkey || !path || typeof value !== "boolean") {
     return res.status(400).json({ error: "Thiếu hoặc sai dữ liệu" });
   }
-
   try {
     const db = getDB(dbkey);
     db.prepare(`UPDATE folders SET isFavorite = ? WHERE path = ?`).run(value ? 1 : 0, path);
@@ -31,16 +30,13 @@ router.post("/favorite", (req, res) => {
  */
 router.get("/favorite", (req, res) => {
   const { key, root } = req.query;
-
+  // --- Validate đầu vào ---
   if (!key || !root) {
     return res.status(400).json({ error: "Thiếu key hoặc root" });
   }
-
   try {
     const db = getDB(key);
-    const list = db
-      .prepare(`SELECT name, path, thumbnail FROM folders WHERE root = ? AND isFavorite = 1`)
-      .all(root);
+    const list = db.prepare(`SELECT name, path, thumbnail FROM folders WHERE root = ? AND isFavorite = 1`).all(root);
     res.json(list);
   } catch (err) {
     console.error("❌ Lỗi lấy danh sách yêu thích:", err);

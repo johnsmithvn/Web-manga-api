@@ -13,14 +13,14 @@ const getDB = require("../utils/db");
  * Query: /api/reset-cache?root=1&mode=scan
  */
 router.delete("/reset-cache", (req, res) => {
-  const key = req.query.key; // ví dụ: FANTASY
-  const rootFolder = req.query.root; // ví dụ: Naruto
+  const key = req.query.key;
+  const rootFolder = req.query.root;
   const mode = req.query.mode;
 
-  if (!rootFolder || !mode || !rootFolder) {
-    return res.status(400).json({ error: "Thiếu root, folder hoặc mode" });
+  // --- Validate đầu vào ---
+  if (!rootFolder || !mode) {
+    return res.status(400).json({ error: "Thiếu root hoặc mode" });
   }
-
   const rootPath = getRootPath(key);
   if (!rootPath) {
     return res.status(400).json({ error: "Root không hợp lệ trong .env" });
@@ -28,8 +28,7 @@ router.delete("/reset-cache", (req, res) => {
 
   try {
     const db = getDB(key);
-
-    // ✅ Thêm cột updatedAt nếu chưa có
+    // Đảm bảo cột updatedAt tồn tại
     try {
       db.prepare(`ALTER TABLE folders ADD COLUMN updatedAt INTEGER`).run();
       console.log("➕ Thêm cột updatedAt vào bảng folders");
@@ -42,7 +41,6 @@ router.delete("/reset-cache", (req, res) => {
       console.log(`🗑️ Đã xoá cache DB cho ${rootFolder}`);
       return res.json({ success: true, message: "Đã xoá cache thành công" });
     }
-
     if (mode === "reset") {
       db.prepare("DELETE FROM folders WHERE root = ?").run(rootFolder);
       const stats = scanFolderRecursive(key, rootFolder);
@@ -53,10 +51,8 @@ router.delete("/reset-cache", (req, res) => {
         message: "Reset cache thành công",
       });
     }
-
-    return res
-      .status(400)
-      .json({ error: "Sai mode (chỉ hỗ trợ delete, reset)" });
+    // Nếu mode không hợp lệ
+    return res.status(400).json({ error: "Sai mode (chỉ hỗ trợ delete, reset)" });
   } catch (err) {
     console.error("❌ Lỗi reset-cache:", err);
     res.status(500).json({ error: "Lỗi server" });
@@ -70,7 +66,6 @@ router.delete("/reset-cache", (req, res) => {
  */
 router.delete("/reset-cache/all", (req, res) => {
   const key = req.query.key;
-
   try {
     const db = getDB(key);
     db.prepare("DELETE FROM folders").run();
