@@ -3,7 +3,7 @@ import { withLoading, showToast, showConfirm } from "/src/core/ui.js";
 import {
   requireSourceKey,
   getSourceKey,
-  clearAllFolderCache,
+  clearAllFolderCache
 } from "/src/core/storage.js";
 /**
  * 📂 Fetch danh sách folder gốc và render ra giao diện
@@ -71,7 +71,7 @@ function createRootFolderCard(folder) {
 async function loadRootFolders() {
   const dbkey = localStorage.getItem("sourceKey");
   if (!dbkey) {
-    alert("❌ Chưa chọn nguồn manga!");
+    showToast("❌ Chưa chọn nguồn manga!");
     return (window.location.href = "/home.html");
   }
   try {

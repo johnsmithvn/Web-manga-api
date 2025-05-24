@@ -1,6 +1,6 @@
 // ➕ BỔ SUNG UI FRONTEND RENDER BANNER RANDOM
 // 📁 frontend/src/ui.js ➜ renderRandomBanner()
-import { getRootFolder, saveRecentViewed, getSourceKey } from "./storage.js";
+import { getRootFolder,  getSourceKey } from "./storage.js";
 
 import { state, loadFolder } from "/src/core/folder.js";
 import { changeRootFolder } from "./storage.js";

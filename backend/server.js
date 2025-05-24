@@ -11,7 +11,7 @@ const PORT = 3000; // PORT = process.env.PORT || 3000; // ✅ Lấy từ biến 
 const allowedHostnames = [
   "xiaomi-redmi-k30-5g-speed",
   "desktop-v88j9e0", // ✅ mảng hostname được truy cập hoặc dung ip của tailscale
-];
+];  
 // ✅ Middleware parse JSON body
 app.use(express.json());
 
@@ -75,6 +75,7 @@ app.use("/api", require("./api/increase-view")); // 📈 Ghi lượt xem
 app.use("/api", require("./api/reset-cache")); // 🔁 Reset cache DB
 // ✅ Đăng ký route /api/scan trong server.js:
 app.use("/api/scan", require("./api/scan"));
+app.use("/api", require("./api/favorite")); // ⭐ API đánh dấu yêu thích
 
 // // ✅ Serve static images từ BASE_DIR (E:/File/Manga)
 // app.use("/manga", express.static(BASE_DIR));

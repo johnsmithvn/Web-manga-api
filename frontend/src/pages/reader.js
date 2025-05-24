@@ -8,7 +8,7 @@ import {
   setupSidebar,
   toggleSidebar,
   filterManga,
-  toggleSearchBar,
+  toggleSearchBar,showToast
 } from "/src/core/ui.js";
 
 /**
@@ -23,7 +23,7 @@ async function initializeReader() {
   const urlParams = new URLSearchParams(window.location.search);
   const rawPath = urlParams.get("path");
   if (!rawPath) {
-    alert("❌ Thiếu path đọc truyện!");
+    showToast("❌ Thiếu path đọc truyện!");
     return;
   }
 
@@ -56,11 +56,11 @@ async function initializeReader() {
         .getElementById("floatingSearchInput")
         ?.addEventListener("input", filterManga);
     } else {
-      alert("❌ Folder này không chứa ảnh hoặc không hợp lệ!");
+      showToast("❌ Folder này không chứa ảnh hoặc không hợp lệ!");
     }
   } catch (error) {
     console.error("❌ Lỗi load reader:", error);
-    alert("🚫 Không thể tải dữ liệu!");
+    showToast("🚫 Không thể tải dữ liệu!");
   }
 }
 

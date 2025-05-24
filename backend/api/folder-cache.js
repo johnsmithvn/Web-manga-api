@@ -53,7 +53,7 @@ router.get("/folder-cache", async (req, res) => {
         const rows = db
           .prepare(
             `
-          SELECT name, path, thumbnail FROM folders
+          SELECT name, path, thumbnail, isFavorite FROM folders
           WHERE root = ? AND thumbnail IS NOT NULL
           ORDER BY RANDOM() LIMIT 30
         `
@@ -67,7 +67,7 @@ router.get("/folder-cache", async (req, res) => {
         const rows = db
           .prepare(
             `
-          SELECT f.name, f.path, f.thumbnail, v.count FROM views v
+          SELECT f.name, f.path, f.thumbnail, v.count ,f.isFavorite FROM views v
           JOIN folders f ON f.path = v.path AND f.root = ?
           ORDER BY v.count DESC LIMIT 30
         `
@@ -119,7 +119,7 @@ router.get("/folder-cache", async (req, res) => {
         const rows = db
           .prepare(
             `
-            SELECT name, path, thumbnail FROM folders
+            SELECT name, path, thumbnail, isFavorite FROM folders
             WHERE root = ? AND name LIKE ?
             ORDER BY name ASC LIMIT 50
           `

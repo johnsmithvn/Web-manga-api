@@ -9,6 +9,7 @@ import {
   renderTopView,
   renderRecentViewed,
   showRandomUpdatedTime,
+  showToast,
 } from "/src/core/ui.js";
 import {
   getRootFolder,
@@ -124,7 +125,7 @@ document
   .getElementById("reset-cache-btn")
   ?.addEventListener("click", async () => {
     const root = getRootFolder();
-    if (!root) return alert("❌ Chưa chọn root!");
+    if (!root) return showToast("❌ Chưa chọn root!");
 
     if (!confirm(`Reset cache cho '${root}'?`)) return;
 
@@ -137,13 +138,13 @@ document
       );
       const json = await res.json();
       if (json.success) {
-        alert("✅ Reset xong!");
+        showToast("✅ Reset xong!");
         location.reload();
       } else {
-        alert("❌ Reset thất bại!");
+        showToast("❌ Reset thất bại!");
       }
     } catch (err) {
-      alert("🚫 Lỗi kết nối API reset");
+      showToast("🚫 Lỗi kết nối API reset");
       console.error(err);
     }
   });
