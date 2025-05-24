@@ -11,7 +11,8 @@ const parsedEnv = dotenv.parse(fs.readFileSync(envPath, "utf-8"));
 const ROOT_PATHS = {};
 
 for (const [key, value] of Object.entries(parsedEnv)) {
-  if (typeof value === "string" && fs.existsSync(value)) {
+  // Chỉ lấy các biến bắt đầu bằng ROOT_
+  if (key.startsWith("ROOT_") && typeof value === "string" && fs.existsSync(value)) {
     ROOT_PATHS[key] = value;
   }
 }

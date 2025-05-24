@@ -19,7 +19,6 @@ const dbMap = {};
 // views: lưu lượt xem
 // ➕ thêm cột root để phân biệt folder từ root nào
 
-
 function getDB(dbkey) {
   if (dbMap[dbkey]) return dbMap[dbkey];
 
@@ -47,9 +46,12 @@ function getDB(dbkey) {
     CREATE INDEX IF NOT EXISTS idx_folders_root_path ON folders(root, path);
 
     CREATE TABLE IF NOT EXISTS views (
-      path TEXT PRIMARY KEY,
-      count INTEGER DEFAULT 1
+    root TEXT NOT NULL,
+    path TEXT NOT NULL,
+    count INTEGER DEFAULT 1,
+    PRIMARY KEY (root, path)
     );
+    CREATE INDEX IF NOT EXISTS idx_folders_favorite ON folders(root, isFavorite);
   `);
 
   dbMap[dbkey] = db;

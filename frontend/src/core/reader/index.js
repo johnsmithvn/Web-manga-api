@@ -1,4 +1,4 @@
-import {  loadFolder } from "/src/core/folder.js";
+import { loadFolder } from "/src/core/folder.js";
 import {
   getRootFolder,
   saveRecentViewed,
@@ -43,13 +43,15 @@ export function renderReader(
     thumbnail: images[0] || null,
   });
   const sourceKey = getSourceKey();
+  const rootFolder = getRootFolder();
+
   if (!sourceKey) return;
-  
+
   if (!preserveCurrentPage) {
     fetch("/api/increase-view", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: path, dbkey: sourceKey }),
+      body: JSON.stringify({ path: path, dbkey: sourceKey, rootKey: rootFolder }),
     });
   }
   //
