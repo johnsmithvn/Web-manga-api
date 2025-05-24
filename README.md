@@ -8,7 +8,7 @@ https://github.com/johnsmithvn/AndroidApp
 
 ---
 ## 🛠️ Cấu trúc dự án
-
+```
 📦 MyLocalManga/
 ├── backend/
 │   ├── api/                # 📡 API chính
@@ -16,6 +16,7 @@ https://github.com/johnsmithvn/AndroidApp
 │   │   ├── increase-view.js     ⇨ Ghi lượt xem (views)
 │   │   ├── reset-cache.js       ⇨ Xoá hoặc scan lại DB cache
 │   │   └── scan.js              ⇨ Scan rootFolder nếu chưa có DB
+│   │   └── favorite.js          ⇨ favorite
 │
 │   ├── utils/
 │   │   ├── config.js            ⇨ Đọc .env, map sourceKey → path gốc (ROOT_PATHS)
@@ -24,7 +25,8 @@ https://github.com/johnsmithvn/AndroidApp
 │   │   ├── folder-loader.js    ⇨ Đọc thư mục thực (subfolder + ảnh)
 │   │   ├── imageUtils.js       ⇨ Tìm ảnh đầu tiên (thumbnail), check folder có ảnh
 │   │   └── views-manager.js    ⇨ (optional) xử lý view count nâng cao (chưa dùng)
-│
+
+│   └── .env                     file env disk
 │   └── server.js               ⇨ Khởi tạo server, cấu hình static + API, middleware chặn IP
 │
 ├── frontend/
@@ -33,6 +35,8 @@ https://github.com/johnsmithvn/AndroidApp
 │   │   ├── select.html          ⇨ Chọn rootFolder
 │   │   └── index.html           ⇨ Trang chính (folder + banner)
 │   │   └── reader.html          ⇨ Trang đọc ảnh (swipe/scroll)
+│   │   └── favorites.html       ⇨ Trang favorite
+│
 │
 │   ├── src/
 │   │   ├── styles/
@@ -64,7 +68,7 @@ https://github.com/johnsmithvn/AndroidApp
 │   │   │   ├── select.js             ⇨ chọn rootFolder
 │   │   │   ├── index.js              ⇨ load random, top, folder
 │   │   │   └── reader.js             ⇨ gọi renderReader + fetch ảnh từ API
-
+│   │   │   └── favorites.js          ⇨ gọi favorite list
 ```
 ### ✅ TỔNG KẾT CHỨC NĂNG
 
