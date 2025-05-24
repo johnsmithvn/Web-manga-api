@@ -16,7 +16,14 @@ router.post("/favorite", (req, res) => {
   }
   try {
     const db = getDB(dbkey);
-    db.prepare(`UPDATE folders SET isFavorite = ? WHERE path = ?`).run(value ? 1 : 0, path);
+    const result = db
+      .prepare(`UPDATE folders SET isFavorite = ? WHERE path = ?`)
+      .run(value ? 1 : 0, path);
+    // ✅ Kiểm tra có update không
+    if (result.changes === 0) {
+      return res.status(404).json({ error: "Folder không tồn tại trong DB" });
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error("❌ Lỗi set favorite:", err);
@@ -36,7 +43,11 @@ router.get("/favorite", (req, res) => {
   }
   try {
     const db = getDB(key);
-    const list = db.prepare(`SELECT name, path, thumbnail FROM folders WHERE root = ? AND isFavorite = 1`).all(root);
+    const list = db
+      .prepare(
+        `SELECT name, path, thumbnail FROM folders WHERE root = ? AND isFavorite = 1`
+      )
+      .all(root);
     res.json(list);
   } catch (err) {
     console.error("❌ Lỗi lấy danh sách yêu thích:", err);

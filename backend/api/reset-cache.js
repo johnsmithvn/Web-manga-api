@@ -28,13 +28,7 @@ router.delete("/reset-cache", (req, res) => {
 
   try {
     const db = getDB(key);
-    // Đảm bảo cột updatedAt tồn tại
-    try {
-      db.prepare(`ALTER TABLE folders ADD COLUMN updatedAt INTEGER`).run();
-      console.log("➕ Thêm cột updatedAt vào bảng folders");
-    } catch (e) {
-      if (!e.message.includes("duplicate column name")) throw e;
-    }
+    
 
     if (mode === "delete") {
       db.prepare("DELETE FROM folders WHERE root = ?").run(rootFolder);
