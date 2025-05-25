@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Danh sách phim</title>
+  <link rel="stylesheet" href="/src/styles/base.css">
+  <style>
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 20px; margin-top: 32px; }
+    .folder-card { background: #232323; color: #fff; border-radius: 10px; padding: 18px 10px; text-align: center; cursor: pointer; }
+    .folder-card:hover { background: #333; }
+    .folder-thumb-placeholder { font-size: 2.5rem; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div style="padding: 20px">
+    <button id="back-root" style="display:none">⬅ Quay lại nguồn phim</button>
+    <div id="movie-app"></div>
+  </div>
+  <script type="module" src="/src/pages/movie-index.js"></script>
+</body>
+</html>

@@ -69,6 +69,67 @@ function loadFolderFromDisk(
   };
 }
 
+/**
+ * 📂 Đọc folder cho MOVIE (trả về cả folder và file video)
+ * @param {string} dbkey
+ * @param {string} root
+ * @param {string} folderPath
+ * @param {number} limit
+ * @param {number} offset
+ * @returns {{ folders: Array, images: Array, total: number, totalImages: number }}
+ */
+function loadMovieFolderFromDisk(
+  dbkey,
+  _root, // <- truyền từ ngoài vào nhưng bỏ qua, chỉ để không lỗi call signature cũ
+  folderPath = "",
+  limit = 0,
+  offset = 0
+) {
+  // 🔥 CHỈ dùng dbkey để lấy rootPath thật
+  const rootPath = getRootPath(dbkey);
+  const basePath = path.join(rootPath, folderPath);
+  if (!fs.existsSync(basePath)) {
+    return { folders: [], images: [], total: 0, totalImages: 0 };
+  }
+
+  const entries = fs.readdirSync(basePath, { withFileTypes: true });
+  entries.sort((a, b) => naturalCompare(a.name, b.name));
+
+  const folders = [];
+  // KHÔNG lấy images nữa, chỉ trả folder & file video
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      folders.push({
+        name: entry.name,
+        path: path.posix.join(folderPath, entry.name),
+        type: "folder",
+        thumbnail: null,
+      });
+    }
+
+    if (entry.isFile()) {
+      const ext = path.extname(entry.name).toLowerCase();
+      if ([".mp4", ".mkv", ".avi", ".webm"].includes(ext)) {
+        folders.push({
+          name: entry.name,
+          path: path.posix.join(folderPath, entry.name),
+          type: "video",
+          ext: ext,
+          thumbnail: null,
+        });
+      }
+    }
+  }
+
+  return {
+    folders,
+    images: [],
+    total: folders.length,
+    totalImages: 0,
+  };
+}
+
 module.exports = {
   loadFolderFromDisk,
+  loadMovieFolderFromDisk, // export thêm hàm mới
 };

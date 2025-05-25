@@ -3,7 +3,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { getAllRootKeys, getRootPath } = require("./utils/config");
+const { getAllMangaKeys, getAllMovieKeys,getRootPath } = require("./utils/config");
 const { ROOT_PATHS } = require("./utils/config");
 const authMiddleware = require("./middleware/auth"); // 🆕 Middleware kiểm tra IP/hostname
 
@@ -85,13 +85,20 @@ app.get(/^\/(?!api|src|manga).*/, (req, res) => {
 });
 
 // API get source keys
-app.get("/api/source-keys-inline.js", (req, res) => {
-  const keys = getAllRootKeys();
-  const js = `window.sourceKeys = ${JSON.stringify(keys)};`;
+app.get("/api/source-keys.js", (req, res) => {
+  const manga = getAllMangaKeys();  // ROOT_
+  const movie = getAllMovieKeys();  // V_
+  const js = `window.mangaKeys = ${JSON.stringify(manga)};\nwindow.movieKeys = ${JSON.stringify(movie)};`;
   res.type("application/javascript").send(js);
 });
+
 
 // ✅ Start server
 app.listen(PORT, () => {
   console.log(`✅ Server is running at http://localhost:${PORT}`);
 });
+
+
+app.use("/api", require("./api/movie-folder"));
+// Thêm dòng này vào server.js
+app.use("/api", require("./api/video"));
